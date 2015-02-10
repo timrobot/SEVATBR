@@ -1,13 +1,11 @@
-on init:
+Notes:
+================
 
-  void stt_init();
+Use speech signal for the robot! Note that it is dependent on stt.c/o and stt,h, as well as gstreamer and the associated scripts.
 
-to get a piece of text:
-
-  void stt_read(char *buffer, int bytes);
-
-in which bufer is null iff no bytes are read
-
-to stop:
-
-  void stt_destroy();
+To do:
+- test the joins
+- double the processes
+- integrate gstreamer in c
+- possibly use a sigalrm scheme for faster
+- create new dict

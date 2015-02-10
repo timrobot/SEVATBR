@@ -1,4 +1,4 @@
-OBJECTS = stt.o test.o
+OBJECTS = stt.o test.o speech_signal.o
 TARGET = test
 
 all: $(OBJECTS) $(TARGET)
@@ -14,6 +14,12 @@ stt.o: stt.c
 		-I/usr/include/pocketsphinx/ \
 		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
 		`pkg-config --cflags --libs pocketsphinx sphinxbase`
+
+speech_signal.o: speech_signal.c
+	gcc -o $@ -c $< \
+		-I/usr/include/pocketsphinx/ \
+		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
+		`pkg-config --cflags --libs pocketsphinx sphinxbase` -pthread
 
 test.o: test.c
 	gcc -o $@ -c $<

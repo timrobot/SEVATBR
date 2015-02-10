@@ -35,9 +35,7 @@ static void *_update_signals(void *args) {
   int pid;
   char *buf;
   int nread;
-  int gst_running;
   while (!sslib_exit) {
-    gst_running = 1;
     if ((pid = fork()) == 0) {
       execlp("./readRaw.sh", "readRaw.sh", NULL);
     } else {
@@ -53,20 +51,14 @@ static void *_update_signals(void *args) {
         signals.none = !(signals.go || signals.stop ||
             signals.fetch || signals.ret);
       }
-      gst_running = 0;
     }
-    // repeat
-  }
-  if (gst_running) { // unnecessary?
-    kill(pid, SIGINT);
-    waitpid(pid, NULL, 0);
   }
   pthread_exit(NULL);
   return NULL;
 }
 
 void get_signal(speech_signal_t *sigframe) {
-  memcpy(sigframe, signals, sizeof(speech_signal_t));
+  memcpy(sigframe, &signals, sizeof(speech_signal_t));
 }
 
 void stop_speech_signals(void) {
