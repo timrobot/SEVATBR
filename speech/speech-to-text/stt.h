@@ -13,7 +13,7 @@ typedef struct stt {
 } stt_t;
 
 int stt_init(stt_t *info);
-int stt_decipher(stt_t *ino, char *filename, char **buf);
+int stt_decipher(stt_t *info, char *filename, char **buf);
 void stt_free(stt_t *info);
 
 #ifdef __cplusplus

@@ -1,6 +1,7 @@
 #include "stt.h"
 #include <stdio.h>
 #include <string.h>
+#include <sigmal.h>
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -18,7 +19,7 @@ int stt_init(stt_t *info) {
     fprintf(stderr, "[stt] Cannot init config.\n");
 #endif
 #endif
-    return -1;
+    goto error;
   }
 
   info->ps = ps_init(info->config);
@@ -28,10 +29,14 @@ int stt_init(stt_t *info) {
     fprintf(stderr, "[stt] Cannot init ps.\n");
 #endif
 #endif
-    return -1;
+    goto error;
   }
-  
+
   return 0;
+
+error:
+  memset(info, 0, sizeof(stt_t));
+  return -1;
 }
 
 int stt_decipher(stt_t *info, char *filename, char **buf) {
@@ -84,6 +89,8 @@ int stt_decipher(stt_t *info, char *filename, char **buf) {
 }
 
 void stt_free(stt_t *info) {
-  ps_free(info->ps);
-  memset(info, 0, sizeof(stt_t));
+  if (ps) {
+    ps_free(info->ps);
+    memset(info, 0, sizeof(stt_t));
+  }
 }
