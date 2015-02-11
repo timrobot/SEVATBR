@@ -15,7 +15,7 @@ typedef struct speech_signal {
   unsigned char ret;
 } speech_signal_t;
 
-void start_speech_signals(void);
+int start_speech_signals(void);
 void get_signal(speech_signal_t *sigframe);
 void stop_speech_signals(void);
 

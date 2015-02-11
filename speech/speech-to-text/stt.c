@@ -1,7 +1,7 @@
 #include "stt.h"
 #include <stdio.h>
 #include <string.h>
-#include <sigmal.h>
+#include <signal.h>
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -89,7 +89,7 @@ int stt_decipher(stt_t *info, char *filename, char **buf) {
 }
 
 void stt_free(stt_t *info) {
-  if (ps) {
+  if (info->ps) {
     ps_free(info->ps);
     memset(info, 0, sizeof(stt_t));
   }

@@ -1,28 +1,25 @@
 #include <stdio.h>
-#include <string.h>
-#include "stt.h"
+#include <signal.h>
+#include "speech_signal.h"
+
+static unsigned char stopsig;
+
+void stop(int param) {
+  stopsig = 1;
+}
 
 int main(int argc, char **argv) {
-  stt_t info;
-  char *buf;
+  signal(SIGINT, stop);
 
-  if (argc != 2) {
-    printf("%s [audio file]\n", argv[0]);
-    return -1;
+  start_speech_signals();
+  speech_signal_t sigframe;
+
+  while (!stopsig) {
+    get_signal(&sigframe);
+    printf("none: \t%d\ngo: \t%d\n, stop: \t%d\n, fetch: \t%d\n, ret: \t%d\n",
+        sigframe.none, sigframe.go, sigframe.stop, sigframe.fetch, sigframe.ret);
   }
 
-  if (stt_init(&info) == -1) {
-    fprintf(stderr, "Failure at init\n");
-    return -1;
-  }
-
-  if (stt_decipher(&info, argv[1], &buf) == -1) {
-    fprintf(stderr, "Failure at decipher\n");
-    return -1;
-  } else {
-    printf("Deciphered: %s\n", buf);
-  }
-
-  stt_free(&info);
+  stop_speech_signals();
   return 0;
 }
