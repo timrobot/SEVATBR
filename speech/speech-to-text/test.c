@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
 
   while (!stopsig) {
     get_signal(&sigframe);
-    printf("none: \t%d\ngo: \t%d\n, stop: \t%d\n, fetch: \t%d\n, ret: \t%d\n",
-        sigframe.none, sigframe.go, sigframe.stop, sigframe.fetch, sigframe.ret);
+//    printf("none: \t%d\ngo: \t%d\n, stop: \t%d\n, fetch: \t%d\n, ret: \t%d\n",
+//        sigframe.none, sigframe.go, sigframe.stop, sigframe.fetch, sigframe.ret);
   }
 
   stop_speech_signals();
