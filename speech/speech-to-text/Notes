@@ -1,2 +1,0 @@
-the sampling must be done with a certain format:
-If you want to create your own version of it, it needs to be a single-channel (monaural), little-endian, unheadered 16-bit signed PCM audio file sampled at 16000 Hz.

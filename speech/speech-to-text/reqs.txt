@@ -1,2 +1,0 @@
-libsphinxbase-dev
-libpocketsphinx-dev
