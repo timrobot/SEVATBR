@@ -10,6 +10,9 @@ $(TARGET): $(OBJECTS)
 		`pkg-config --cflags --libs pocketsphinx sphinxbase` \
 		`pkg-config --cflags gstreamer-0.10` `pkg-config --libs gstreamer-0.10`
 
+rawrec.o: rawrec.c
+	gcc -g -o $@ `pkg-config --cflags gstreamer-0.10` -c $<
+
 stt.o: stt.c
 	gcc -g -o $@ -c $< \
 		-I/usr/include/pocketsphinx/ \
@@ -27,16 +30,6 @@ test.o: test.c
 		-I/usr/include/pocketsphinx/ \
 		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
 		`pkg-config --cflags --libs pocketsphinx sphinxbase` -pthread
-
-gst_play: gst_play.o rawrec.o
-	gcc -g -o $@ `pkg-config --cflags glib-2.0` `pkg-config --libs glib-2.0` \
-		`pkg-config --cflags gstreamer-0.10` `pkg-config --libs gstreamer-0.10` $^
-
-gst_play.o: gst_play.c
-	gcc -g -o $@ -c $<
-
-rawrec.o: rawrec.c
-	gcc -g -o $@ `pkg-config --cflags gstreamer-0.10` -c $<
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
