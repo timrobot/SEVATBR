@@ -1,4 +1,4 @@
-OBJECTS = stt.o test.o speech_signal.o
+OBJECTS = rawrec.o stt.o speech_signal.o test.o
 TARGET = test
 
 all: $(OBJECTS) $(TARGET)
@@ -7,7 +7,8 @@ $(TARGET): $(OBJECTS)
 	gcc -g -o $@ $^ \
 		-I/usr/include/pocketsphinx/ \
 		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
-		`pkg-config --cflags --libs pocketsphinx sphinxbase`
+		`pkg-config --cflags --libs pocketsphinx sphinxbase` \
+		`pkg-config --cflags gstreamer-0.10` `pkg-config --libs gstreamer-0.10`
 
 stt.o: stt.c
 	gcc -g -o $@ -c $< \
@@ -35,8 +36,7 @@ gst_play.o: gst_play.c
 	gcc -g -o $@ -c $<
 
 rawrec.o: rawrec.c
-	gcc -g -o $@ `pkg-config --cflags glib-2.0` \
-		`pkg-config --cflags gstreamer-0.10` -c $<
+	gcc -g -o $@ `pkg-config --cflags gstreamer-0.10` -c $<
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

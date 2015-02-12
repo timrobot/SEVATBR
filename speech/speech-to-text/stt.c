@@ -4,14 +4,14 @@
 #include <signal.h>
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 int stt_init(stt_t *info) {
   info->config = cmd_ln_init(NULL, ps_args(), TRUE,
       "-hmm", MODELDIR "/hmm/en_US/hub4wsj_sc_8k",
       "-lm", MODELDIR "/lm/en_US/hub4.5000.DMP",
-      "-dict", "custom.dic",      // custom dictionary
+      "-dict", MODELDIR "/lm/en_US/cmu07a.dic",      // custom dictionary
       NULL);
   if (!info->config) {
 #ifdef DEBUG

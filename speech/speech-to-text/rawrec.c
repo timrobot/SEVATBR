@@ -93,5 +93,5 @@ void stop_recording(rawrec_t *rr) {
   // free
   gst_element_set_state((GstElement *)rr->pipeline, GST_STATE_NULL);
   gst_object_unref((GstElement *)rr->pipeline);
-  unlink(rr->filesink_loc);
+  memset(rr, 0, sizeof(rawrec_t));
 }

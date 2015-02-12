@@ -10,7 +10,6 @@ requirements:
 
 To do:
 - test the joins
-- double the processes
-- integrate gstreamer in c
 - possibly use a sigalrm scheme for faster
-- create new dict
+- create new dict (somewhat finished)
+- create new adaption (http://cmusphinx.sourceforge.net/wiki/tutorialadapt)

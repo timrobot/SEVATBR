@@ -1,8 +1,6 @@
 #ifndef speech_signal_h
 #define speech_signal_h
 
-#include "stt.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
