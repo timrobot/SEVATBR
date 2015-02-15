@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#didn't feel like figuring out how to write the makefile properly
+echo 'gcc -Wall -Wextra -o ball-rec ball-rec.c $(pkg-config --libs --cflags opencv)'
+gcc -Wall -Wextra -o ball-rec ball-rec.c $(pkg-config --libs --cflags opencv)
