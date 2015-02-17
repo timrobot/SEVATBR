@@ -1,18 +1,9 @@
-CC=gcc
-CFLAGS+=`pkg-config --cflags opencv`
-LDFLAGS+=`pkg-config --libs opencv`
+CFLAGS=-Wall -g -O3 $(shell pkg-config --cflags opencv)
+CFLAGS+=$(shell pkg-config --cflags opencv)
+LDFLAGS=$(shell pkg-config --libs opencv)
 
-PROG=ball-rec
-OBJS=$(PROG).o
-
-.PHONY: all clean
-	$(PROG): $(OBJS)
-	    $(CC) -o $(PROG) $(OBJS) $(LDFLAGS) $(CLFAGS)
-
-%.o: %.c
-	    $(CC) -c $(CFLAGS) $<
-
-all: $(PROG)
+ball-rec: ball-rec.c
+	gcc $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 clean:
-	    rm -f $(OBJS) $(PROG)
+	rm -f ball-rec
