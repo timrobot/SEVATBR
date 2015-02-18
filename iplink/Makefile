@@ -13,4 +13,4 @@ test.o: test.c
 	gcc -o $@ -c $<
 
 clean:
-	rm $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(TARGET)

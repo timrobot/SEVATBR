@@ -8,6 +8,11 @@
 
 static char msgbuf[1024];
 
+/** Connect to the main server for our robot's manual interface.
+ *  @param connection
+ *    the connection information for the server
+ *  @return 0 on success, -1 otherwise
+ */
 int iplink_connect_main_server(iplink_t *connection) {
   struct hostent *he;
   struct in_addr **addr_list;
@@ -39,6 +44,17 @@ int iplink_connect_main_server(iplink_t *connection) {
   return 0;
 }
 
+/** Send a request to the main server
+ *  @param connection
+ *    the connection information for the server
+ *  @param addr
+ *    the addr to send the request to, "/" for main page
+ *  @param type
+ *    either get (IPLINK_GET) or post (IPLINK_POST)
+ *  @param data
+ *    the data to send over (only for IPLINK_POST)
+ *  @return n bytes sent over, -1 otherwise
+ */
 int iplink_send(iplink_t *connection, char *addr, int type, char *data) {
   char const *typestr;
   switch (type) {
@@ -58,10 +74,23 @@ int iplink_send(iplink_t *connection, char *addr, int type, char *data) {
   return send(connection->socket_fd, msgbuf, strlen(msgbuf), 0);
 }
 
+/** Try and receive a response from the main server
+ *  @param connection
+ *    the connection information for the server
+ *  @param buf
+ *    the buffer to store the message in
+ *  @param buflen
+ *    the max amount of data to write to the buffer
+ *  @return n bytes received, -1 otherwise
+ */
 int iplink_recv(iplink_t *connection, char *buf, int buflen) {
   return recv(connection->socket_fd, buf, buflen, 0);
 }
 
+/** Disconnect the connection
+ *  @param connection
+ *    the connection information for the server
+ */
 void iplink_disconnect(iplink_t *connection) {
   close(connection->socket_fd);
 }
