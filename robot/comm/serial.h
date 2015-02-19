@@ -23,7 +23,7 @@ typedef struct serial {
   int8_t  readAvailable;
 } serial_t;
 
-int serial_connect(serial_t *connection, char *port, int baudrate, int parity = 0);
+int serial_connect(serial_t *connection, char *port, int baudrate);
 char *serial_read(serial_t *connection);
 void serial_write(serial_t *connection, char *message);
 void serial_disconnect(serial_t *connection);

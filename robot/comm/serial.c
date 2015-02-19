@@ -29,11 +29,9 @@ static char tempbuf[SWREADMAX];
  *    a portname; if NULL, will open a random port
  *  @param baudrate
  *    the bits per second of information to transmit/receive
- *  @param parity
- *    specifies whether or not parity is turned on (if unsure, use 0)
  *  @return 0 on success, -1 on failure
  */
-int serial_connect(serial_t *connection, char *port, int baudrate, int parity) {
+int serial_connect(serial_t *connection, char *port, int baudrate) {
   connection->connected = 0;
   if (port) {
     connection->port = (char *)malloc((strlen(port) + 1) * sizeof(char));
@@ -78,7 +76,7 @@ int serial_connect(serial_t *connection, char *port, int baudrate, int parity) {
 
   /* set connection attributes */
   connection->baudrate = baudrate;
-  connection->parity = parity;
+  connection->parity = 0;
   if (_serial_setattr(connection) == -1) {
     goto error; /* possible bad behavior */
   }
@@ -122,7 +120,7 @@ static int _serial_setattr(serial_t *connection) {
   }
   tty.c_iflag &= ~(IXON | IXOFF | IXANY);
   tty.c_oflag &= ~OPOST;
-  tty.c_cflag &= ~(PARENB | CSTOPB | CSIZE);
+  tty.c_cflag &= ~(PARENB | CSTOPB | CSIZE); // no parity
   tty.c_cflag |= CS8 | CLOCAL | CREAD;
   tty.c_cflag &= ~CRTSCTS;
   tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
@@ -206,7 +204,7 @@ static void _serial_update(serial_t *connection) {
     char *start_index, *end_index;
     tempbuf[numAvailable] = '\0';
     if ((totalBytes = strlen(connection->buffer) + numAvailable) >= SWBUFMAX) {
-      totalBytes -= SWBUFMAX - 1;
+      totalBytes -= SWREADMAX;
       memmove(connection->buffer, &connection->buffer[totalBytes],
           (SWBUFMAX - totalBytes) * sizeof(char));
       connection->buffer[SWBUFMAX - totalBytes] = '\0';
