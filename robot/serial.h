@@ -24,8 +24,6 @@ typedef struct serial {
 } serial_t;
 
 int serial_connect(serial_t *connection, char *port, int baudrate, int parity = 0);
-void serial_sync(serial_t *connection);
-void serial_update(serial_t *connection);
 char *serial_read(serial_t *connection);
 void serial_write(serial_t *connection, char *message);
 void serial_disconnect(serial_t *connection);
