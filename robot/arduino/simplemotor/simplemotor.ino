@@ -15,7 +15,7 @@ void loop()
     input=Serial.parseInt();
   }
     Serial.println(input);
-    //LED will blink fast
+    //go
     if(input==1)
     {
         analogWrite(5,255);
@@ -23,7 +23,7 @@ void loop()
         delay(100);
         Serial.write("stuck in HIGH\n");
     }
-    //LED will blink slow
+    //stop
     else if(input==0)
     {
         analogWrite(5,0);
