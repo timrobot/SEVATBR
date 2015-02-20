@@ -19,8 +19,7 @@ void left()
   analogWrite(5,255);
   analogWrite(6,0);
   analogWrite(10,255);
-  analogWrite(11,0);
- delay(100); 
+  analogWrite(11,0); 
 }
 //move right
 void right()
@@ -29,7 +28,6 @@ void right()
   analogWrite(6,255);
   analogWrite(10,0);
   analogWrite(11,255);
-  delay(100);
 }
 //move forward
 void forward()
@@ -38,7 +36,6 @@ void forward()
   analogWrite(6,255);
   analogWrite(10,255);
   analogWrite(11,0);
-  delay(100); 
 }
 //move back
 void reverse()
@@ -47,7 +44,6 @@ void reverse()
   analogWrite(6,0);
   analogWrite(10,0);
   analogWrite(11,255);
-  delay(100); 
 }
 char input;
 void loop()
