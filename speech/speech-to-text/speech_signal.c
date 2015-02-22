@@ -78,10 +78,10 @@ static void *_update_signals(void *args) {
   }
   stop_recording(&rec[0]);
   stop_recording(&rec[1]);
-  if (access(fname[0], O_RDONLY)) {
+  if (access(fname[0], F_OK)) {
     unlink(fname[0]);
   }
-  if (access(fname[1], O_RDONLY)) {
+  if (access(fname[1], F_OK)) {
     unlink(fname[1]);
   }
   pthread_exit(NULL);

@@ -3,10 +3,11 @@
 #include <string.h>
 #include <signal.h>
 
-#ifndef DEBUG
-#define DEBUG 1
-#endif
-
+/** Initialize the speech engine
+ *  @param info
+ *    the information struct for the engine
+ *  @return 0 on success, -1 otherwise
+ */
 int stt_init(stt_t *info) {
   info->config = cmd_ln_init(NULL, ps_args(), TRUE,
       "-hmm", MODELDIR "/hmm/en_US/hub4wsj_sc_8k",
@@ -14,21 +15,13 @@ int stt_init(stt_t *info) {
       "-dict", MODELDIR "/lm/en_US/cmu07a.dic",      // custom dictionary
       NULL);
   if (!info->config) {
-#ifdef DEBUG
-#if DEBUG
     fprintf(stderr, "[stt] Cannot init config.\n");
-#endif
-#endif
     goto error;
   }
 
   info->ps = ps_init(info->config);
   if (!info->ps) {
-#ifdef DEBUG
-#if DEBUG
     fprintf(stderr, "[stt] Cannot init ps.\n");
-#endif
-#endif
     goto error;
   }
 
@@ -39,6 +32,12 @@ error:
   return -1;
 }
 
+/** Try to decipher a file
+ *  @param info
+ *    the information struct for the engine
+ *  @return n characters deciphered on success,
+ *    -1 otherwise
+ */
 int stt_decipher(stt_t *info, char *filename, char **buf) {
   FILE *fh;
   char *fncpy;
@@ -49,11 +48,7 @@ int stt_decipher(stt_t *info, char *filename, char **buf) {
   // open file
   fh = fopen(filename, "rb");
   if (!fh) {
-#ifdef DEBUG
-#if DEBUG
     fprintf(stderr, "[stt] Cannot find file: %s.\n", filename);
-#endif
-#endif
     return -1;
   }
 
@@ -64,22 +59,14 @@ int stt_decipher(stt_t *info, char *filename, char **buf) {
   rv = ps_decode_raw(info->ps, fh, fncpy, -1);
   free(fncpy);
   if (rv < 0) {
-#ifdef DEBUG
-#if DEBUG
     fprintf(stderr, "[stt] Couldn't decode file: %s.\n", filename);
-#endif
-#endif
     return -1;
   }
 
   // decode
   hyp = ps_get_hyp(info->ps, &score, &uttid);
   if (!hyp) {
-#ifdef DEBUG
-#if DEBUG
     fprintf(stderr, "[stt] Cannot get hypothesis\n");
-#endif
-#endif
     return -1;
   }
 
@@ -88,6 +75,10 @@ int stt_decipher(stt_t *info, char *filename, char **buf) {
   return strlen(*buf);
 }
 
+/** Remove the speech engine
+ *  @param info
+ *    the information struct for the engine
+ */
 void stt_free(stt_t *info) {
   if (info->ps) {
     ps_free(info->ps);

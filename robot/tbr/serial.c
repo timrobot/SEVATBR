@@ -159,7 +159,7 @@ static void _serial_sync(serial_t *connection) {
     execlp("python", "python", "_syncserial.py", NULL);
   } else {
     waitpid(pid, NULL, 0);
-    if (access(syncname, O_RDONLY) == 0) {
+    if (access(syncname, F_OK) == 0) {
       unlink(syncname);
     }
   }
@@ -179,7 +179,7 @@ static void _serial_update(serial_t *connection) {
   int totalBytes;
 
   /* dynamically reconnect the device */
-  if (access(connection->port, O_RDWR) != 0) {
+  if (access(connection->port, F_OK) == -1) {
     if (connection->connected) {
       connection->connected = 0;
       connection->fd = -1;
