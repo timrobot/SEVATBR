@@ -7,18 +7,21 @@
 #include "iplink.h"
 
 static char msgbuf[1024];
+static char response[1024];
 
 /** Connect to the main server for our robot's manual interface.
  *  @param connection
  *    the connection information for the server
+ *  @param hostname
+ *    the hostname of the server
  *  @return 0 on success, -1 otherwise
  */
-int iplink_connect_main_server(iplink_t *connection) {
+int iplink_connect(iplink_t *connection, char *hostname) {
   struct hostent *he;
   struct in_addr **addr_list;
   struct sockaddr_in main_server;
   int i;
-  connection->hostname = "sevatbr-v002.appspot.com";
+  connection->hostname = hostname;
 
   // url -> ip
   if ((he = gethostbyname(connection->hostname)) == NULL) {
@@ -41,6 +44,7 @@ int iplink_connect_main_server(iplink_t *connection) {
       sizeof(main_server)) == -1) {
     return -1;
   }
+  connection->connected = 1;
   return 0;
 }
 
@@ -50,23 +54,19 @@ int iplink_connect_main_server(iplink_t *connection) {
  *  @param addr
  *    the addr to send the request to, "/" for main page
  *  @param type
- *    either get (IPLINK_GET) or post (IPLINK_POST)
+ *    either "GET" or "POST" or "get" or "post"
  *  @param data
  *    the data to send over (only for IPLINK_POST)
  *  @return n bytes sent over, -1 otherwise
  */
-int iplink_send(iplink_t *connection, char *addr, int type, char *data) {
+int iplink_send(iplink_t *connection, char *addr, char *type, char *data) {
   char const *typestr;
-  switch (type) {
-    case IPLINK_GET:
-      typestr = "GET";
-      break;
-    case IPLINK_POST:
-      typestr = "POST";
-      break;
-    default:
-      typestr = "GET";
-      break;
+  if (strcmp(type, "get") == 0) {
+    typestr = "GET";
+  } else if (strcmp(type, "post") == 0) {
+    typestr = "POST";
+  } else {
+    typestr = type;
   }
   // TODO; put data in here for later
   sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n",
@@ -83,14 +83,23 @@ int iplink_send(iplink_t *connection, char *addr, int type, char *data) {
  *    the max amount of data to write to the buffer
  *  @return n bytes received, -1 otherwise
  */
-int iplink_recv(iplink_t *connection, char *buf, int buflen) {
-  return recv(connection->socket_fd, buf, buflen, 0);
+char *iplink_recv(iplink_t *connection) {
+  int n = recv(connection->socket_fd, response, sizeof(response) - sizeof(char), 0);
+  if (n == -1) {
+    return NULL;
+  }
+  return strstr(response, "\r\n\r\n") + sizeof(char) * 4;
 }
 
 /** Disconnect the connection
  *  @param connection
  *    the connection information for the server
  */
-void iplink_disconnect(iplink_t *connection) {
-  close(connection->socket_fd);
+int iplink_disconnect(iplink_t *connection) {
+  if (connection->connected) {
+    close(connection->socket_fd);
+    connection->socket_fd = -1;
+    connection->connected = 0;
+  }
+  return 0;
 }

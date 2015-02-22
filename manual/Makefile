@@ -1,5 +1,5 @@
 OBJECTS = iplink.o test.o
-TARGET = iplink
+TARGET = test
 
 all: $(OBJECTS) $(TARGET)
 
