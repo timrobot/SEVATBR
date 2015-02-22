@@ -6,7 +6,7 @@
 
 typedef struct manual {
  iplink_t connection;
- robot_t ctrl;
+ robotctrl_t ctrl;
 } manual_t;
 
 int manual_connect(manual_t *mnl);

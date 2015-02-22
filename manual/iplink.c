@@ -77,10 +77,6 @@ int iplink_send(iplink_t *connection, char *addr, char *type, char *data) {
 /** Try and receive a response from the main server
  *  @param connection
  *    the connection information for the server
- *  @param buf
- *    the buffer to store the message in
- *  @param buflen
- *    the max amount of data to write to the buffer
  *  @return n bytes received, -1 otherwise
  */
 char *iplink_recv(iplink_t *connection) {
