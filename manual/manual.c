@@ -54,19 +54,17 @@ robotctrl_t *manual_get(manual_t *mnl) {
   int ctrlsig;
   int up, down, left, right;
 
-  if (throttle_en) {
-    return NULL;
-  } else {
-    if (!request_sent) {
-      iplink_send(&mnl->connection, "/manual_feedback", "get", NULL);
-      throttle_en = 1;
-    }
+  if (!throttle_en && !request_sent) {
+    iplink_send(&mnl->connection, "/manual_feedback", "get", NULL);
+    throttle_en = 1;
+    request_sent = 1;
   }
 
   // extract message
   if (!(msg = iplink_recv(&mnl->connection))) {
     return NULL;
   }
+  request_sent = 0;
   sp = strstr(msg, "feedback: ") + sizeof(char) * strlen("feedback: ");
   ep = strstr(sp, " ");
   buflen = (size_t)ep - (size_t)sp;
