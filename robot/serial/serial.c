@@ -80,6 +80,7 @@ int serial_connect(serial_t *connection, char *port, int baudrate) {
   if (_serial_setattr(connection) == -1) {
     goto error; /* possible bad behavior */
   }
+  sleep(2); /* wait for connection sync */
   tcflush(connection->fd, TCIFLUSH);
   connection->connected = 1;
   memset(connection->buffer, 0, SWBUFMAX);
@@ -145,7 +146,7 @@ static void _serial_sync(serial_t *connection) {
     "port = %s\r\n"
     "s = serial.Serial(port, %d)\r\n"
     "if s.isOpen():\r\n"
-    "  for i in range(10):\r\n"
+    "  for i in range(4):\r\n"
     "    s.readline()\r\n"
     "  s.close()\r\n"
     "else:\r\n"

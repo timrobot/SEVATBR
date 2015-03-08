@@ -20,7 +20,7 @@ static void unthrottle(int signum);
  */
 int manual_connect(manual_t *mnl) {
   int res;
-  memset(&mnl->ctrl, 0, sizeof(robotctrl_t));
+  memset(&mnl->ctrl, 0, sizeof(pose3d_t));
   res = iplink_connect(&mnl->connection, "sevatbr-v002.appspot.com");
   if (res != -1) {
     struct itimerval timer;
@@ -39,14 +39,18 @@ int manual_connect(manual_t *mnl) {
   return res;
 }
 
+void manual_enable(manual_t manua) {
+  
+}
+
 /** Get the information sent over from the server
  *  @param mnl
  *    the information for the manual connection
  *  @return the information struct on success,
  *    NULL otherwise
  */
-robotctrl_t *manual_get(manual_t *mnl) {
-  // conform to the specifications in robotctrl_t
+pose3d_t *manual_get(manual_t *mnl) {
+  // conform to the specifications in pose3d_t
   char *msg;
   char *sp, *ep;
   char buf[16];
@@ -103,6 +107,8 @@ int manual_disconnect(manual_t *mnl) {
 }
 
 /** Private method to handle throttling
+ *  @param signum
+ *    the id for the signal
  */
 static void unthrottle(int signum) {
   throttle_en = 0;

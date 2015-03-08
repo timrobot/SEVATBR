@@ -14,11 +14,10 @@
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include "serial.h"
-#include "comm.h"
+#include "tbr.h"
 
 #define NUM_DEV       2
-#define DEV_BAUD      9600
+#define DEV_BAUD      38400
 #define WHEEL_DEVID   1
 #define ARM_DEVID     2
 
@@ -58,8 +57,8 @@ int tbr_connect(tbr_t *robot) {
   // when finished adding all the possible filenames,
   // try to connect to a couple of them (NUM_DEV)
   // and identify their ids
-  robot->connections = (serial *)malloc(sizeof(serial_t) * NUM_DEV);
-  robot->ids = (int *)malloc(sizeof(int_t) * NUM_DEV);
+  robot->connections = (serial_t *)malloc(sizeof(serial_t) * NUM_DEV);
+  robot->ids = (int *)malloc(sizeof(int) * NUM_DEV);
   for (i = 0, n = 0; n < NUM_DEV && i < robot->num_possible; i++) {
     char *msg;
     int id;
@@ -89,13 +88,7 @@ int tbr_connect(tbr_t *robot) {
     return -1;
   } else {
     // reset
-    robot->baseleft = 0;
-    robot->baseright = 0;
-    robot->armbottom = 0;
-    robot->armtop = 0;
-    robot->clawrotate = 0;
-    robot->clawleft = 0;
-    robot->clawright = 0;
+    tbr_reset(robot);
     tbr_send(robot);
     tbr_recv(robot);
     return n;
@@ -112,9 +105,6 @@ void tbr_send(tbr_t *robot) {
     char msg[128]; // careful of static sizes!
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
-        int l, r;
-        l = robot->baseleft > 0 ? 1 : (robot->baseleft < 0 ? -1 : 0);
-        r = robot->baseright > 0 ? 1 : (robot->baseleft < 0 ? -1 : 0);
         if (robot->baseleft == 0 && robot->baseright == 0) {
           sprintf(msg, " ");
         } else if (robot->baseleft > 0 && robot->baseright > 0) {
@@ -129,11 +119,9 @@ void tbr_send(tbr_t *robot) {
         serial_write(&robot->connections[i], msg);
         break;
       case ARM_DEVID:
-        sprintf(msg, "%d %d %d %d\n",
-            robot->armtop,
-            robot->clawrotate,
-            robot->clawleft,
-            robot->clawright);
+        sprintf(msg, "%d %d\n",
+            robot->arm,
+            robot->claw);
         serial_write(&robot->connections[i], msg);
         break;
       default:
@@ -150,7 +138,7 @@ void tbr_recv(tbr_t *robot) {
   // there is actually nothing that we need at the moment
   int i;
   for (i = 0; i < NUM_DEV; i++) {
-    switch (robot->connection_ids[i]) {
+    switch (robot->ids[i]) {
       case WHEEL_DEVID:
         break;
       case ARM_DEVID:
@@ -168,6 +156,8 @@ void tbr_recv(tbr_t *robot) {
 void tbr_disconnect(tbr_t *robot) {
   int i;
   if (robot->connected) {
+    tbr_reset(robot);
+    tbr_send(robot);
     if (robot->connections) {
       for (i = 0; i < NUM_DEV; i++) {
         serial_disconnect(&robot->connections[i]);
@@ -188,113 +178,13 @@ void tbr_disconnect(tbr_t *robot) {
   }
 }
 
-////////////////////////////////////////////////////////////
-// Note: the following functions are abstractions of the  //
-// top functions.                                         //
-////////////////////////////////////////////////////////////
-
-/** Move the robot forward
+/** Reset the robot values
  *  @param robot
  *    the robot information
  */
-void tbr_move_forward(tbr_t *robot) {
-  robot->baseleft = 1;
-  robot->baseright = 1;
-  tbr_send(robot);
-}
-
-/** Move the robot backward
- *  @param robot
- *    the robot information
- */
-void tbr_move_backward(tbr_t *robot) {
-  robot->baseleft = -1;
-  robot->baseright = -1;
-  tbr_send(robot);
-}
-
-/** Turn the robot left
- *  @param robot
- *    the robot information
- */
-void tbr_turn_left(tbr_t *robot) {
-  robot->baseleft = -1;
-  robot->baseright = 1;
-  tbr_send(robot);
-}
-
-/** Turn the robot right
- *  @param robot
- *    the robot information
- */
-void tbr_turn_right(tbr_t *robot) {
-  robot->baseleft = 1;
-  robot->baseright = -1;
-  tbr_send(robot);
-}
-
-/** Stop the wheels from moving
- *  @param robot
- *    the robot information
- */
-void tbr_stop_wheels(tbr_t *robot) {
+void tbr_reset(tbr_t *robot) {
   robot->baseleft = 0;
   robot->baseright = 0;
-  tbr_send(robot);
-}
-
-/** Create a sequence to grab the ball
- *  @param robot
- *    the robot information
- */
-void tbr_grab_ball(tbr_t *robot) {
-  // TODO
-}
-
-/** Create a sequence to release the ball into a basket
- *  @param robot
- *    the robot information
- */
-void tbr_release_ball(tbr_t *robot) {
-  // TODO
-}
-
-/** Open the claw
- *  @param robot
- *    the robot information
- */
-void tbr_open_claw(tbr_t *robot) {
-  // TODO
-}
-
-/** Close the claw
- *  @param robot
- *    the robot information
- */
-void tbr_close_claw(tbr_t *robot) {
-  // TODO
-}
-
-/** Lift up the arm
- *  @param robot
- *    the robot information
- */
-void tbr_lift_arm(tbr_t *robot) {
-  // TODO
-}
-
-/** Lower the arm
- *  @param robot
- *    the robot information
- */
-void tbr_drop_arm(tbr_t *robot) {
-  // TODO
-}
-
-/** Stop arm movement
- *  @param robot
- *    the robot information
- */
-void tbr_stop_arm(tbr_t *robot) {
-  // TODO
+  robot->arm = 0;
+  robot->claw = 0;
 }

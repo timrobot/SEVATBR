@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <stdint.h>
 #include <string.h>
+#include "coord.h"
 #include "robot.h"
 #include "manual.h"
 
@@ -23,7 +24,7 @@ void stop_program(int signum) {
  */
 int main(int argc, char *argv[]) {
   manual_t mnl;
-  robotctrl_t *ctrl;
+  void *ctrl;
   int manual_mode;
 
   // set everything
@@ -39,7 +40,7 @@ int main(int argc, char *argv[]) {
         robot_set_controls(ctrl);
       }
     } else {
-      
+      // sorry dont connect ai right now
     }
   }
 
