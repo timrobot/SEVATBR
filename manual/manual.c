@@ -6,7 +6,6 @@
 #define HZ  10
 
 static int throttle_en;
-static int request_sent;
 static void unthrottle(int signum);
 
 // TODO set throttle management for multiple connections
@@ -58,13 +57,9 @@ pose3d_t *manual_get(manual_t *mnl) {
   int ctrlsig;
   int up, down, left, right;
 
-  if (throttle_en) {
-    return NULL;
-  } else {
-    if (!request_sent) {
-      iplink_send(&mnl->connection, "/manual_feedback", "get", NULL);
-      throttle_en = 1;
-    }
+  if (!throttle_en) {
+    iplink_send(&mnl->connection, "/manual_feedback", "get", NULL);
+    throttle_en = 1;
   }
 
   // extract message
