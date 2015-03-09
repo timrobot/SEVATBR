@@ -2,11 +2,10 @@
 #include "speech.h"
 #include "visual.h"
 #include "coord.h"
-#include "robot.h"
+#include "parietal.h"
 
 static pthread_t conciousness;
 static int end_conciousness;
-static pose3d_t ctrlout;
 
 typedef struct info {
   speech_signal_t ss;
@@ -25,11 +24,7 @@ void wakeup() {
 
 void *concious_thought(void *information) {
   info_t *info = (info_t *)information;
-  enum goal_states {
-    go,
-    ret,
-    stop
-  };
+  enum goal_states { go, ret, stop };
   enum action_states {
     find_ball,
     goto_ball,

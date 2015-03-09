@@ -1,25 +1,22 @@
-OBJECTS = iplink.o test1.o manual.o test2.o
-TARGET = test1 test2
+CC = gcc
+CFLAGS = -pedantic -Wall -Werror -std=c99 -O3
+INCLUDE = -I$(shell pwd)/../core
+OBJECTS = httplink.o manual.o test.o
+TARGET = test
 
 all: $(OBJECTS) $(TARGET)
 
-test2: iplink.o manual.o test2.o
-	gcc -o $@ $^ -I$(shell pwd)/../robot
-
-test1: iplink.o test1.o
-	gcc -o $@ $^
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $^ $(INCLUDE)
 
 manual.o: manual.c
-	gcc -o $@ -c $< -I$(shell pwd)/../robot
+	$(CC) -o $@ -c $< $(INCLUDE)
 
-iplink.o: iplink.c
-	gcc -o $@ -c $<
+httplink.o: httplink.c
+	$(CC) -o $@ -c $<
 
-test1.o: test1.c
-	gcc -o $@ -c $<
-
-test2.o: test2.c
-	gcc -o $@ -c $< -I$(shell pwd)/../robot
+test.o: test.c
+	$(CC) -o $@ -c $< $(INCLUDE)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

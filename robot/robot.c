@@ -87,7 +87,17 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
         forward = (base->y > 0.0) - (base->y < 0.0);
         rotate = (base->yaw > 0.0) - (base->yaw < 0.0);
         tbr.baseleft = forward - rotate;
+        if (tbr.baseleft > 1) {
+          tbr.baseleft = 1;
+        } else if (tbr.baseleft < -1) {
+          tbr.baseleft = -1;
+        }
         tbr.baseright = forward + rotate;
+        if (tbr.baseright > 1) {
+          tbr.baseright = 1;
+        } else if (tbr.baseright < -1) {
+          tbr.baseright = -1;
+        }
         tbr.arm = (arm->pitch > 0.0) - (arm->pitch < 0.0);
         tbr.claw = (arm->yaw > 0.0) - (arm->yaw < 0.0);
         tbr_send(&tbr);

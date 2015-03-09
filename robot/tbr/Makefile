@@ -9,7 +9,6 @@ all: subdirs $(OBJECTS) $(TARGET)
 
 subdirs:
 	make -C $(shell pwd)/../serial
-	
 
 tbr.o: tbr.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<

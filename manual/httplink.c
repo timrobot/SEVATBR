@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <string.h>
-#include "iplink.h"
+#include "httplink.h"
 
 static char msgbuf[1024];
 static char response[1024];
@@ -16,7 +16,7 @@ static char response[1024];
  *    the hostname of the server
  *  @return 0 on success, -1 otherwise
  */
-int iplink_connect(iplink_t *connection, char *hostname) {
+int httplink_connect(httplink_t *connection, char *hostname) {
   struct hostent *he;
   struct in_addr **addr_list;
   struct sockaddr_in main_server;
@@ -56,10 +56,10 @@ int iplink_connect(iplink_t *connection, char *hostname) {
  *  @param type
  *    either "GET" or "POST" or "get" or "post"
  *  @param data
- *    the data to send over (only for IPLINK_POST)
+ *    the data to send over (only for httplink_POST)
  *  @return n bytes sent over, -1 otherwise
  */
-int iplink_send(iplink_t *connection, char *addr, char *type, char *data) {
+int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
   char const *typestr;
   if (strcmp(type, "get") == 0) {
     typestr = "GET";
@@ -79,7 +79,7 @@ int iplink_send(iplink_t *connection, char *addr, char *type, char *data) {
  *    the connection information for the server
  *  @return n bytes received, -1 otherwise
  */
-char *iplink_recv(iplink_t *connection) {
+char *httplink_recv(httplink_t *connection) {
   int n = recv(connection->socket_fd, response, sizeof(response) - sizeof(char), 0);
   if (n == -1) {
     return NULL;
@@ -91,7 +91,7 @@ char *iplink_recv(iplink_t *connection) {
  *  @param connection
  *    the connection information for the server
  */
-int iplink_disconnect(iplink_t *connection) {
+int httplink_disconnect(httplink_t *connection) {
   if (connection->connected) {
     close(connection->socket_fd);
     connection->socket_fd = -1;

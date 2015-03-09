@@ -7,7 +7,6 @@
  * starting program.
  ***********************************/
 #include <signal.h>
-#include <stdint.h>
 #include <string.h>
 #include "coord.h"
 #include "robot.h"
@@ -20,32 +19,31 @@ void stop_program(int signum) {
 }
 
 /** This is the starting program for the robot
- *  think of it as init.
  */
 int main(int argc, char *argv[]) {
-  manual_t mnl;
-  void *ctrl;
   int manual_mode;
 
-  // set everything
-  robot_set(TENNIS_BALL_ROBOT);
-  manual_connect(&mnl);
+  // init robot and manual
+  robot_set(STANDARD_OUT);
+  manual_connect();
   manual_mode = 1;
+
+  // change later
+  manual_enable();
 
   // start getting communication accesses
   while (!stop_signal) {
     // choose input
     if (manual_mode) {
-      if ((ctrl = manual_get(&mnl))) {
-        robot_set_controls(ctrl);
-      }
-    } else {
-      // sorry dont connect ai right now
+      pose3d_t base;
+      pose3d_t arm;
+      manual_get_poses(&base, &arm);
+      robot_move(&base, &arm);
     }
   }
 
   // clean up
-  manual_disonnect(&mnl);
+  manual_disonnect();
   robot_unset();
 
   return 0;
