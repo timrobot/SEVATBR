@@ -8,9 +8,9 @@
  ***********************************/
 #include <signal.h>
 #include <string.h>
-#include "coord.h"
 #include "robot.h"
 #include "manual.h"
+#include "coord.h"
 
 // Signal handler for killing the program
 static int stop_signal;
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
 
   // clean up
-  manual_disonnect();
+  manual_disconnect();
   robot_unset();
 
   return 0;

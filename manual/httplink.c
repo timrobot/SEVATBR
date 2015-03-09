@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <string.h>
+#include <unistd.h>
 #include "httplink.h"
 
 static char msgbuf[1024];

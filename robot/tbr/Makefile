@@ -1,23 +1,27 @@
 CC = gcc
 INCLUDE = -I$(shell pwd)/../serial
 CFLAGS = -pedantic -Wall -Werror -std=c99 -O3
-LIBS = -L$(shell pwd)/../serial -lserial
-OBJECTS = tbr.o test.o
-TARGET = test
+SUBDIRS = $(shell pwd)/../serial
+OBJECTS = tbr.o
+LIBOBJS = libtbr.o
 
-all: subdirs $(OBJECTS) $(TARGET)
+all: subdirs $(OBJECTS) $(LIBOBJS)
 
 subdirs:
-	make -C $(shell pwd)/../serial
+	$(foreach directory, $(SUBDIRS), make -C $(directory);)
 
 tbr.o: tbr.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
+libtbr.o: tbr.c
+	$(CC) $(CFLAGS) $(INCLUDE) -fPIC -o $@ -c $<
+
 test.o: test.c
 	$(CC) -pedantic -std=c99 -O3 $(INCLUDE) -o $@ -c $<
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
+test: $(OBJECTS) test.o $(shell pwd)/../serial/serial.o
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
+	$(foreach directory, $(SUBDIRS), make clean -C $(directory);)

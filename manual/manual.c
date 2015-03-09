@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/time.h>
+#include <stdlib.h>
 #include "httplink.h"
 #include "manual.h"
 

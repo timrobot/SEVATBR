@@ -1,22 +1,35 @@
 CC = gcc
-CFLAGS = -pedantic -Wall -Werror -std=c99 -O3
+CFLAGS = -pedantic -Wall -Werror -std=gnu99 -O3
 INCLUDE = -I$(shell pwd)/../core
-OBJECTS = httplink.o manual.o test.o
-TARGET = test
+OBJECTS = httplink.o manual.o
+LIBOBJS = libhttplink.o libmanual.o
+TARGET = libmanual.so libmanual.a
 
 all: $(OBJECTS) $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) -o $@ $^ $(INCLUDE)
+httplink.o: httplink.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+libhttplink.o: httplink.c
+	$(CC) $(CFLAGS) -fPIC -o $@ -c $<
 
 manual.o: manual.c
-	$(CC) -o $@ -c $< $(INCLUDE)
+	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE)
 
-httplink.o: httplink.c
-	$(CC) -o $@ -c $<
+libmanual.o: manual.c
+	$(CC) $(CFLAGS) -fPIC -o $@ -c $< $(INCLUDE)
+	
+libmanual.so: $(LIBOBJS)
+	$(CC) $(CFLAGS) -shared -o $@ $^
+
+libmanual.a: $(OBJECTS)
+	ar rcs $@ $^
 
 test.o: test.c
 	$(CC) -o $@ -c $< $(INCLUDE)
 
+test: $(OBJECTS) test.o
+	$(CC) $(CFLAGS) -o $@ $^ $(INCLUDE)
+
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(LIBOBJS) $(TARGET)
