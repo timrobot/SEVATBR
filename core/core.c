@@ -24,8 +24,10 @@ int main(int argc, char *argv[]) {
   int manual_mode;
 
   // init robot and manual
-  robot_set(STANDARD_OUT);
-  manual_connect();
+  if (robot_set(TENNIS_BALL_ROBOT) == -1) {
+    return -1;
+  }
+  manual_connect(MNL_CTRL);
   manual_mode = 1;
 
   // change later

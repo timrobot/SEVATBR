@@ -103,6 +103,7 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
         tbr_send(&tbr);
       }
       break;
+
     case SIMULATOR:
       // TODO
       break;

@@ -2,12 +2,14 @@
 #define manual_h
 
 #include "coord.h"
+#define MNL_SRVR  0x0001
+#define MNL_CTRL  0x0002
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int manual_connect(void);
+int manual_connect(int type);
 void manual_enable(void);
 void manual_disable(void);
 int manual_disconnect(void);

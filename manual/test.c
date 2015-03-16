@@ -14,7 +14,7 @@ int main() {
   pose3d_t base;
   pose3d_t arm;
   signal(SIGINT, stop);
-  manual_connect();
+  manual_connect(MNL_CTRL);
   manual_enable();
 
   while (!stopsig) {

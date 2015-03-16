@@ -18,6 +18,11 @@ typedef struct tbr {
   int arm;
   int claw;
 
+  int prev_bl;
+  int prev_br;
+  int prev_a;
+  int prev_c;
+
   char **possible_ports;
   int num_possible;
 } tbr_t;

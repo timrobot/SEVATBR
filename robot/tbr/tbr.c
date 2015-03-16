@@ -14,12 +14,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <termios.h>
 #include "tbr.h"
 
-#define NUM_DEV       2
-#define DEV_BAUD      38400
+#define NUM_DEV       3
+#define DEV_BAUD      B38400
 #define WHEEL_DEVID   1
 #define ARM_DEVID     2
+#define CLAW_DEVID    3
 
 /** Initialize the communication layer
  *  @param robot
@@ -50,7 +52,10 @@ int tbr_connect(tbr_t *robot) {
     if (strcmp(entry->d_name, ".") != 0 &&
         strcmp(entry->d_name, "..") != 0 &&
         strstr(entry->d_name, "ttyACM")) {
-      robot->possible_ports[i++] = entry->d_name;
+      char *pport;
+      pport = (char *)malloc(sizeof(char) * (strlen("/dev/") + strlen(entry->d_name) + 1));
+      sprintf(pport, "/dev/%s", entry->d_name);
+      robot->possible_ports[i++] = pport;
     }
   }
   closedir(device_dir);
@@ -70,12 +75,11 @@ int tbr_connect(tbr_t *robot) {
     // read a message
     do  {
       msg = serial_read(&robot->connections[n]);
-    } while (strlen(msg) == 0);
+    } while (!msg || strlen(msg) == 0);
     // if a valid device, add as connected, otherwise disconnect
     sscanf(msg, "[%d", &id);
-    if (id == WHEEL_DEVID || id == ARM_DEVID) {
-      robot->ids[n] = id;
-      n++;
+    if (id == WHEEL_DEVID || id == ARM_DEVID || id == CLAW_DEVID) {
+      robot->ids[n++] = id;
     } else {
       serial_disconnect(&robot->connections[n]);
     }
@@ -101,10 +105,18 @@ int tbr_connect(tbr_t *robot) {
  */
 void tbr_send(tbr_t *robot) {
   int i;
+  tbr_recv(robot);
   for (i = 0; i < NUM_DEV; i++) {
     char msg[128]; // careful of static sizes!
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
+        if (robot->baseleft == robot->prev_bl &&
+            robot->baseright == robot->prev_br) {
+          break;
+        } else {
+          robot->prev_bl = robot->baseleft;
+          robot->prev_br = robot->baseright;
+        }
         if (robot->baseleft == 0 && robot->baseright == 0) {
           sprintf(msg, " ");
         } else if (robot->baseleft > 0 && robot->baseright > 0) {
@@ -119,9 +131,33 @@ void tbr_send(tbr_t *robot) {
         serial_write(&robot->connections[i], msg);
         break;
       case ARM_DEVID:
-        sprintf(msg, "%d %d\n",
-            robot->arm,
-            robot->claw);
+        if (robot->arm == robot->prev_a) {
+          break;
+        } else {
+          robot->prev_a = robot->arm;
+        }
+        if (robot->arm == 0) {
+          sprintf(msg, " ");
+        } else if (robot->arm > 0) {
+          sprintf(msg, "p");
+        } else if (robot->arm < 0) {
+          sprintf(msg, "l");
+        }
+        serial_write(&robot->connections[i], msg);
+        break;
+      case CLAW_DEVID:
+        if (robot->claw == robot->prev_c) {
+          break;
+        } else {
+          robot->prev_c = robot->claw;
+        }
+        if (robot->claw == 0) {
+          sprintf(msg, " ");
+        } else if (robot->claw > 0) {
+          sprintf(msg, "k");
+        } else if (robot->claw < 0) {
+          sprintf(msg, "o");
+        }
         serial_write(&robot->connections[i], msg);
         break;
       default:
@@ -140,8 +176,13 @@ void tbr_recv(tbr_t *robot) {
   for (i = 0; i < NUM_DEV; i++) {
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
+        serial_read(&robot->connections[i]);
         break;
       case ARM_DEVID:
+        serial_read(&robot->connections[i]);
+        break;
+      case CLAW_DEVID:
+        serial_read(&robot->connections[i]);
         break;
       default:
         break;
@@ -166,6 +207,9 @@ void tbr_disconnect(tbr_t *robot) {
       robot->connections = NULL;
     }
     if (robot->possible_ports) {
+      for (i = 0; i < robot->num_possible; i++) {
+        free(robot->possible_ports[i]);
+      }
       free(robot->possible_ports);
       robot->possible_ports = NULL;
     }
@@ -187,4 +231,8 @@ void tbr_reset(tbr_t *robot) {
   robot->baseright = 0;
   robot->arm = 0;
   robot->claw = 0;
+  robot->prev_bl = 0;
+  robot->prev_br = 0;
+  robot->prev_a = 0;
+  robot->prev_c = 0;
 }
