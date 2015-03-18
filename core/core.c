@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   if (robot_set(TENNIS_BALL_ROBOT) == -1) {
     return -1;
   }
-  manual_connect(MNL_CTRL);
+  manual_connect(MNL_SRVR);
   manual_mode = 1;
 
   // change later
