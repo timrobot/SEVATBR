@@ -24,14 +24,14 @@ int limit(int x, int a, int b) {
 }
 
 void setwheels(int left, int right) {
-  left = -limit(left, -180, 180);
-  right = limit(right, -180, 180);
-  wheel_l[0].write(left);
-  wheel_r[0].write(right);
-  wheel_l[1].write(-left);
-  wheel_r[1].write(-right);
-  wheel_l[2].write(left);
-  wheel_r[2].write(right);
+  left = -limit(left, -90, 90);
+  right = limit(right, -90, 90);
+  wheel_l[0].write(left + 90);
+  wheel_r[0].write(right + 90);
+  wheel_l[1].write(90 - left);
+  wheel_r[1].write(90 - right);
+  wheel_l[2].write(left + 90);
+  wheel_r[2].write(right + 90);
 }
 
 void stopwheels() {
@@ -42,28 +42,28 @@ void stopwheels() {
 void turnleft() {
   stopwheels();
   delay(50);
-  setwheels(-180, 180);
+  setwheels(-90, 90);
   //Serial.println("turnleft");
 }
 
 void turnright() {
   stopwheels();
   delay(50);
-  setwheels(180, -180);
+  setwheels(90, -90);
   //Serial.println("turnright");
 }
 
 void forward() {
   stopwheels();
   delay(50);
-  setwheels(180, 180);
+  setwheels(90, 90);
   //Serial.println("forward");
 }
 
 void backward() {
   stopwheels();
   delay(50);
-  setwheels(-180, -180);
+  setwheels(-90, -90);
   //Serial.println("backward");
 }
 

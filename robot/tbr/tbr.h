@@ -13,15 +13,15 @@ typedef struct tbr {
   int *ids;
   int8_t connected;
 
-  int baseleft;
-  int baseright;
+  int left;
+  int right;
   int arm;
   int claw;
 
-  int prev_bl;
-  int prev_br;
-  int prev_a;
-  int prev_c;
+  int prev_left;
+  int prev_right;
+  int prev_arm;
+  int prev_claw;
 
   char **possible_ports;
   int num_possible;

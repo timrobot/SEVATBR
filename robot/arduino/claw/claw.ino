@@ -24,9 +24,9 @@ int limit(int x, int a, int b) {
 }
 
 void setclaw(int vel) {
-  vel = limit(vel, -180, 180);
-  claw_l.write(-vel);
-  claw_r.write(vel);
+  vel = limit(vel, -90, 90);
+  claw_l.write(90 - vel);
+  claw_r.write(vel + 90);
 }
 
 void stopclaw() {
@@ -41,7 +41,7 @@ void stopclaw() {
 void openclaw() {
   stopclaw();
   delay(50);
-  setclaw(180);
+  setclaw(90);
   digitalWrite(BOT_R, HIGH);
   digitalWrite(TOP_R, LOW);
   digitalWrite(BOT_L, HIGH);
@@ -52,7 +52,7 @@ void openclaw() {
 void closeclaw() {
   stopclaw();
   delay(50);
-  setclaw(-180);
+  setclaw(-90);
   digitalWrite(BOT_R, HIGH);
   digitalWrite(TOP_R, LOW);
   digitalWrite(BOT_L, HIGH);

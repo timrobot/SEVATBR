@@ -13,7 +13,7 @@
 #define INPUT_DIR "/dev/"
 static char const *PREFIXES[3] = {
   "ttyACM",
-  "ttyUSB",
+//  "ttyUSB", // not necessary if only using Arduino Uno or Teeensy
   NULL
 };
 
@@ -146,9 +146,13 @@ static int _serial_setattr(serial_t *connection) {
  */
 static void _serial_sync(serial_t *connection) {
   int pid;
-  char const *syncname = "_syncserial.py";
+  char const *syncname;
   FILE *syncfp;
-  char const *syncprog =
+  char const *syncprog;
+
+#if 0
+  syncname = "_syncserial.py";
+  syncprog =
     "import serial, time, sys\r\n"
     "port = \"%s\"\r\n"
     "s = serial.Serial(port, %d)\r\n"
@@ -162,20 +166,19 @@ static void _serial_sync(serial_t *connection) {
     "else:\r\n"
     "  print \"Cannot open to {0}\".format(port)\r\n";
 
-//  if (0) {
-    pid = fork();
-    if (pid == 0) {
-      syncfp = fopen(syncname, "w+");
-      fprintf(syncfp, syncprog, connection->port, connection->baudrate);
-      fclose(syncfp);
-      execlp("python", "python", "_syncserial.py", NULL);
-    } else {
-      waitpid(pid, NULL, 0);
-      if (access(syncname, F_OK) == 0) {
-        unlink(syncname);
-      }
+  pid = fork();
+  if (pid == 0) {
+    syncfp = fopen(syncname, "w+");
+    fprintf(syncfp, syncprog, connection->port, connection->baudrate);
+    fclose(syncfp);
+    execlp("python", "python", "_syncserial.py", NULL);
+  } else {
+    waitpid(pid, NULL, 0);
+    if (access(syncname, F_OK) == 0) {
+      unlink(syncname);
     }
-//  }
+  }
+#endif
 }
 
 /** Method to update the readbuf of the serial communication,

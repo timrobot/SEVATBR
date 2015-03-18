@@ -74,9 +74,14 @@ int tbr_connect(tbr_t *robot) {
     if (!robot->connections[n].connected) {
       continue;
     }
-    sleep(1);
     // read a message
+    sleep(1);
     do  {
+      msg = serial_read(&robot->connections[n]);
+    } while (!msg || strlen(msg) == 0);
+    // read another one in case that one was garbage
+    sleep(1);
+    do {
       msg = serial_read(&robot->connections[n]);
     } while (!msg || strlen(msg) == 0);
     printf("Message: %s\n", msg);
@@ -90,7 +95,7 @@ int tbr_connect(tbr_t *robot) {
   }
 
   robot->connected = 1;
-  // disconnect if number of devices is not enough
+  // disconnect if number of devices is not enough, or there are too many
   printf("number of devices connected: %d\n", n);
   if (n != NUM_DEV) {
     tbr_disconnect(robot);
@@ -115,31 +120,31 @@ void tbr_send(tbr_t *robot) {
     char msg[128]; // careful of static sizes!
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
-        if (robot->baseleft == robot->prev_bl &&
-            robot->baseright == robot->prev_br) {
+        if (robot->left == robot->prev_left &&
+            robot->right == robot->prev_right) {
           break;
         } else {
-          robot->prev_bl = robot->baseleft;
-          robot->prev_br = robot->baseright;
+          robot->prev_left = robot->left;
+          robot->prev_right = robot->right;
         }
-        if (robot->baseleft == 0 && robot->baseright == 0) {
+        if (robot->left == 0 && robot->right == 0) {
           sprintf(msg, " ");
-        } else if (robot->baseleft > 0 && robot->baseright > 0) {
+        } else if (robot->left > 0 && robot->right > 0) {
           sprintf(msg, "w");
-        } else if (robot->baseleft < 0 && robot->baseright < 0) {
+        } else if (robot->left < 0 && robot->right < 0) {
           sprintf(msg, "s");
-        } else if (robot->baseleft > 0 || robot->baseright < 0) {
+        } else if (robot->left > 0 || robot->right < 0) {
           sprintf(msg, "d");
-        } else if (robot->baseleft < 0 || robot->baseright > 0) {
+        } else if (robot->left < 0 || robot->right > 0) {
           sprintf(msg, "a");
         }
         serial_write(&robot->connections[i], msg);
         break;
       case ARM_DEVID:
-        if (robot->arm == robot->prev_a) {
+        if (robot->arm == robot->prev_arm) {
           break;
         } else {
-          robot->prev_a = robot->arm;
+          robot->prev_arm = robot->arm;
         }
         if (robot->arm == 0) {
           sprintf(msg, " ");
@@ -151,10 +156,10 @@ void tbr_send(tbr_t *robot) {
         serial_write(&robot->connections[i], msg);
         break;
       case CLAW_DEVID:
-        if (robot->claw == robot->prev_c) {
+        if (robot->claw == robot->prev_claw) {
           break;
         } else {
-          robot->prev_c = robot->claw;
+          robot->prev_claw = robot->claw;
         }
         if (robot->claw == 0) {
           sprintf(msg, " ");
@@ -232,12 +237,12 @@ void tbr_disconnect(tbr_t *robot) {
  *    the robot information
  */
 void tbr_reset(tbr_t *robot) {
-  robot->baseleft = 0;
-  robot->baseright = 0;
+  robot->left = 0;
+  robot->right = 0;
   robot->arm = 0;
   robot->claw = 0;
-  robot->prev_bl = 0;
-  robot->prev_br = 0;
-  robot->prev_a = 0;
-  robot->prev_c = 0;
+  robot->prev_left = 0;
+  robot->prev_right = 0;
+  robot->prev_arm = 0;
+  robot->prev_claw = 0;
 }

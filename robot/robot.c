@@ -1,11 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "robot.h"
 #include "tbr.h"
 
+static void *robot;
 static uint32_t currid;
-/* Currently supported devices */
-static tbr_t tbr;
 
 /** Initialize the robot to some id
  *  which specifies the device
@@ -23,9 +23,9 @@ int robot_set(uint32_t robotid) {
       break;
 
     case TENNIS_BALL_ROBOT:
-      memset(&tbr, 0, sizeof(tbr));
-      if (tbr_connect(&tbr) == -1) {
-        printf("Could not get all arduinos. By policy, exiting\n");
+      robot = malloc(sizeof(tbr_t));
+      if (tbr_connect((tbr_t *)robot) == -1) {
+        printf("Could not get all arduinos. By policy, returning\n");
         return -1;
       }
       break;
@@ -52,7 +52,7 @@ int robot_unset(void) {
       break;
 
     case TENNIS_BALL_ROBOT:
-      tbr_disconnect(&tbr);
+      tbr_disconnect((tbr_t *)robot);
       break;
 
     case SIMULATOR:
@@ -84,23 +84,17 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
       {
         int forward;
         int rotate;
+        tbr_t *tbr;
+        tbr = (tbr_t *)robot;
         forward = (base->y > 0.0) - (base->y < 0.0);
         rotate = (base->yaw > 0.0) - (base->yaw < 0.0);
-        tbr.baseleft = forward - rotate;
-        if (tbr.baseleft > 1) {
-          tbr.baseleft = 1;
-        } else if (tbr.baseleft < -1) {
-          tbr.baseleft = -1;
-        }
-        tbr.baseright = forward + rotate;
-        if (tbr.baseright > 1) {
-          tbr.baseright = 1;
-        } else if (tbr.baseright < -1) {
-          tbr.baseright = -1;
-        }
-        tbr.arm = (arm->pitch > 0.0) - (arm->pitch < 0.0);
-        tbr.claw = (arm->yaw > 0.0) - (arm->yaw < 0.0);
-        tbr_send(&tbr);
+        tbr->left = forward - rotate;
+        tbr->left = (tbr->left > 1) ? 1 : ((tbr->left < -1) ? -1 : tbr->left);
+        tbr->right = forward + rotate;
+        tbr->right = (tbr->right > 1) ? 1 : ((tbr->right < -1) ? -1 : tbr->right);
+        tbr->arm = (arm->pitch > 0.0) - (arm->pitch < 0.0);
+        tbr->claw = (arm->yaw > 0.0) - (arm->yaw < 0.0);
+        tbr_send(tbr);
       }
       break;
 

@@ -24,10 +24,10 @@ int limit(int x, int a, int b) {
 }
 
 void setarm(int vel) {
-  vel = limit(vel, -180, 180);
+  vel = limit(vel, -90, 90);
   for (int i = 0; i < 3; i++) {
-    arm_l[i].write(-vel);
-    arm_r[i].write(vel);
+    arm_l[i].write(90 - vel);
+    arm_r[i].write(vel + 90);
   }
 }
 
@@ -39,14 +39,14 @@ void stoparm() {
 void raisearm() {
   stoparm();
   delay(50);
-  setarm(180);
+  setarm(90);
   //Serial.println("raisearm");
 }
 
 void lowerarm() {
   stoparm();
   delay(50);
-  setarm(-180);
+  setarm(-90);
   //Serial.println("lowerarm");
 }
 
