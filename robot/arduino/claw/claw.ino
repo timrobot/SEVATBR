@@ -1,8 +1,12 @@
 #include <Servo.h>
 #include <string.h>
 #define DEV_ID  3
-#define CLAW_L  9 
-#define CLAW_R 10
+#define CLAW_L 10
+#define BOT_L   2
+#define TOP_L   3
+#define CLAW_R  9
+#define BOT_R   0
+#define TOP_R   1
 
 Servo claw_l;
 Servo claw_r;
@@ -26,6 +30,10 @@ void setclaw(int vel) {
 }
 
 void stopclaw() {
+  digitalWrite(TOP_R, HIGH);
+  digitalWrite(BOT_R, LOW);
+  digitalWrite(TOP_L, HIGH);
+  digitalWrite(BOT_L, LOW);
   setclaw(0);
   //Serial.println("stopclaw");
 }
@@ -34,6 +42,10 @@ void openclaw() {
   stopclaw();
   delay(50);
   setclaw(180);
+  digitalWrite(BOT_R, HIGH);
+  digitalWrite(TOP_R, LOW);
+  digitalWrite(BOT_L, HIGH);
+  digitalWrite(TOP_L, LOW);
   //Serial.println("openclaw");
 }
 
@@ -41,17 +53,25 @@ void closeclaw() {
   stopclaw();
   delay(50);
   setclaw(-180);
+  digitalWrite(BOT_R, HIGH);
+  digitalWrite(TOP_R, LOW);
+  digitalWrite(BOT_L, HIGH);
+  digitalWrite(TOP_L, LOW);
   //Serial.println("closeclaw");
 }
 
 void setup() {
   claw_l.attach(CLAW_L);
   claw_r.attach(CLAW_R);
-  pinMode(13, OUTPUT);
+  pinMode(TOP_L, OUTPUT);
+  pinMode(BOT_L, OUTPUT);
+  pinMode(TOP_R, OUTPUT);
+  pinMode(BOT_R, OUTPUT);
+  pinMode(11, OUTPUT);
   
   Serial.begin(38400);
   stopclaw();
-  digitalWrite(13, HIGH);
+  digitalWrite(11, HIGH);
   time = millis();
 }
 

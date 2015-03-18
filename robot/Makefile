@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -pedantic -Wall -std=c99 -O3
+CFLAGS = -pedantic -Wall -Werror -std=c99 -O3
 INCLUDE = -I$(shell pwd)/tbr -I$(shell pwd)/../core -I$(shell pwd)/serial
 SUBDIRS = $(shell pwd)/tbr
 OBJECTS = robot.o $(shell pwd)/serial/serial.o $(shell pwd)/tbr/tbr.o

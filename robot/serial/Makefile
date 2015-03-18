@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -pedantic -Wall -Werror -std=gnu99 -O3
+CFLAGS = -pedantic -Wall -std=gnu99 -O3
 OBJECTS = serial.o
 LIBOBJS = libserial.o
 

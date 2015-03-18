@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <termios.h>
@@ -56,6 +57,7 @@ int tbr_connect(tbr_t *robot) {
       pport = (char *)malloc(sizeof(char) * (strlen("/dev/") + strlen(entry->d_name) + 1));
       sprintf(pport, "/dev/%s", entry->d_name);
       robot->possible_ports[i++] = pport;
+      printf("possible port: %s\n", pport);
     }
   }
   closedir(device_dir);
@@ -72,10 +74,12 @@ int tbr_connect(tbr_t *robot) {
     if (!robot->connections[n].connected) {
       continue;
     }
+    sleep(1);
     // read a message
     do  {
       msg = serial_read(&robot->connections[n]);
     } while (!msg || strlen(msg) == 0);
+    printf("Message: %s\n", msg);
     // if a valid device, add as connected, otherwise disconnect
     sscanf(msg, "[%d", &id);
     if (id == WHEEL_DEVID || id == ARM_DEVID || id == CLAW_DEVID) {
@@ -87,6 +91,7 @@ int tbr_connect(tbr_t *robot) {
 
   robot->connected = 1;
   // disconnect if number of devices is not enough
+  printf("number of devices connected: %d\n", n);
   if (n != NUM_DEV) {
     tbr_disconnect(robot);
     return -1;
