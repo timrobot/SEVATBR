@@ -1,6 +1,6 @@
 '''
 Simple detection of ball using SimpleCV (much easier than OpenCV). The run method
-identifies a tennis ball in the camera stream image. '_is_ball_in_middle' function
+identifies a tennis ball in the camera stream image. 'is_ball_middle' function
 can be used to determine whether a ball is horizontally centered based on a specified
 threshold.
 
@@ -11,6 +11,13 @@ from SimpleCV import *
 from time import sleep
 from prquadtree import *
 import sys
+
+# global Point-Range-Quadtree used for additional 
+# error point elimination
+pr_tree = None
+# keep count here since determining size is heavy
+# on recursion
+pr_tree_size = 0
 
 # function for experimental testing of acceptable
 # average color ranges
@@ -87,6 +94,58 @@ def _image_color_filter(img):
 
     return img
 
+def _check_point_feasibility(blob, img):
+    '''
+    Checks feasibility of point/blob given based on the history
+    stored in the global PRQuadtree.
+    '''
+    global pr_tree, pr_tree_size
+
+    if blob is None:
+        return False 
+
+    middle_pt = Point(img.width / 2, img.height / 2)
+
+    # initialize tree
+    if pr_tree is None:
+        # NOTE: square crops a bit of image but should be ok
+        box = Box(middle_pt, img.height / 2)
+        pr_tree = PRQuadTree(box)
+
+    # get center of given blob
+    centroid = blob.centroid()
+    blob_x = centroid[0]
+    blob_y = centroid[1]
+    
+    # throw in some data initially
+    if pr_tree_size < 10:
+        inserted = pr_tree.insert(blob_x, blob_y)
+        if inserted:
+            pr_tree_size += 1
+        return inserted
+
+    # check within 100 pixels
+    box_rng = Box(Point(blob_x, blob_y), 100)
+    rng_points = pr_tree.query_range(box_rng)
+
+    #print "around: %s" % len(rng_points)
+    #print "pts: %s" % (rng_points)
+    # WARNING: size method is recursion heavy!
+    #print "pr-size: %s" % PRQuadTree.size(pr_tree)
+
+    inserted = False
+    # point feasible
+    if len(rng_points) > 1:
+        inserted = pr_tree.insert(blob_x, blob_y)
+        if inserted:
+            pr_tree_size += 1
+
+    # clear tree to minimize load
+    if pr_tree_size > 100:
+        pr_tree_size = 0
+        pr_tree = None
+    return inserted
+
 # entry point for module, returns none is ball is 
 # not in middle, otherwise returns image with circle 
 # drawn around ball if found
@@ -94,6 +153,8 @@ def is_ball_middle(img):
     img = _image_color_filter(img)
     blobs = _get_tennis_blobs(img)
     largest_blob = _get_largest_blob(blobs)
+    if largest_blob and not _check_point_feasibility(largest_blob, img):
+        largest_blob = None
 
     if(largest_blob is not None):
         rad = largest_blob.radius()
@@ -123,8 +184,9 @@ def run():
 
         temp_img = is_ball_middle(img)
         if temp_img:
+            print "MIDDLE!"
             img = temp_img
 
         img.save(disp)
 
-run()
+#run()
