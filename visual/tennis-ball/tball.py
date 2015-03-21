@@ -1,26 +1,15 @@
 '''
-
 Simple detection of ball using SimpleCV (much easier than OpenCV). The run method
 identifies a tennis ball in the camera stream image. '_is_ball_in_middle' function
 can be used to determine whether a ball is horizontally centered based on a specified
 threshold.
 
 -Pawel Szczurko
-
 '''
 
 from SimpleCV import *
 from time import sleep
 import sys
-
-
-MIN_R = 55
-MIN_G = 135
-MIN_B = 130
-
-MAX_R = 101
-MAX_G = 188
-MAX_B = 160
 
 # function for experimental testing of acceptable
 # average color ranges
@@ -45,20 +34,27 @@ def _determine_range(avg_color):
         MIN_B = cur_b
     if cur_b > MAX_B:
         MAX_B = cur_b
-    print "MAX: (%i, %i, %i), MIN(%i, %i, %i)" % (MAX_R, MAX_G, MAX_B, MIN_R, MIN_G, MIN_B)
+    print "MAX: (%i, %i, %i), MIN(%i, %i, %i)" % (MAX_R, MAX_G, MAX_B,
+            MIN_R, MIN_G, MIN_B)
 
 def _is_ball_in_middle(img_middle, blob_x):
     # experimental threshold for center
     THRESHOLD = 50
 
-    if img_middle - THRESHOLD < blob_x and blob_x < img_middle + THRESHOLD:
+    if (img_middle - THRESHOLD < blob_x 
+            and blob_x < img_middle + THRESHOLD):
         return True
     return False
 
 def _get_tennis_blobs(img):
-    # accepted color range
-    start_color = (123,132,51)
-    end_color = (203,232,106)
+    # accepted color range (when no color removal)
+    #start_color = (123,132,51)
+    #end_color = (203,232,106)
+
+    # with red removed
+    start_color = (0, 166, 124)
+    end_color = (255, 220, 147)
+
     
     # create binary mask based on color ranges
     mask = img.createBinaryMask(color1=start_color,color2=end_color)
@@ -78,6 +74,18 @@ def _get_largest_blob(blobs):
                 largest_blob = b
     return largest_blob
 
+def _image_color_filter(img):
+    #removes less-red reds if they don't have enough blue
+    removal_mask = img.createBinaryMask(color1=(30,0,0), 
+            color2=(70,255,100)).invert()
+    img = img.applyBinaryMask(removal_mask)
+
+    # completely remove the red color
+    (r,g,b) = img.splitChannels()
+    img = img.mergeChannels(r=None, g=g, b=b)
+
+    return img
+
 def run():
     cam = Camera()
     disp = Display()
@@ -85,20 +93,15 @@ def run():
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
+        img = _image_color_filter(img)
 
         # close window with left click
         if disp.mouseLeft:
             break
-        
         blobs = _get_tennis_blobs(img)
         largest_blob = _get_largest_blob(blobs)
     
         if(largest_blob is not None):
-            # call below is used to determine range
-            # _determine_range(largest_blob.mAvgColor)
-
-            # TODO: add filtering by the determined range above
-
             rad = largest_blob.radius()
             centroid = largest_blob.centroid()
 
