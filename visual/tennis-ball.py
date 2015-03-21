@@ -9,6 +9,7 @@ threshold.
 
 from SimpleCV import *
 from time import sleep
+from prquadtree import *
 import sys
 
 # function for experimental testing of acceptable
@@ -37,7 +38,7 @@ def _determine_range(avg_color):
     print "MAX: (%i, %i, %i), MIN(%i, %i, %i)" % (MAX_R, MAX_G, MAX_B,
             MIN_R, MIN_G, MIN_B)
 
-def _is_ball_in_middle(img_middle, blob_x):
+def _is_ball_in_middle_helper(img_middle, blob_x):
     # experimental threshold for center
     THRESHOLD = 50
 
@@ -86,6 +87,28 @@ def _image_color_filter(img):
 
     return img
 
+# entry point for module, returns none is ball is 
+# not in middle, otherwise returns image with circle 
+# drawn around ball if found
+def is_ball_middle(img):
+    img = _image_color_filter(img)
+    blobs = _get_tennis_blobs(img)
+    largest_blob = _get_largest_blob(blobs)
+
+    if(largest_blob is not None):
+        rad = largest_blob.radius()
+        centroid = largest_blob.centroid()
+
+        # error buffer for drawing circle on img
+        rad += 10 
+        # draw circle on picture
+        img.drawCircle(centroid, rad, (0,255,0), 2)
+
+        is_middle = _is_ball_in_middle_helper(img.width / 2, centroid[0])
+        if is_middle:
+            return img
+    return None
+
 def run():
     cam = Camera()
     disp = Display()
@@ -93,24 +116,14 @@ def run():
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
-        img = _image_color_filter(img)
 
         # close window with left click
         if disp.mouseLeft:
             break
-        blobs = _get_tennis_blobs(img)
-        largest_blob = _get_largest_blob(blobs)
-    
-        if(largest_blob is not None):
-            rad = largest_blob.radius()
-            centroid = largest_blob.centroid()
 
-            print _is_ball_in_middle(img.width / 2, centroid[0])  
-
-            # error buffer for drawing circle on img
-            rad += 10 
-            # draw circle on picture
-            img.drawCircle(centroid, rad, (0,255,0), 2)
+        temp_img = is_ball_middle(img)
+        if temp_img:
+            img = temp_img
 
         img.save(disp)
 
