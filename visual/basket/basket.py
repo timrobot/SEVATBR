@@ -8,6 +8,8 @@ from prquadtree import *
 from particlefilter import ParticleFilter
 
 #silly globals
+particle_filter = None
+image_half_size = -1
 save_count = 1
 base_filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
@@ -41,7 +43,8 @@ def _get_basket_blobs(img):
     blobs = img.findBlobsFromMask(mask, appx_level=10, minsize=20)
     return blobs
 
-def _get_best_blob(blobs, particle_filter):
+def _get_best_blob(blobs):
+    global particle_filter
     def c_diff(c1, c2):
         return sum([abs(x-y) for x,y in zip(c1,c2)]) #sums the abs diff
 
@@ -67,33 +70,55 @@ def _save_image(img):
     print "saved image %s" % f
     save_count += 1
 
+def _init_particle_filter(img):
+    global particle_filter
+    if particle_filter is None:
+        middle_pt = Point(img.width / 2, img.height / 2)
+        # NOTE: square crops a bit of image but should be ok
+        box = Box(middle_pt, img.height / 2)
+        particle_filter = ParticleFilter(box)
+
+def _is_basket_in_middle_helper(img_middle, blob_x):
+    # experimental threshold for center
+    THRESHOLD = 50
+    img_middle = img.width / 2
+    blob_x = best.centroid()[0]
+    if (img_middle - THRESHOLD < blob_x and blob_x < img_middle + THRESHOLD):
+        return True
+    return False
+
+'''
+Single entry function returning True/False if basket is in the middle of
+the screen
+'''
+def is_basket_middle(img):
+    _init_particle_filter(img)
+    blobs = _get_basket_blobs(img)
+    if blobs:
+        particle_filter.iterate(blobs)
+        best = _get_best_blob(blobs)
+        return _is_basket_in_middle_helper(img.width/2, best.centroid()[0])
 
 def run():
     cam = Camera()
     disp = Display()
-    init_img = cam.getImage()
-    middle_pt = Point(init_img.width / 2, init_img.height / 2)
-    box = Box(middle_pt, init_img.height / 2)
-    particle_filter = ParticleFilter(box)
 
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
         img = _basket_image_filter(img)
+        _init_particle_filter(img)
         blobs = _get_basket_blobs(img)
-
         if blobs:
             particle_filter.iterate(blobs)
             blobs.show()
             for b in blobs:
                 if b.isRectangle(.2):
                     b.drawRect(color=Color.RED)
-            best = _get_best_blob(blobs, particle_filter)
+            best = _get_best_blob(blobs)
             best.drawRect(color=Color.GREEN)
         img.save(disp)
         if disp.mouseLeft:
             break
         if disp.mouseRight:
             _save_image(img)
-
-run()
