@@ -4,6 +4,8 @@ import sys
 from datetime import datetime
 import numpy as np
 import experiment
+from prquadtree import *
+from particlefilter import ParticleFilter
 
 #silly globals
 save_count = 1
@@ -39,7 +41,7 @@ def _get_basket_blobs(img):
     blobs = img.findBlobsFromMask(mask, appx_level=10, minsize=20)
     return blobs
 
-def _get_best_blob(blobs):
+def _get_best_blob(blobs, particle_filter):
     def c_diff(c1, c2):
         return sum([abs(x-y) for x,y in zip(c1,c2)]) #sums the abs diff
 
@@ -51,6 +53,8 @@ def _get_best_blob(blobs):
     best_blob = None
     for b in blobs:
         score = b.area() - c_diff(b.meanColor(), target_color)
+        #take particle filter score into account
+        score += particle_filter.score(b)
         if largest_score is False or score > largest_score:
             best_blob = b
             largest_score = score
@@ -67,18 +71,24 @@ def _save_image(img):
 def run():
     cam = Camera()
     disp = Display()
+    init_img = cam.getImage()
+    middle_pt = Point(init_img.width / 2, init_img.height / 2)
+    box = Box(middle_pt, init_img.height / 2)
+    particle_filter = ParticleFilter(box)
 
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
         img = _basket_image_filter(img)
         blobs = _get_basket_blobs(img)
+
         if blobs:
+            particle_filter.iterate(blobs)
             blobs.show()
             for b in blobs:
                 if b.isRectangle(.2):
                     b.drawRect(color=Color.RED)
-            best = _get_best_blob(blobs)
+            best = _get_best_blob(blobs, particle_filter)
             best.drawRect(color=Color.GREEN)
         img.save(disp)
         if disp.mouseLeft:
@@ -86,6 +96,4 @@ def run():
         if disp.mouseRight:
             _save_image(img)
 
-
 run()
-#experiment.experiment()
