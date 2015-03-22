@@ -1,8 +1,11 @@
-CC = gcc
-CFLAGS = -pedantic -Wall -std=c99 -O3
-INCLUDE = -I$(shell pwd) -I$(shell pwd)/../manual -I$(shell pwd)/../robot
-LIBS = $(shell pwd)/../manual/libmanual.a $(shell pwd)/../robot/librobot.a
-SUBDIRS = $(shell pwd)/../manual $(shell pwd)/../robot
+CC = g++
+CFLAGS = -pedantic -Wall -O3 `pkg-config --cflags opencv`
+INCLUDE = -I$(shell pwd) -I$(shell pwd)/../manual -I$(shell pwd)/../robot -I$(shell pwd)/../agent
+LIBS = $(shell pwd)/../manual/libmanual.a \
+	$(shell pwd)/../robot/librobot.a \
+	$(shell pwd)/../agent/libagent.a \
+	`pkg-config --libs opencv`
+SUBDIRS = $(shell pwd)/../manual $(shell pwd)/../robot $(shell pwd)/../agent
 OBJECTS = core.o
 TARGET = core
 
@@ -11,7 +14,7 @@ all: subdirs $(OBJECTS) $(TARGET)
 subdirs:
 	$(foreach directory, $(SUBDIRS), make -C $(directory);)
 
-core.o: core.c
+core.o: core.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 core: core.o

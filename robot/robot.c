@@ -85,6 +85,10 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
         int forward;
         int rotate;
         tbr_t *tbr;
+
+        printf("forward: %f, turn: %f, arm: %f, claw: %f\n",
+          base->y, base->yaw, arm->pitch, arm->yaw);
+
         tbr = (tbr_t *)robot;
         forward = (base->y > 0.0) - (base->y < 0.0);
         rotate = (base->yaw > 0.0) - (base->yaw < 0.0);

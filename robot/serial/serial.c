@@ -145,12 +145,12 @@ static int _serial_setattr(serial_t *connection) {
  *    the serial struct
  */
 static void _serial_sync(serial_t *connection) {
+#if 0
   int pid;
   char const *syncname;
   FILE *syncfp;
   char const *syncprog;
 
-#if 0
   syncname = "_syncserial.py";
   syncprog =
     "import serial, time, sys\r\n"

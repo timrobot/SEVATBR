@@ -8,8 +8,10 @@
  ***********************************/
 #include <signal.h>
 #include <string.h>
+#include <stdio.h>
 #include "robot.h"
 #include "manual.h"
+#include "agent.h"
 #include "coord.h"
 
 // Signal handler for killing the program
@@ -21,31 +23,35 @@ void stop_program(int signum) {
 /** This is the starting program for the robot
  */
 int main(int argc, char *argv[]) {
-  int manual_mode;
-
+  signal(SIGINT, stop_program);
   // init robot and manual
   if (robot_set(TENNIS_BALL_ROBOT) == -1) {
     return -1;
   }
-  manual_connect(MNL_SRVR);
-  manual_mode = 1;
+  //manual_connect(MNL_CTRL);
+  agent_create(AGENT_SIMPLE);
 
   // change later
-  manual_enable();
+  //manual_enable();
+  agent_enable();
 
   // start getting communication accesses
   while (!stop_signal) {
+    pose3d_t base;
+    pose3d_t arm;
     // choose input
-    if (manual_mode) {
-      pose3d_t base;
-      pose3d_t arm;
-      manual_get_poses(&base, &arm);
-      robot_move(&base, &arm);
-    }
+    //if (isOverriden()) {
+      //manual_get_poses(&base, &arm);
+    //} else {
+      agent_enable();
+      agent_get_poses(&base, &arm);
+    //}
+    robot_move(&base, &arm);
   }
 
   // clean up
-  manual_disconnect();
+  agent_destroy();
+  //manual_disconnect();
   robot_unset();
 
   return 0;

@@ -15,7 +15,7 @@ libhttplink.o: httplink.c
 	$(CC) $(CFLAGS) -fPIC -o $@ -c $<
 
 controller.o: controller.c
-	$(CC) $(CFLAGS) -pthread -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 libcontroller.o: controller.c
 	$(CC) $(CFLAGS) -pthread -fPIC -o $@ -c $<
