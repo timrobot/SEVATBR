@@ -16,6 +16,8 @@ int manual_disconnect(void);
 int manual_new_data(void);
 void manual_get_poses(pose3d_t *base, pose3d_t *arm);
 
+int isOverriden(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -17,6 +17,7 @@ static pose3d_t arm;
 static int new_join;
 static struct timeval last_signal;
 static int manual_en;
+static int mnl_override;
 static void server_update(void);
 static void raise_server_request(int signum);
 static void controller_update(void);
@@ -43,6 +44,7 @@ int manual_connect(int id) {
           memset(&action, 0, sizeof(struct sigaction));
           action.sa_handler = raise_server_request;
           sigaction(SIGALRM, &action, NULL);
+          mnl_override = 1;
         }
         return res;
       }
@@ -118,6 +120,25 @@ int manual_new_data(void) {
   return 0;
 }
 
+/** User override
+ *  @return 1 if overridden, else 0
+ */
+int isOverriden(void) {
+  switch (input_id) {
+    case MNL_SRVR:
+      server_update();
+      return mnl_override;
+
+    case MNL_CTRL:
+      return 1;
+    
+    default:
+      break;
+  }
+  return 0;
+}
+
+
 /** Get the poses
  *  @param the structs needed to hold the poses
  */
@@ -153,6 +174,7 @@ static void server_update(void) {
   int ctrlsig;
   int up, down, left, right;
   int lift, drop, grab, release;
+  int ovr;
 
   // get message
   if (!(msg = httplink_recv(&server))) {
@@ -190,6 +212,9 @@ static void server_update(void) {
   drop =    (ctrlsig & 0x00000020) >> 5;
   grab =    (ctrlsig & 0x00000040) >> 6;
   release = (ctrlsig & 0x00000080) >> 7;
+  ovr =     (ctrlsig & 0x00000100) >> 8;
+
+  mnl_override = ovr;
 
   memset(&base, 0, sizeof(pose3d_t));
   memset(&arm, 0, sizeof(pose3d_t));
