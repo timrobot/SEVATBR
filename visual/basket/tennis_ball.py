@@ -9,8 +9,8 @@ threshold.
 
 from SimpleCV import *
 from time import sleep
-from prquadtree import *
 from particlefilter import ParticleFilter
+from image_support import *
 import sys
 
 # global particle filter
@@ -131,77 +131,40 @@ def _check_point_feasibility(blob, img):
     return inserted
 
 def _init_particle_filter(img):
-    global particle_filter
-    if particle_filter is None:
-        middle_pt = Point(img.width / 2, img.height / 2)
-        # NOTE: square crops a bit of image but should be ok
-        box = Box(middle_pt, img.height / 2)
-        particle_filter = ParticleFilter(box)
-
-def basket_image_hue_filter(img):
-    return img.hueDistance((185,206,111), minsaturation=110, minvalue=130)
-
-def _get_basket_hue_blobs(img):
     '''
-    Gets basket blobs after hue distance filtering
+    Internal wrapper to particle filter initializer.
     '''
-    # accepted color range
-    start_color = (0,0,0)
-    end_color = (20,20,20)
-
-    # create binary mask based on color ranges
-    mask = img.createBinaryMask(color1=start_color,color2=end_color)
-
-    # find binary blobs in the image
-    blobs = img.findBlobsFromMask(mask, appx_level=10, minsize=20)
-    return blobs
-
-def _get_best_blob(blobs):
     global particle_filter
-    def c_diff(c1, c2):
-        return sum([abs(x-y) for x,y in zip(c1,c2)]) #sums the abs diff
+    if not particle_filter:
+        particle_filter = external_init_particle_filter(img)
 
-    if blobs is None:
-        return None
-    # find the largest blob which has closest mean color to target color
-    #target_color = (20, 60, 100)
-    largest_score = False
-    best_blob = None
-    for b in blobs:
-        score = b.area() #- c_diff(b.meanColor(), target_color)
-        #take particle filter score into account
-        score += particle_filter.score(b)
-        if largest_score is False or score > largest_score:
-            best_blob = b
-            largest_score = score
-    return best_blob
-
-def _is_blob_in_middle_helper(img, blob):
-    img_middle = img.width/2
-    blob_x = blob.centroid()[0]
-    # experimental threshold for center
-    THRESHOLD = 50
-    if (img_middle - THRESHOLD < blob_x and blob_x < img_middle + THRESHOLD):
-        return True
-    return False
+def _ball_image_hue_filter(img):
+    '''
+    Internal wrapper image hue filter.
+    '''
+    color = (185, 206, 111)
+    return image_hue_filter(img, color)
 
 
 # entry point for module, returns none is ball is 
 # not in middle, otherwise returns image with circle 
 # drawn around ball if found
 def is_ball_middle(img):
+    global particle_filter
 
     _init_particle_filter(img)
-    img = basket_image_hue_filter(img)
-    blobs = _get_basket_hue_blobs(img)
+    img = _ball_image_hue_filter(img)
+    blobs = get_hue_blobs(img)
     if blobs:
         particle_filter.iterate(blobs)
-        best = _get_best_blob(blobs)
-        return _is_blob_in_middle_helper(img, best)
+        best = get_best_blob(blobs, particle_filter)
+        return is_blob_in_middle_helper(img, best)
     return False
 
 
 def run():
+    global particle_filter
+
     cam = Camera()
     disp = Display()
 
@@ -215,11 +178,11 @@ def run():
             break
 
         _init_particle_filter(img)
-        img = basket_image_hue_filter(img)
-        blobs = _get_basket_hue_blobs(img)
+        img = _ball_image_hue_filter(img)
+        blobs = get_hue_blobs(img)
         if blobs:
             particle_filter.iterate(blobs)
-            best = _get_best_blob(blobs)
+            best = get_best_blob(blobs, particle_filter)
             if best:
                 rad = best.radius()
                 centroid = best.centroid()
@@ -227,7 +190,7 @@ def run():
                 rad += 10 
                 # draw circle on picture
                 org_img.drawCircle(centroid, rad, (0,255,0), 2)
-                if _is_blob_in_middle_helper(img, best):
+                if is_blob_in_middle_helper(img, best):
                     print "BALL IN MIDDLE!"
 
         org_img.save(disp)
