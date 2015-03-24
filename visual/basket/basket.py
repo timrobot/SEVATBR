@@ -78,31 +78,41 @@ def _init_particle_filter(img):
         box = Box(middle_pt, img.height / 2)
         particle_filter = ParticleFilter(box)
 
-def _is_basket_in_middle_helper(img_middle, blob_x):
+def _is_blob_in_middle_helper(img, blob):
+    img_middle = img.width/2
+    blob_x = blob.centroid()[0]
     # experimental threshold for center
     THRESHOLD = 50
-    img_middle = img.width / 2
-    blob_x = best.centroid()[0]
     if (img_middle - THRESHOLD < blob_x and blob_x < img_middle + THRESHOLD):
         return True
     return False
 
-'''
-Single entry function returning True/False if basket is in the middle of
-the screen
-'''
 def is_basket_middle(img):
+    '''
+    Single entry function returning True/False if basket is in the middle of
+    the screen
+    '''
     _init_particle_filter(img)
+    img = _basket_image_filter(img)
     blobs = _get_basket_blobs(img)
     if blobs:
         particle_filter.iterate(blobs)
         best = _get_best_blob(blobs)
-        return _is_basket_in_middle_helper(img.width/2, best.centroid()[0])
+        return _is_blob_in_middle_helper(img, best)
+    return False
 
-def run():
+def run_middle():
+    '''
+    Runs continuously and prints if the best detected blob is in the middle
+    '''
+    def middle_callback(img, best):
+        if _is_blob_in_middle_helper(img, best):
+            print "Basket in middle"
+    run(middle_callback)
+
+def run(bestBlobCallback=False):
     cam = Camera()
     disp = Display()
-
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
@@ -117,6 +127,8 @@ def run():
                     b.drawRect(color=Color.RED)
             best = _get_best_blob(blobs)
             best.drawRect(color=Color.GREEN)
+            if bestBlobCallback:
+                bestBlobCallback(img, best)
         img.save(disp)
         if disp.mouseLeft:
             break
