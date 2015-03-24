@@ -18,9 +18,6 @@ def basketPresent():
     img = Image("assets/test/present3.jpg")
     unitTest(basket.is_basket_middle(img), True, "Present 3")
 
-    img = Image("assets/test/present4.jpg")
-    unitTest(basket.is_basket_middle(img), True, "Present 4")
-
 def basketMissing():
     img = Image("assets/test/missing1.jpg")
     unitTest(basket.is_basket_middle(img), False, "Missing 1")

@@ -13,7 +13,7 @@ image_half_size = -1
 save_count = 1
 base_filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-def _basket_image_filter(img):
+def basket_image_filter(img):
     #removes very-red reds
     removal_mask = img.createBinaryMask(color1=(70,0,0), color2=(255,255,255)).invert()
     img = img.applyBinaryMask(removal_mask)
@@ -31,10 +31,31 @@ def _basket_image_filter(img):
     img = img.applyBinaryMask(removal_mask)
     return img
 
+def basket_image_hue_filter(img):
+    return img.hueDistance(280, minsaturation=110, minvalue=130)
+
 def _get_basket_blobs(img):
+    '''
+    Gets basket blobs with RGB range
+    '''
     # accepted color range
     start_color = (0,0,35)
     end_color = (255,255,255)
+
+    # create binary mask based on color ranges
+    mask = img.createBinaryMask(color1=start_color,color2=end_color)
+
+    # find binary blobs in the image
+    blobs = img.findBlobsFromMask(mask, appx_level=10, minsize=20)
+    return blobs
+
+def _get_basket_hue_blobs(img):
+    '''
+    Gets basket blobs after hue distance filtering
+    '''
+    # accepted color range
+    start_color = (0,0,0)
+    end_color = (20,20,20)
 
     # create binary mask based on color ranges
     mask = img.createBinaryMask(color1=start_color,color2=end_color)
@@ -51,11 +72,11 @@ def _get_best_blob(blobs):
     if blobs is None:
         return None
     # find the largest blob which has closest mean color to target color
-    target_color = (20, 60, 100)
+    #target_color = (20, 60, 100)
     largest_score = False
     best_blob = None
     for b in blobs:
-        score = b.area() - c_diff(b.meanColor(), target_color)
+        score = b.area() #- c_diff(b.meanColor(), target_color)
         #take particle filter score into account
         score += particle_filter.score(b)
         if largest_score is False or score > largest_score:
@@ -93,8 +114,8 @@ def is_basket_middle(img):
     the screen
     '''
     _init_particle_filter(img)
-    img = _basket_image_filter(img)
-    blobs = _get_basket_blobs(img)
+    img = basket_image_hue_filter(img)
+    blobs = _get_basket_hue_blobs(img)
     if blobs:
         particle_filter.iterate(blobs)
         best = _get_best_blob(blobs)
@@ -116,12 +137,12 @@ def run(bestBlobCallback=False):
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
-        img = _basket_image_filter(img)
+        img = basket_image_hue_filter(img)
         _init_particle_filter(img)
-        blobs = _get_basket_blobs(img)
+        blobs = _get_basket_hue_blobs(img)
         if blobs:
             particle_filter.iterate(blobs)
-            blobs.show()
+            #blobs.show()
             for b in blobs:
                 if b.isRectangle(.2):
                     b.drawRect(color=Color.RED)
