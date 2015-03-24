@@ -2,6 +2,8 @@ from SimpleCV import *
 from prquadtree import *
 from particlefilter import ParticleFilter
 
+bcolor = 0
+
 
 def external_init_particle_filter(img):
     '''
@@ -19,7 +21,8 @@ def external_init_particle_filter(img):
     particle_filter = ParticleFilter(box)
     return particle_filter
 
-def image_hue_filter(img, color):
+def image_hue_filter(img, ball=True):
+    global bcolor
     '''
     Converts given image to HSV based on the given color.
 
@@ -30,7 +33,12 @@ def image_hue_filter(img, color):
     Returns:
         HSV converted image
     '''
-    return img.hueDistance(color, minsaturation=110, minvalue=130)
+    if ball:
+        return img.hueDistance(45, minsaturation=49, minvalue=69)
+    bcolor += 1
+    print "Bitch: %s" % bcolor
+    return img.hueDistance(105, minsaturation=80, minvalue=72)
+
 
 def get_hue_blobs(img):
     '''

@@ -39,7 +39,7 @@ def _basket_image_hue_filter(img):
     Internal wrapper image hue filter.
     '''
     color = 280
-    return image_hue_filter(img, color)
+    return image_hue_filter(img, False)
 
 def _get_basket_blobs(img):
     '''
@@ -125,3 +125,4 @@ def run(bestBlobCallback=False):
             break
         if disp.mouseRight:
             _save_image(img)
+run()

@@ -143,7 +143,7 @@ def _ball_image_hue_filter(img):
     Internal wrapper image hue filter.
     '''
     color = (185, 206, 111)
-    return image_hue_filter(img, color)
+    return image_hue_filter(img, True)
 
 
 # entry point for module, returns none is ball is 
@@ -187,12 +187,12 @@ def run():
                 rad = best.radius()
                 centroid = best.centroid()
                 # error buffer for drawing circle on img
-                rad += 10 
+                #rad += 10 
                 # draw circle on picture
                 org_img.drawCircle(centroid, rad, (0,255,0), 2)
                 if is_blob_in_middle_helper(img, best):
                     print "BALL IN MIDDLE!"
-
+#        org_img = img
         org_img.save(disp)
 
 run()
