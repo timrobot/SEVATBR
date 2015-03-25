@@ -192,7 +192,7 @@ def run():
                 org_img.drawCircle(centroid, rad, (0,255,0), 2)
                 if is_blob_in_middle_helper(img, best):
                     print "BALL IN MIDDLE!"
-#        org_img = img
+      #  org_img = img
         org_img.save(disp)
 
 run()

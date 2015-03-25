@@ -33,11 +33,14 @@ def image_hue_filter(img, ball=True):
     Returns:
         HSV converted image
     '''
+    #bcolor += 1
+    #print "B-color: %s" % bcolor
+
     if ball:
-        return img.hueDistance(45, minsaturation=49, minvalue=69)
-    bcolor += 1
-    print "Bitch: %s" % bcolor
-    return img.hueDistance(105, minsaturation=80, minvalue=72)
+        # good tested values
+        return img.hueDistance(32, minsaturation=72, minvalue=120)
+    # good tested values
+    return img.hueDistance(105, minsaturation=80, minvalue=75)
 
 
 def get_hue_blobs(img):
