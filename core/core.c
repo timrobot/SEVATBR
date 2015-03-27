@@ -28,12 +28,12 @@ int main(int argc, char *argv[]) {
   if (robot_set(TENNIS_BALL_ROBOT) == -1) {
     return -1;
   }
-  //manual_connect(MNL_CTRL);
-  agent_create(AGENT_SIMPLE);
+  manual_connect(MNL_CTRL);
+  //agent_create(AGENT_SIMPLE);
 
   // change later
-  //manual_enable();
-  agent_enable();
+  manual_enable();
+  //agent_enable();
 
   // start getting communication accesses
   while (!stop_signal) {
@@ -41,17 +41,17 @@ int main(int argc, char *argv[]) {
     pose3d_t arm;
     // choose input
     //if (isOverriden()) {
-      //manual_get_poses(&base, &arm);
+      manual_get_poses(&base, &arm);
     //} else {
-      agent_enable();
-      agent_get_poses(&base, &arm);
+      //agent_enable();
+      //agent_get_poses(&base, &arm);
     //}
     robot_move(&base, &arm);
   }
 
   // clean up
-  agent_destroy();
-  //manual_disconnect();
+  //agent_destroy();
+  manual_disconnect();
   robot_unset();
 
   return 0;

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include "manual.h"
+#include "controller.h"
 
 static int stopsig;
 
@@ -11,19 +11,29 @@ void stop(int signo) {
 }
 
 int main() {
-  pose3d_t base;
-  pose3d_t arm;
-  signal(SIGINT, stop);
-  manual_connect(MNL_CTRL);
-  manual_enable();
-
-  while (!stopsig) {
-    if (manual_new_data()) {
-      manual_get_poses(&base, &arm);
-      printf("data: %f %f %f %f\n", base.y, base.yaw, arm.pitch, arm.yaw);
-    }
+  controller_t ctrl;
+  controller_connect(&ctrl);
+  for (;;) {
+    printf("%d ", ctrl.A);
+    printf("%d ", ctrl.B);
+    printf("%d ", ctrl.X);
+    printf("%d ", ctrl.Y);
+    printf("%d ", ctrl.UP);
+    printf("%d ", ctrl.DOWN);
+    printf("%d ", ctrl.LEFT);
+    printf("%d ", ctrl.RIGHT);
+    printf("%d ", ctrl.LB);
+    printf("%d ", ctrl.RB);
+    printf("%d ", ctrl.LB2);
+    printf("%d ", ctrl.RB2);
+    printf("%d ", ctrl.START);
+    printf("%d ", ctrl.SELECT);
+    printf("%d ", ctrl.HOME);
+    printf("%d ", ctrl.RB2);
+    printf("%d ", ctrl.LJOY.pressed);
+    printf("%d ", ctrl.RJOY.pressed);
+    printf("\n");
   }
-
-  manual_disconnect();
+  controller_disconnect(&ctrl);
   return 0;
 }

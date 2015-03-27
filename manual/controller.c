@@ -10,7 +10,7 @@
 #define INPUT_DIR "/dev/input/"
 #define JS_PREFIX "js"
 #define MAX_16BIT 0x7FFF
-static void *_controller_update(void *ctrl_arg);
+int controller_update(controller_t *ctrl);
 
 /** Connect to a joystick device.
  *  @param controller
@@ -40,17 +40,11 @@ void controller_connect(controller_t *ctrl) {
     }
   if (!ctrl->connected)
     goto error;
-
-  /* start asynchronous update */
-  if (pthread_create(&ctrl->thread, NULL, _controller_update, (void *)ctrl) != 0)
-    goto error;
-  ctrl->alive = 1;
   return;
 
 error:
   fprintf(stderr, "Error: Cannot connect to controller\n");
   ctrl->connected = 0;
-  ctrl->alive = 0;
   if (ctrl->fd != -1)
     close(ctrl->fd);
   ctrl->fd = -1;
@@ -63,113 +57,109 @@ error:
 /** Hidden. Update a joystick device asynchronously.
  *  @param controller_arg
  *    A (void *) pointer to a controller struct.
- *  @return NULL
+ *  @return 0 on success, else -1
  */
-static void *_controller_update(void *ctrl_arg) {
-  controller_t *ctrl;
+int controller_update(controller_t *ctrl) {
   struct js_event event;
 
-  ctrl = (controller_t *)ctrl_arg;
-  while (ctrl->alive) {
-    /* dynamically reconnect the device */
-    if (access(ctrl->name, O_RDONLY) != 0) {
-      if (ctrl->connected) {
-        ctrl->connected = 0;
-        ctrl->fd = -1;
-        ctrl->buttons = 0;
-        ctrl->axes = 0;
-        memset(&ctrl->A, 0, (size_t)&ctrl->HOME + sizeof(char) - (size_t)&ctrl->A);
-      }
-    } else {
-      if (!ctrl->connected) {
-        ctrl->fd = open(ctrl->name, O_RDONLY);
-        if (ctrl->fd != -1)
-          ctrl->connected = 1;
-      }
+  /* dynamically reconnect the device */
+  if (access(ctrl->name, O_RDONLY) != 0) {
+    if (ctrl->connected) {
+      ctrl->connected = 0;
+      ctrl->fd = -1;
+      ctrl->buttons = 0;
+      ctrl->axes = 0;
+      memset(&ctrl->A, 0, (size_t)&ctrl->HOME + sizeof(char) - (size_t)&ctrl->A);
     }
-    if (!ctrl->connected)
-      continue;
-
-    /* update device values */
-    if (read(ctrl->fd, &event, sizeof(struct js_event)) == -1)
-      continue;
-    if (event.type & JS_EVENT_BUTTON) {
-      if (event.type & JS_EVENT_INIT)
-        ctrl->buttons++;
-      switch (event.number) {
-        case 0:
-          ctrl->A = event.value;
-          break;
-        case 1:
-          ctrl->B = event.value;
-          break;
-        case 2:
-          ctrl->X = event.value;
-          break;
-        case 3:
-          ctrl->Y = event.value;
-          break;
-        case 4:
-          ctrl->LB = event.value;
-          break;
-        case 5:
-          ctrl->RB = event.value;
-          break;
-        case 6:
-          ctrl->START = event.value;
-          break;
-        case 7:
-          ctrl->SELECT = event.value;
-          break;
-        case 8:
-          ctrl->HOME = event.value;
-          break;
-        case 9:
-          ctrl->LJOY.pressed = event.value;
-          break;
-        case 10:
-          ctrl->RJOY.pressed = event.value;
-          break;
-      }
-    } else if (event.type & JS_EVENT_AXIS) {
-      float value;
-      value = (float)event.value;
-      if (value > 1.0 || value < -1.0)
-        value /= (float)MAX_16BIT;
-      if (event.type & JS_EVENT_INIT)
-        ctrl->axes++;
-      switch (event.number) {
-        case 0:
-          ctrl->LJOY.x = value;
-          break;
-        case 1:
-          ctrl->LJOY.y = -value;
-          break;
-        case 2:
-          ctrl->LT = value;
-          break;
-        case 3:
-          ctrl->RJOY.x = value;
-          break;
-        case 4:
-          ctrl->RJOY.y = -value;
-          break;
-        case 5:
-          ctrl->RT = value;
-          break;
-        case 6:
-          ctrl->LEFT = value < 0.0;
-          ctrl->RIGHT = value > 0.0;
-          break;
-        case 7:
-          ctrl->UP = value < 0.0;
-          ctrl->DOWN = value > 0.0;
-          break;
-      }
+  } else {
+    if (!ctrl->connected) {
+      ctrl->fd = open(ctrl->name, O_RDONLY);
+      if (ctrl->fd != -1)
+        ctrl->connected = 1;
     }
   }
-  pthread_exit(NULL);
-  return NULL;
+  if (!ctrl->connected) {
+    return -1;
+  }
+
+  /* update device values */
+  if (read(ctrl->fd, &event, sizeof(struct js_event)) == -1)
+    return -1;
+  if (event.type & JS_EVENT_BUTTON) {
+    if (event.type & JS_EVENT_INIT)
+      ctrl->buttons++;
+    switch (event.number) {
+      case 0:
+        ctrl->A = event.value;
+        break;
+      case 1:
+        ctrl->B = event.value;
+        break;
+      case 2:
+        ctrl->X = event.value;
+        break;
+      case 3:
+        ctrl->Y = event.value;
+        break;
+      case 4:
+        ctrl->LB = event.value;
+        break;
+      case 5:
+        ctrl->RB = event.value;
+        break;
+      case 6:
+        ctrl->START = event.value;
+        break;
+      case 7:
+        ctrl->SELECT = event.value;
+        break;
+      case 8:
+        ctrl->HOME = event.value;
+        break;
+      case 9:
+        ctrl->LJOY.pressed = event.value;
+        break;
+      case 10:
+        ctrl->RJOY.pressed = event.value;
+        break;
+    }
+  } else if (event.type & JS_EVENT_AXIS) {
+    float value;
+    value = (float)event.value;
+    if (value > 1.0 || value < -1.0)
+      value /= (float)MAX_16BIT;
+    if (event.type & JS_EVENT_INIT)
+      ctrl->axes++;
+    switch (event.number) {
+      case 0:
+        ctrl->LJOY.x = value;
+        break;
+      case 1:
+        ctrl->LJOY.y = -value;
+        break;
+      case 2:
+        ctrl->LT = value;
+        break;
+      case 3:
+        ctrl->RJOY.x = value;
+        break;
+      case 4:
+        ctrl->RJOY.y = -value;
+        break;
+      case 5:
+        ctrl->RT = value;
+        break;
+      case 6:
+        ctrl->LEFT = value < 0.0;
+        ctrl->RIGHT = value > 0.0;
+        break;
+      case 7:
+        ctrl->UP = value < 0.0;
+        ctrl->DOWN = value > 0.0;
+        break;
+    }
+  }
+  return 0;
 }
 
 /** Disconnect from a joystick device.
@@ -177,12 +167,6 @@ static void *_controller_update(void *ctrl_arg) {
  *    A pointer to a controller struct.
  */
 void controller_disconnect(controller_t *ctrl) {
-  /* stop asynchronous update */
-  if (ctrl->alive) {
-    ctrl->alive = 0;
-    pthread_join(ctrl->thread, NULL);
-  }
-  
   /* clean up */
   if (ctrl->fd != -1)
     close(ctrl->fd);

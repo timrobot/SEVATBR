@@ -16,10 +16,6 @@ typedef struct controller {
   int32_t buttons;
   int32_t axes;
 
-  /* threaded update */
-  uint64_t  thread;
-  int8_t    alive;  /* 1 if alive, 0 if dead */
-
   /* values */
   int8_t  A;
   int8_t  B;
@@ -41,6 +37,8 @@ typedef struct controller {
   int8_t  START;
   int8_t  SELECT;
   int8_t  HOME;
+  int8_t  LB2;
+  int8_t  RB2;
 } controller_t;
 
 /* Prototypes */

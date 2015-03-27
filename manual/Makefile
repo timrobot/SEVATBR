@@ -18,7 +18,7 @@ controller.o: controller.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 libcontroller.o: controller.c
-	$(CC) $(CFLAGS) -pthread -fPIC -o $@ -c $<
+	$(CC) $(CFLAGS) -fPIC -o $@ -c $<
 
 manual.o: manual.c
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE)
@@ -36,7 +36,7 @@ test.o: test.c
 	$(CC) -o $@ -c $< $(INCLUDE)
 
 test: $(OBJECTS) test.o
-	$(CC) $(CFLAGS) -pthread -o $@ $^ $(INCLUDE)
+	$(CC) $(CFLAGS) -o $@ $^ $(INCLUDE)
 
 clean:
 	rm -f $(OBJECTS) $(LIBOBJS) $(TARGET) $(TEST)
