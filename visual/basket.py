@@ -125,3 +125,5 @@ def run(bestBlobCallback=False):
             break
         if disp.mouseRight:
             _save_image(img)
+
+run()
