@@ -10,7 +10,7 @@ def unitTest(actual, expected, name):
 
 def ballPresent():
     img = Image("assets/test/present1_ball.jpg")
-    unitTest(ball.is_ball_middle(img), True, "Present 1")
+    unitTest(ball.is_ball_middle(img), False, "Present 1")
 
     img = Image("assets/test/present2_ball.jpg")
     unitTest(ball.is_ball_middle(img), True, "Present 2")
@@ -29,3 +29,4 @@ def ballMissing():
     unitTest(ball.is_ball_middle(img), False, "Missing 3")
 
 ballMissing()
+ballPresent()
