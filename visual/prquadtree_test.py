@@ -1,45 +1,53 @@
-'''
-File testing the capabilities of the PRQuadTree.
-
-Author: Pawel Szczurko
-'''
-
+import unittest
 from prquadtree import *
 
-# creates two squares
-b = Box(Point(5,5), 50)
-b2 = Box(Point(50,50), 50)
+class TestPoint(unittest.TestCase):
+    def test_point_insert(self):
+        x = 5
+        y = 6
+        p = Point(x,y)
+        self.assertEqual(p.x, x)
+        self.assertEqual(p.y, y)
 
-print "Do 'b' and 'b2' intersect: %s " % b.intersect(b2)
+class TestParticle(unittest.TestCase):
+    def test_particle_insert(self):
+        x = 5
+        y = 6
+        part = Particle(x,y)
+        self.assertEqual(part.x, x)
+        self.assertEqual(part.y, y)
+        self.assertEqual(part.score, 0)
 
-# create PRQuadTree based on b2
-qt = PRQuadTree(b2)
+class TestBox(unittest.TestCase):
+    def test_box_insert(self):
+        x = 5
+        y = 6
+        p = Point(x,y)
+        box = Box(p, 50)
+        self.assertEqual(box.half_size, 50)
+    def test_box_contains(self):
+        x = 5
+        y = 6
+        p = Point(x,y)
+        box = Box(p, 50)
+        p2 = Point(x + 1, y + 1)
+        self.assertTrue(box.contains_point(p2))
 
-qt.insert(1,1)
-qt.insert(4,14)
-qt.insert(14,14)
-qt.insert(16,4)
-qt.insert(1,2)
-qt.insert(2,3)
-qt.insert(5,3)
+class TestPrQuadTree(unittest.TestCase):
+    def test_insert(self):
+        b2 = Box(Point(50,50), 50)
+        qt = PRQuadTree(b2)
+        qt.insert(Point(1,1))
+        self.assertEqual(qt.size(qt), 1)
+    def test_nearby(self):
+        b2 = Box(Point(50,50), 50)
+        qt = PRQuadTree(b2)
 
-# insert more random data
-for x in range(100):
-    qt.insert(uniform(0.0,100.0), uniform(0.0,100.0))
+        for x in range(100):
+            qt.insert(Point(uniform(0.0,100.0), uniform(0.0,100.0)))
+        pt = Point(2,2) 
+        nearby = qt.query_k_nearest(pt, 20)
+        self.assertEqual(len(nearby), 20)
 
-print "======Start print of all points in PRQuadTree======"
-print qt.print_all_points(qt)
-print "======End print of all points in PRQuadTree======"
-
-# defines seach point
-pt = Point(2,2)
-# get 20 nearby points to search point
-nearby = qt.query_k_nearest(pt, 20)
-
-print "======View nearby points for %s =======" % pt
-c = 1
-for point in nearby:
-    print "%s: %s" % (c, point)
-    c+=1
-
-print "Num points: %s" % PRQuadTree.size(qt)
+if __name__ == "__main__":
+    unittest.main()
