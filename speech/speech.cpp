@@ -9,7 +9,6 @@ static char readbuf[128];
  */
 int speech::start(void) {
 /*  int res;
-  tts_select_voice("cmu_us_rms_cg");
   res = stt_start_listening();
   return res;*/
   return -1;

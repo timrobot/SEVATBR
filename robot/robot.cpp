@@ -30,6 +30,7 @@ int robot::set(uint32_t robotid) {
         printf("[ERROR] Could not get all arduinos! Recommend exiting.\n");
         return -1;
       } else {
+        currid = robotid;
         return ((tbr_t *)bot)->connected;
       }
       break;
@@ -78,15 +79,13 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
   tbr_t *tbr;
 
   switch (currid) {
-    case 0x45:
-      printf("[STDOUT] arm->x: %f, arm->y: %f, arm->z: %f\n"
-          "arm->yaw: %f, arm->pitch: %f, arm->roll: %f\n"
-          "base->x: %f, base->y: %f, base->z: %f\n"
-          "base->yaw: %f, base->pitch: %f, base->roll: %f\n\n",
-          arm->x, arm->y, arm->z,
-          arm->yaw, arm->pitch, arm->roll,
-          base->x, base->y, base->z,
-          base->yaw, base->pitch, base->roll);
+    //case 0x45:
+    case STANDARD_OUT:
+      printf("[STDOUT] "
+          "arm->yaw: %f, arm->pitch: %f, "
+          "base->y: %f, base->yaw: %f\n\n",
+          arm->yaw, arm->pitch,
+          base->y, base->yaw);
       break;
 
     case TENNIS_BALL_ROBOT:

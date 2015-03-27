@@ -29,6 +29,10 @@
 #define BACK_SONAR    2
 #define SYNC_NSEC     500000000
 
+const int botpot = 688;
+const int midpot = 650; // TODO: CONFIGURE ME
+const int toppot = 630;
+
 static double limitf(double x, double min, double max);
 
 /** Initialize the communication layer
@@ -155,6 +159,11 @@ void tbr_send(tbr_t *robot) {
         } else {
           robot->prev_arm = robot->arm;
         }
+        // limit the arm
+        if ((robot->potentiometer > botpot && robot->arm < 0.0) ||
+            (robot->potentiometer < toppot && robot->arm > 0.0)) {
+          robot->arm = 0.0;
+        }
         sprintf(msg, "[%d]\n",
             (int)(limitf(robot->arm, -1.0, 1.0) * 255.0));
         serial_write(&robot->connections[i], msg);
@@ -187,25 +196,45 @@ void tbr_send(tbr_t *robot) {
 void tbr_recv(tbr_t *robot) {
   char *msg;
   int i;
+  int back_sonar;
+  int left_sonar;
+  int right_sonar;
   for (i = 0; i < NUM_DEV; i++) {
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
         msg = serial_read(&robot->connections[i]);
-        sscanf(msg, "[%d %lf %d]\n", &robot->ids[i],
-            &robot->sonar[BACK_SONAR], &robot->potentiometer);
+        if (!msg) {
+          break;
+        }
+        sscanf(msg, "[%d %d %d]\n", &robot->ids[i],
+            &back_sonar, &robot->potentiometer);
+        robot->sonar[BACK_SONAR] = (double)back_sonar;
         break;
       case ARM_DEVID:
         msg = serial_read(&robot->connections[i]);
-        sscanf(msg, "[%d %lf %lf]\n", &robot->ids[i],
-            &robot->sonar[LEFT_SONAR], &robot->sonar[RIGHT_SONAR]);
+        if (!msg) {
+          break;
+        }
+        sscanf(msg, "[%d %d %d]\n", &robot->ids[i],
+            &left_sonar, &right_sonar);
+        robot->sonar[LEFT_SONAR] = (double)left_sonar;
+        robot->sonar[RIGHT_SONAR] = (double)right_sonar;
         break;
       case CLAW_DEVID:
         msg = serial_read(&robot->connections[i]);
+        if (!msg) {
+          break;
+        }
         sscanf(msg, "[%d ]\n", &robot->ids[i]);
         break;
       default:
         break;
     }
+  }
+  // adjust for sonar blockage by the arm
+  if (robot->potentiometer < 650) {
+    robot->sonar[0] = 200;
+    robot->sonar[1] = 200;
   }
 }
 

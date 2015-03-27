@@ -13,8 +13,8 @@ LIBS = -L$(shell pwd)/../user -luser \
 SUBDIRS = $(shell pwd)/../user \
           $(shell pwd)/../agent \
           $(shell pwd)/../robot
-OBJECTS = core.o
-TARGET = core
+OBJECTS = core.o manual.o
+TARGET = core manual
 
 all: subdirs $(OBJECTS) $(TARGET)
 
@@ -25,6 +25,12 @@ core.o: core.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 core: core.o
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
+
+manual.o: manual.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+manual: manual.o
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 clean:
