@@ -47,7 +47,8 @@ int start_visual(void) {
         fprintf(stderr, "[visual] {child} Warning: cannot redirect output\n");
         exit(1);
       }
-      execlp("../core/visual.py", "visual.py", NULL);
+      printf("starting process\n");
+      execlp("../visual/visual.py", "visual.py", NULL);
       printf("[visual] {child} Error: bad subprocess exec\n");
       exit(1);
     } else if (procID > 0) {
@@ -55,8 +56,6 @@ int start_visual(void) {
       int flags;
       flags = fcntl(pipefd[0], F_GETFL, 0);
       fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
-      sleep(1);
-      set_detection(DETECT_BALL); // default
     } else {
       fprintf(stderr, "[visual] Error: could not create subprocess\n");
       return -1;
@@ -86,13 +85,14 @@ pose3d_t *get_position(int *type) {
       if (interim[i] == '\n') {
         if (strncmp(buf, "coordinate:", 11) == 0) {
           memset(&loc, 0, sizeof(pose3d_t));
-          sscanf(buf, "coordinate:[%s %lf %lf %lf]\n", typestr, &loc.x, &loc.y, &loc.z);
+          sscanf(buf, "coordinate:[%s %llf %llf %llf]\n", typestr, &loc.x, &loc.y, &loc.z);
           found = 1;
         }
         if (strncmp(buf, "notfound:", 9) == 0) {
           memset(&loc, 0, sizeof(pose3d_t));
           sscanf(buf, "notfound:[%s]\n", typestr);
           notfound = 1;
+          printf("%s is not found\n", typestr);
         }
         ind = 0;
       } else {

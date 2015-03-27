@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
 #include <vector>
 #include "visual.h"
 #include "speech.h"
@@ -52,8 +53,9 @@ double difftime(struct timeval t2, struct timeval t1);
 int agent::wakeup(void) {
   // start the vision engine(s)
   start_visual();
-  set_detection(DETECT_BALL);
-  visual_detect_type = S_BALL;
+  sleep(10);
+  visual_detect_type = S_BASKET;
+  look_for(S_BALL);
   task = "fetch";
   subtask = S_IDLE;
   // start the speech to text listener
@@ -89,11 +91,11 @@ void agent::set_enable(bool en) {
  */
 int agent::get_poses(pose3d_t *base, pose3d_t *arm) {
   conscious_thought();
-//  pose3d_t *loc;
-//  int type;
-//  if ((loc = get_position(&type))) {
-//    printf("got: %lf %lf %lf\n", loc->x, loc->y, loc->z);
-//  }
+/*  pose3d_t *loc;
+  int type;
+  if ((loc = get_position(&type))) {
+    printf("got: %f %f %f\n", loc->x, loc->y, loc->z);
+  }*/
   if (!enable) {
     memset(base, 0, sizeof(pose3d_t));
     memset(arm, 0, sizeof(pose3d_t));

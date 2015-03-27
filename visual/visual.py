@@ -18,10 +18,8 @@ import signal
 # global particle filter
 # error point elimination
 particle_filter = None
-mode = "ball" # basket|ball
+mode = "basket" # basket|ball
 quiet = False
-VSIG_BALL = 40
-VSIG_BASKET = 41
 
 ## Internal wrapper to particle filter initializer.
 #
@@ -105,18 +103,18 @@ def run_middle():
 def run():
     global particle_filter, mode, quiet
     cam = Camera(0, {"width" : 20, "height" : 40})
-    disp = Display()
+    #disp = Display()
+    best_found = False
     
     print "VISUAL-PROC-STARTED"
     sys.stdout.flush()
-    while disp.isNotDone():
+    while True:
+        best_found = False
         sleep(.05)
         img = cam.getImage()
-        orig_img = img
         # close window with left click
-        if disp.mouseLeft:
-            break
-
+        #if disp.mouseLeft:
+            #break
         if mode == "ball":        
             img = _ball_image_hue_filter(img)
             #img = img.dilate(2)
@@ -126,15 +124,14 @@ def run():
                 blobs.draw()
                 best = get_best_blob(blobs, particle_filter, mode)
                 if best:
+                    best_found = True
                     rad = best.radius()
                     centroid = best.centroid()
                     img.drawCircle(centroid, rad, (0,255,0), 2)
                     dist = (38 * 1200) / best.area()
                     if not quiet:
                         print "coordinate:[%s %s %s %s]" % (mode, centroid[0], centroid[1], dist)
-                else:
-                    if not quiet:
-                        print "notfound:[%s]" % (mode)
+                        sys.stdout.flush()
         elif mode == "basket":
             img = cam.getImage()
             img = _basket_image_hue_filter(img)
@@ -142,6 +139,7 @@ def run():
             if blobs:
                 best = get_best_blob(blobs, particle_filter, mode)                
                 if best:
+                    best_found = True
                     centroid = best.centroid()
                     rect = best.minRect()
                     height = max([abs(p1[1] - p2[1]) for p1 in rect for p2 in rect])
@@ -149,24 +147,34 @@ def run():
                     best.drawRect(color=Color.BLUE, width=2)
                     if not quiet:
                         print "coordinate:[%s %s %s %s]" % (mode, centroid[0], centroid[1], dist)
+                        sys.stdout.flush()
                 else:
                     if not quiet:
-                        print "notfound:[%s]" % (mode)
-        img.save(disp)
+                        print "notfound:[%s]" % mode
+                        sys.stdout.flush()
+        if not best_found and not quiet:
+            print "notfound:[%s]" % mode
+            sys.stdout.flush()
+
+        if mode == "basket":
+            mode = "ball"
+        else:
+            mode = "basket"
+        #img.save(disp)
         sys.stdout.flush()
 
 def switch_handler(signum, frame):
     global mode
-    if signum == VSIG_BALL:
+    if signum == 40:
         mode = "ball"
-    elif signum == VSIG_BASKET:
+    elif signum == 41:
         mode = "basket"
 
 def end_handler(signum, frame):
     sys.exit(1)
     
-signal.signal(VSIG_BALL, switch_handler)
-signal.signal(VSIG_BASKET, switch_handler)
+signal.signal(40, switch_handler)
+signal.signal(41, switch_handler)
 signal.signal(signal.SIGINT, end_handler)
 
 run()
