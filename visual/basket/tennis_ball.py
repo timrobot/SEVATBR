@@ -186,13 +186,12 @@ def run():
             if best:
                 rad = best.radius()
                 centroid = best.centroid()
+                print "Location: (%s, %s)" % (centroid[0], centroid[1])
                 # error buffer for drawing circle on img
                 #rad += 10 
                 # draw circle on picture
-                org_img.drawCircle(centroid, rad, (0,255,0), 2)
                 if is_blob_in_middle_helper(img, best):
+                    org_img.drawCircle(centroid, rad, (0,255,0), 2)
                     print "BALL IN MIDDLE!"
       #  org_img = img
         org_img.save(disp)
-
-run()
