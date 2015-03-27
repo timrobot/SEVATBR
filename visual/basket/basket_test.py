@@ -27,3 +27,6 @@ def basketMissing():
 
     img = Image("assets/test/missing3.jpg")
     unitTest(basket.is_basket_middle(img), False, "Missing 3")
+
+basketPresent()
+basketMissing()
