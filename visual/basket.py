@@ -113,11 +113,9 @@ def run(bestBlobCallback=False):
         if blobs:
             particle_filter.iterate(blobs)
             #blobs.show()
-            for b in blobs:
-                if b.isRectangle(.2):
-                    b.drawRect(color=Color.RED)
             best = get_best_blob(blobs, particle_filter)
-            best.drawRect(color=Color.GREEN)
+            if is_blob_in_middle_helper(img, best):
+                best.drawRect(color=Color.BLUE, width=10)
             if bestBlobCallback:
                 bestBlobCallback(img, best)
         img.save(disp)
@@ -125,5 +123,3 @@ def run(bestBlobCallback=False):
             break
         if disp.mouseRight:
             _save_image(img)
-
-run()
