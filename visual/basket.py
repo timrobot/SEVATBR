@@ -99,6 +99,9 @@ def run_middle():
             print "Basket in middle"
     run(middle_callback)
 
+/**
+ * @param bestBlobCallback function Callback function which is called
+ */
 def run(bestBlobCallback=False):
     global particle_filter
 

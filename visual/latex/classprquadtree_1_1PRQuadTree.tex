@@ -1,0 +1,174 @@
+\hypertarget{classprquadtree_1_1PRQuadTree}{}\section{prquadtree.\+P\+R\+Quad\+Tree Class Reference}
+\label{classprquadtree_1_1PRQuadTree}\index{prquadtree.\+P\+R\+Quad\+Tree@{prquadtree.\+P\+R\+Quad\+Tree}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_a56de30271f808d21281b790a19448aab}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, box)
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_ab9ca8c1d94c56c72f47dabd2f90b7754}{insert} (self, point)
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_ab145cd20b246f04ddcd53ae9618b5479}{query\+\_\+range} (self, rng)
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_a578891ac618a6770184fc1c02f426b45}{query\+\_\+k\+\_\+nearest} (self, point, k)
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_a0d43d9d2ebe765b6690067c1d8bc5a8a}{print\+\_\+all\+\_\+points} (self, root)
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_a2f9dd431836575327c97cd3fb5426adb}{\+\_\+\+\_\+str\+\_\+\+\_\+} (self)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classprquadtree_1_1PRQuadTree_a5dd006b80f1697585a10722fba06e9ba}{size} (prtree)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_a2f1d8e21568aa0467a7dabedb50e3593}{}{\bfseries box}\label{classprquadtree_1_1PRQuadTree_a2f1d8e21568aa0467a7dabedb50e3593}
+
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_a6534693edb5dd5450859c5b4b0773936}{}{\bfseries points}\label{classprquadtree_1_1PRQuadTree_a6534693edb5dd5450859c5b4b0773936}
+
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_a6d0f1330cc70f704f8153fd1f386b9c3}{}{\bfseries nw}\label{classprquadtree_1_1PRQuadTree_a6d0f1330cc70f704f8153fd1f386b9c3}
+
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_acf96c88788ee32d03032c490b9a90f68}{}{\bfseries ne}\label{classprquadtree_1_1PRQuadTree_acf96c88788ee32d03032c490b9a90f68}
+
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_aee59816ff69872d39d406a103dd2e2f8}{}{\bfseries sw}\label{classprquadtree_1_1PRQuadTree_aee59816ff69872d39d406a103dd2e2f8}
+
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_acf5a1f668e9962b03120856564e0a3b0}{}{\bfseries se}\label{classprquadtree_1_1PRQuadTree_acf5a1f668e9962b03120856564e0a3b0}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classprquadtree_1_1PRQuadTree_a8a1b023159e61d011e1c1c94f3534a87}{}int {\bfseries Q\+T\+\_\+\+N\+O\+D\+E\+\_\+\+C\+A\+P\+A\+C\+I\+T\+Y} = 20\label{classprquadtree_1_1PRQuadTree_a8a1b023159e61d011e1c1c94f3534a87}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{DoxyVerb}Class representing a Point Range Quadtree.
+\end{DoxyVerb}
+ 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classprquadtree_1_1PRQuadTree_a56de30271f808d21281b790a19448aab}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{\+\_\+\+\_\+init\+\_\+\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+\_\+\+\_\+init\+\_\+\+\_\+ (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{box}
+\end{DoxyParamCaption}
+)}\label{classprquadtree_1_1PRQuadTree_a56de30271f808d21281b790a19448aab}
+\begin{DoxyVerb}Constructs a PR Quadtree given an initial square.
+
+Args:
+    box: a Box representing initial square
+\end{DoxyVerb}
+ 
+
+\subsection{Member Function Documentation}
+\hypertarget{classprquadtree_1_1PRQuadTree_a2f9dd431836575327c97cd3fb5426adb}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!\+\_\+\+\_\+str\+\_\+\+\_\+@{\+\_\+\+\_\+str\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+str\+\_\+\+\_\+@{\+\_\+\+\_\+str\+\_\+\+\_\+}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{\+\_\+\+\_\+str\+\_\+\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+\_\+\+\_\+str\+\_\+\+\_\+ (
+\begin{DoxyParamCaption}
+\item[{}]{self}
+\end{DoxyParamCaption}
+)}\label{classprquadtree_1_1PRQuadTree_a2f9dd431836575327c97cd3fb5426adb}
+\begin{DoxyVerb}Prints the points of the nw,ne,sw,se blocks of the
+given PRQuadTree node.
+
+Returns:
+    A string of points in the blocks
+\end{DoxyVerb}
+ \hypertarget{classprquadtree_1_1PRQuadTree_ab9ca8c1d94c56c72f47dabd2f90b7754}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!insert@{insert}}
+\index{insert@{insert}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{insert}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+insert (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{point}
+\end{DoxyParamCaption}
+)}\label{classprquadtree_1_1PRQuadTree_ab9ca8c1d94c56c72f47dabd2f90b7754}
+\begin{DoxyVerb}Inserts a point into the PRQuadtree.
+
+Args:
+    point: An instance of Point
+
+Returns:
+    A boolean returning true on success, false on failure.
+\end{DoxyVerb}
+ \hypertarget{classprquadtree_1_1PRQuadTree_a0d43d9d2ebe765b6690067c1d8bc5a8a}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!print\+\_\+all\+\_\+points@{print\+\_\+all\+\_\+points}}
+\index{print\+\_\+all\+\_\+points@{print\+\_\+all\+\_\+points}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{print\+\_\+all\+\_\+points}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+print\+\_\+all\+\_\+points (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{root}
+\end{DoxyParamCaption}
+)}\label{classprquadtree_1_1PRQuadTree_a0d43d9d2ebe765b6690067c1d8bc5a8a}
+\begin{DoxyVerb}Prints all points stored in the PRQuadtree.
+
+Args:
+    root: start point, or the root of the Quadtree
+
+Returns:
+    out: a string with coordinates
+\end{DoxyVerb}
+ \hypertarget{classprquadtree_1_1PRQuadTree_a578891ac618a6770184fc1c02f426b45}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!query\+\_\+k\+\_\+nearest@{query\+\_\+k\+\_\+nearest}}
+\index{query\+\_\+k\+\_\+nearest@{query\+\_\+k\+\_\+nearest}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{query\+\_\+k\+\_\+nearest}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+query\+\_\+k\+\_\+nearest (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{point, }
+\item[{}]{k}
+\end{DoxyParamCaption}
+)}\label{classprquadtree_1_1PRQuadTree_a578891ac618a6770184fc1c02f426b45}
+\begin{DoxyVerb}Returns k points closest to the provided point.
+
+Args:
+    point: a Point from which to search for other points.
+    k: number of closest points to return
+
+Returns:
+    A list of k closest points
+\end{DoxyVerb}
+ \hypertarget{classprquadtree_1_1PRQuadTree_ab145cd20b246f04ddcd53ae9618b5479}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!query\+\_\+range@{query\+\_\+range}}
+\index{query\+\_\+range@{query\+\_\+range}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{query\+\_\+range}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+query\+\_\+range (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{rng}
+\end{DoxyParamCaption}
+)}\label{classprquadtree_1_1PRQuadTree_ab145cd20b246f04ddcd53ae9618b5479}
+\begin{DoxyVerb}Returns the points in the provided range.
+
+Args:
+    rng: a Box range from which to retrieve points
+
+Returns:
+    A list of points within the provided range
+\end{DoxyVerb}
+ \hypertarget{classprquadtree_1_1PRQuadTree_a5dd006b80f1697585a10722fba06e9ba}{}\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!size@{size}}
+\index{size@{size}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
+\subsubsection[{size}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+size (
+\begin{DoxyParamCaption}
+\item[{}]{prtree}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\label{classprquadtree_1_1PRQuadTree_a5dd006b80f1697585a10722fba06e9ba}
+\begin{DoxyVerb}Static method that determines the size of the given tree.
+Keeping an insertion count in the client code would be
+preferred to this due to heavy recursion.
+
+Args:
+    prtree: instance of PRQuadTree
+
+Returns:
+    An integer representing the number of points in the given tree.
+\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+prquadtree.\+py\end{DoxyCompactItemize}
