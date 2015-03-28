@@ -6,66 +6,50 @@ Author: Pawel Szczurko
 
 from math import sqrt
 from random import uniform
-
+## Represents an (x,y) coordinate point on a grid.
 class Point():
-    '''
-    Represents an (x,y) coordinate point on a grid.
-    '''
-
+    ## Constructs a coordinate Point.
+    #
+    # @param x float/int x-position
+    # @param y float/int y-position
     def __init__(self, x, y):
-        '''
-        Constructs a coordinate Point.
-
-        Args:
-            x: x-position
-            y: y-position
-        '''
         self.x = float(x)
         self.y = float(y)
-
+    ## Overwritting the default to string method of the Point class.
+    #
+    # @return String representation of Point
     def __str__(self):
-        '''
-        Overwritting the default to string method
-        of the Point class.
-        '''
-        return "(%s, %s)" % (self.x, self.y)
+            return "(%s, %s)" % (self.x, self.y)
 
+    ## Needed for printing via 'print'.
     def __repr__(self):
             return self.__str__()
 
+## Represents particle point.
 class Particle(Point):
+    ## Constructs a Particle.
+    #
+    # @param x float/int x-position
+    # @param y float/int y-position
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.score = 0
-
+## Class defining a square on the coordinate system via a center point and half of square width.
 class Box():
-    '''
-    Class defining a square on the coordinate system via a center point and
-    half of square width.
-    '''
-
+    ## Construct a Box object.
+    #
+    # @param center Point type specifying the center of the square
+    # @param half_size int half the length of the square
     def __init__(self, center, half_size):
-        '''
-        Construct a Box object.
-
-        Args:
-            center: a Point type specifying the center of the square
-            half_size: half the length of the square
-        '''
         self.center = center
         self.half_size = float(half_size)
 
+    ## Verifies that the given point is within this square.
+    #
+    # @param point Point type to check if it's in the square
+    # @return boolean indicating whether the point is within the square
     def contains_point(self, point):
-        '''
-        Verifies that the given point is within this square.
-
-        Args:
-            point: a Point type to check if it's in the square
-
-        Returns:
-            A boolean indicating whether the point is within the square
-        '''
         left_bound = self.center.x - self.half_size
         right_bound = self.center.x + self.half_size
         bottom_bound = self.center.y - self.half_size
@@ -75,16 +59,11 @@ class Box():
             return True
         return False
 
+    ## Checks if the provided box/square intersects with this square.
+    #
+    # @param other_box Box object
+    # @return Boolean indicating if the two intersect anywhere
     def intersect(self, other_box):
-        '''
-        Checks if the provided box/square intersects with this square.
-
-        Args:
-            other_box: another Box object
-
-        Returns:
-            A boolean indicating if the two intersect anywhere
-        '''
         # self bottom left corner
         aX1 = self.center.x - self.half_size
         aY1 = self.center.y - self.half_size
@@ -102,22 +81,15 @@ class Box():
         if aX1 < bX2 and aX2 > bX1 and aY1 < bY2 and aY2 > bY1:
             return True
         return False
-
+## Class representing a Point Range Quadtree.
 class PRQuadTree():
-    '''
-    Class representing a Point Range Quadtree.
-    '''
-
     # number of coordinate points to store per node
     QT_NODE_CAPACITY = 20
 
+    ## Constructs a PR Quadtree given an initial square.
+    #
+    # @param box Box representing initial square
     def __init__(self, box):
-        '''
-        Constructs a PR Quadtree given an initial square.
-
-        Args:
-            box: a Box representing initial square
-        '''
         self.box = box
         self.points = []
         self.nw = None
