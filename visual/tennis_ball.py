@@ -194,3 +194,5 @@ def run():
                     org_img.drawCircle(centroid, rad, (0,255,0), 2)
                     print "BALL IN MIDDLE!"
         org_img.save(disp)
+
+run()
