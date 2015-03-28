@@ -14,8 +14,9 @@ save_count = 1
 base_filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 def basket_image_filter(img):
-    '''
-    CURRENTLY NOT BEING USED.
+    '''Image filter which removes colors out of basket color range. (Deprecated)
+    @param img SimpleCV.Image
+    @return img SimpleCV.Image The image with filtered colors turned to black
     '''
     #removes very-red reds
     removal_mask = img.createBinaryMask(color1=(70,0,0), color2=(255,255,255)).invert()
