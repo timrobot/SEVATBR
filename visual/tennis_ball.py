@@ -195,4 +195,3 @@ def run():
                     print "BALL IN MIDDLE!"
         org_img.save(disp)
 
-run()
