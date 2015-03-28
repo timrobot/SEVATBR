@@ -97,36 +97,28 @@ class PRQuadTree():
         self.sw = None
         self.se = None
 
+    ## 
+    # Static method that determines the size of the given tree.
+    # Keeping an insertion count in the client code would be
+    # preferred to this due to heavy recursion.
+    #
+    # @param prtree PRQuadTree
+    # @return int An integer representing the number of points in the given tree.
     @staticmethod
     def size(prtree):
-        '''
-        Static method that determines the size of the given tree.
-        Keeping an insertion count in the client code would be
-        preferred to this due to heavy recursion.
-
-        Args:
-            prtree: instance of PRQuadTree
-
-        Returns:
-            An integer representing the number of points in the given tree.
-        '''
         if prtree is None:
             return 0
         return (len(prtree.points) + PRQuadTree.size(prtree.nw)
                 + PRQuadTree.size(prtree.ne) + PRQuadTree.size(prtree.sw)
                 + PRQuadTree.size(prtree.se))
 
-
+    ##
+    # Inserts a point into the PRQuadtree.
+    # 
+    # @param point Point
+    # @return A boolean returning true on success, false on failure.
+    #
     def insert(self, point):
-        '''
-        Inserts a point into the PRQuadtree.
-
-        Args:
-            point: An instance of Point
-
-        Returns:
-            A boolean returning true on success, false on failure.
-        '''
         if not self.box.contains_point(point):
             # point does not belong to this box
             return False
@@ -146,16 +138,12 @@ class PRQuadTree():
         if self.se.insert(point):
             return True
 
+    ##
+    # Returns the points in the provided range.
+    # 
+    # @param rng Box a Box range from which to retrieve points
+    # @return A list of points within the provided range
     def query_range(self, rng):
-        '''
-        Returns the points in the provided range.
-
-        Args:
-            rng: a Box range from which to retrieve points
-
-        Returns:
-            A list of points within the provided range
-        '''
         final_points = []
         if not self.box.intersect(rng):
             return final_points
@@ -180,29 +168,23 @@ class PRQuadTree():
 
         return final_points
 
+    ##
+    # Returns k points closest to the provided point.
+    #
+    # @param point Point a Point from which to search for other points.
+    # @param k int number of closest points to return
+    # @return array A coordinate distance between the search point and 
+    # the provided point
+    # 
     def query_k_nearest(self, point, k):
-        '''
-        Returns k points closest to the provided point.
-
-        Args:
-            point: a Point from which to search for other points.
-            k: number of closest points to return
-
-        Returns:
-            A list of k closest points
-        '''
+        ##
+        # Internal method used to provide python method with a key 
+        # (coordinate distance) on which to sort.
+        #
+        # @param p Point
+        # @return float
+        #
         def _sort_key(p):
-            '''
-            Internal method used to provide python method with a key
-            (coordinate distance) on which to sort.
-
-            Args:
-                p: Point to sort
-
-            Returns:
-                A coordinate distance between the search point and
-                the provided point
-            '''
             return sqrt( pow(point.x-p.x, 2) + pow(p.y-point.y,2))
         nearby = None
         for i in range(1,20):
@@ -212,12 +194,10 @@ class PRQuadTree():
                 break
         return sorted(nearby, key=_sort_key)[:k]
 
-
+    ##
+    # Divides a node into nw,ne,sw,se pieces so that a new point can be inserted.
+    #
     def _subdivide(self):
-        '''
-        Divides a node into nw,ne,sw,se pieces so that a new point
-        can be inserted.
-        '''
         hs = self.box.half_size / 2
 
         nw_x = self.box.center.x - hs
@@ -248,16 +228,13 @@ class PRQuadTree():
         self.se = PRQuadTree(se_box)
         #print "se: %s" % se_center
 
+    ##
+    # Prints all points stored in the PRQuadtree.
+    #
+    # @param root PRQuadTree start point, or the root of the Quadtree
+    # @return String a string with coordinates
+    #
     def print_all_points(self, root):
-        '''
-        Prints all points stored in the PRQuadtree.
-
-        Args:
-            root: start point, or the root of the Quadtree
-
-        Returns:
-            out: a string with coordinates
-        '''
         out = ""
         for point in root.points:
             out += "%s, " % point
@@ -271,25 +248,19 @@ class PRQuadTree():
             out += self.print_all_points(root.se)
         return out
 
+    ##
+    # Prints the points of the nw,ne,sw,se blocks of the given PRQuadTree node.
+    #
+    # @return String A string of points in the blocks
+    #
     def __str__(self):
-        '''
-        Prints the points of the nw,ne,sw,se blocks of the
-        given PRQuadTree node.
-
-        Returns:
-            A string of points in the blocks
-        '''
+        ##
+        # Generates string based on the number of points stored in the provided node.
+        #
+        # @param loc PRQuadTree a PRQuadTree node (ie nw,ne,sw,se)
+        # @param name String
+        # @return String A string with point and name
         def _print_msg(loc, name):
-            '''
-            Generates string based on the number of points stored in the
-            provided node.
-
-            Args:
-                loc: a PRQuadTree node (ie nw,ne,sw,se)
-
-            Returns:
-                A string with point and name
-            '''
             if len(loc.points) == 0:
                 return "%s point: no points\n" % (name)
             else:

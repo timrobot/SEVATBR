@@ -11,20 +11,20 @@ Class representing a \hyperlink{classprquadtree_1_1Point}{Point} Range Quadtree.
 def \hyperlink{classprquadtree_1_1PRQuadTree_a56de30271f808d21281b790a19448aab}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, \hyperlink{classprquadtree_1_1PRQuadTree_a2f1d8e21568aa0467a7dabedb50e3593}{box})
 \begin{DoxyCompactList}\small\item\em Constructs a P\+R Quadtree given an initial square. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1PRQuadTree_ab9ca8c1d94c56c72f47dabd2f90b7754}{insert} (self, point)
-\item 
+\begin{DoxyCompactList}\small\item\em Inserts a point into the P\+R\+Quadtree. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1PRQuadTree_ab145cd20b246f04ddcd53ae9618b5479}{query\+\_\+range} (self, rng)
-\item 
+\begin{DoxyCompactList}\small\item\em Returns the points in the provided range. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1PRQuadTree_a578891ac618a6770184fc1c02f426b45}{query\+\_\+k\+\_\+nearest} (self, point, k)
-\item 
+\begin{DoxyCompactList}\small\item\em Returns k points closest to the provided point. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1PRQuadTree_a0d43d9d2ebe765b6690067c1d8bc5a8a}{print\+\_\+all\+\_\+points} (self, root)
-\item 
+\begin{DoxyCompactList}\small\item\em Prints all points stored in the P\+R\+Quadtree. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1PRQuadTree_a2f9dd431836575327c97cd3fb5426adb}{\+\_\+\+\_\+str\+\_\+\+\_\+} (self)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Prints the points of the nw,ne,sw,se blocks of the given \hyperlink{classprquadtree_1_1PRQuadTree}{P\+R\+Quad\+Tree} node. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Static Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{classprquadtree_1_1PRQuadTree_a5dd006b80f1697585a10722fba06e9ba}{size} (prtree)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Static method that determines the size of the given tree. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
@@ -80,13 +80,24 @@ Constructs a P\+R Quadtree given an initial square.
 \item[{}]{self}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1PRQuadTree_a2f9dd431836575327c97cd3fb5426adb}
-\begin{DoxyVerb}Prints the points of the nw,ne,sw,se blocks of the
-given PRQuadTree node.
 
-Returns:
-    A string of points in the blocks
-\end{DoxyVerb}
- \index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!insert@{insert}}
+
+Prints the points of the nw,ne,sw,se blocks of the given \hyperlink{classprquadtree_1_1PRQuadTree}{P\+R\+Quad\+Tree} node. 
+
+\begin{DoxyReturn}{Returns}
+String A string of points in the blocks Generates string based on the number of points stored in the provided node.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em loc} & \hyperlink{classprquadtree_1_1PRQuadTree}{P\+R\+Quad\+Tree} a \hyperlink{classprquadtree_1_1PRQuadTree}{P\+R\+Quad\+Tree} node (ie nw,ne,sw,se) \\
+\hline
+{\em name} & String \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+String A string with point and name 
+\end{DoxyReturn}
+\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!insert@{insert}}
 \index{insert@{insert}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
 \subsubsection[{insert}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+insert (
 \begin{DoxyParamCaption}
@@ -94,15 +105,19 @@ Returns:
 \item[{}]{point}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1PRQuadTree_ab9ca8c1d94c56c72f47dabd2f90b7754}
-\begin{DoxyVerb}Inserts a point into the PRQuadtree.
 
-Args:
-    point: An instance of Point
 
-Returns:
-    A boolean returning true on success, false on failure.
-\end{DoxyVerb}
- \index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!print\+\_\+all\+\_\+points@{print\+\_\+all\+\_\+points}}
+Inserts a point into the P\+R\+Quadtree. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em point} & \hyperlink{classprquadtree_1_1Point}{Point} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A boolean returning true on success, false on failure. 
+\end{DoxyReturn}
+\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!print\+\_\+all\+\_\+points@{print\+\_\+all\+\_\+points}}
 \index{print\+\_\+all\+\_\+points@{print\+\_\+all\+\_\+points}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
 \subsubsection[{print\+\_\+all\+\_\+points}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+print\+\_\+all\+\_\+points (
 \begin{DoxyParamCaption}
@@ -110,15 +125,19 @@ Returns:
 \item[{}]{root}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1PRQuadTree_a0d43d9d2ebe765b6690067c1d8bc5a8a}
-\begin{DoxyVerb}Prints all points stored in the PRQuadtree.
 
-Args:
-    root: start point, or the root of the Quadtree
 
-Returns:
-    out: a string with coordinates
-\end{DoxyVerb}
- \index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!query\+\_\+k\+\_\+nearest@{query\+\_\+k\+\_\+nearest}}
+Prints all points stored in the P\+R\+Quadtree. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em root} & \hyperlink{classprquadtree_1_1PRQuadTree}{P\+R\+Quad\+Tree} start point, or the root of the Quadtree \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+String a string with coordinates 
+\end{DoxyReturn}
+\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!query\+\_\+k\+\_\+nearest@{query\+\_\+k\+\_\+nearest}}
 \index{query\+\_\+k\+\_\+nearest@{query\+\_\+k\+\_\+nearest}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
 \subsubsection[{query\+\_\+k\+\_\+nearest}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+query\+\_\+k\+\_\+nearest (
 \begin{DoxyParamCaption}
@@ -127,16 +146,29 @@ Returns:
 \item[{}]{k}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1PRQuadTree_a578891ac618a6770184fc1c02f426b45}
-\begin{DoxyVerb}Returns k points closest to the provided point.
 
-Args:
-    point: a Point from which to search for other points.
-    k: number of closest points to return
 
-Returns:
-    A list of k closest points
-\end{DoxyVerb}
- \index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!query\+\_\+range@{query\+\_\+range}}
+Returns k points closest to the provided point. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em point} & \hyperlink{classprquadtree_1_1Point}{Point} a \hyperlink{classprquadtree_1_1Point}{Point} from which to search for other points. \\
+\hline
+{\em k} & int number of closest points to return \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+array A coordinate distance between the search point and the provided point Internal method used to provide python method with a key (coordinate distance) on which to sort.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \hyperlink{classprquadtree_1_1Point}{Point} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+float 
+\end{DoxyReturn}
+\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!query\+\_\+range@{query\+\_\+range}}
 \index{query\+\_\+range@{query\+\_\+range}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
 \subsubsection[{query\+\_\+range}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+query\+\_\+range (
 \begin{DoxyParamCaption}
@@ -144,32 +176,40 @@ Returns:
 \item[{}]{rng}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1PRQuadTree_ab145cd20b246f04ddcd53ae9618b5479}
-\begin{DoxyVerb}Returns the points in the provided range.
 
-Args:
-    rng: a Box range from which to retrieve points
 
-Returns:
-    A list of points within the provided range
-\end{DoxyVerb}
- \index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!size@{size}}
+Returns the points in the provided range. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em rng} & \hyperlink{classprquadtree_1_1Box}{Box} a \hyperlink{classprquadtree_1_1Box}{Box} range from which to retrieve points \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A list of points within the provided range 
+\end{DoxyReturn}
+\index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!size@{size}}
 \index{size@{size}!prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}}
 \subsubsection[{size}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+P\+R\+Quad\+Tree.\+size (
 \begin{DoxyParamCaption}
 \item[{}]{prtree}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [static]}}\label{classprquadtree_1_1PRQuadTree_a5dd006b80f1697585a10722fba06e9ba}
-\begin{DoxyVerb}Static method that determines the size of the given tree.
-Keeping an insertion count in the client code would be
-preferred to this due to heavy recursion.
 
-Args:
-    prtree: instance of PRQuadTree
 
-Returns:
-    An integer representing the number of points in the given tree.
-\end{DoxyVerb}
- 
+Static method that determines the size of the given tree. 
+
+Keeping an insertion count in the client code would be preferred to this due to heavy recursion.
+
+
+\begin{DoxyParams}{Parameters}
+{\em prtree} & \hyperlink{classprquadtree_1_1PRQuadTree}{P\+R\+Quad\+Tree} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int An integer representing the number of points in the given tree. 
+\end{DoxyReturn}
+
 
 \subsection{Member Data Documentation}
 \index{prquadtree\+::\+P\+R\+Quad\+Tree@{prquadtree\+::\+P\+R\+Quad\+Tree}!box@{box}}
