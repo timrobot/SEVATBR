@@ -4,20 +4,15 @@
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{namespaceimage__support_a45e637a8685d23a453229102a4346327}{external\+\_\+init\+\_\+particle\+\_\+filter} (img)
-\item 
+\begin{DoxyCompactList}\small\item\em Initializes particle filter. \end{DoxyCompactList}\item 
 def \hyperlink{namespaceimage__support_aff0422e55f0d6119a012115570442c3f}{image\+\_\+hue\+\_\+filter}
-\item 
+\begin{DoxyCompactList}\small\item\em Converts given image to H\+S\+V based on the given color. \end{DoxyCompactList}\item 
 def \hyperlink{namespaceimage__support_aaa6d938c26b4ad5878e1bfb6870e749b}{get\+\_\+hue\+\_\+blobs} (img)
-\item 
+\begin{DoxyCompactList}\small\item\em Gets basket blobs after hue distance filtering. \end{DoxyCompactList}\item 
 def \hyperlink{namespaceimage__support_a0cebf9b300caec4b9e3f7725204f7f63}{get\+\_\+best\+\_\+blob} (blobs, particle\+\_\+filter)
-\item 
+\begin{DoxyCompactList}\small\item\em Returns the best blob out of the provided set and particle filter. \end{DoxyCompactList}\item 
 def \hyperlink{namespaceimage__support_ae76ebc019a04c735f46210bc29e55f76}{is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper} (img, blob)
-\end{DoxyCompactItemize}
-\subsection*{Variables}
-\begin{DoxyCompactItemize}
-\item 
-int \hyperlink{namespaceimage__support_a1cfece0a81077dca0136b23884fb318d}{bcolor} = 0
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Determines whether the given blob is in ceter of image. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
@@ -28,15 +23,19 @@ int \hyperlink{namespaceimage__support_a1cfece0a81077dca0136b23884fb318d}{bcolor
 \item[{}]{img}
 \end{DoxyParamCaption}
 )}\label{namespaceimage__support_a45e637a8685d23a453229102a4346327}
-\begin{DoxyVerb}Initializes particle filter.
 
-Args:
-    img: SimpleCV captured image
 
-Returns:
-    A ParticleFilter object
-\end{DoxyVerb}
- \index{image\+\_\+support@{image\+\_\+support}!get\+\_\+best\+\_\+blob@{get\+\_\+best\+\_\+blob}}
+Initializes particle filter. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em img} & Simple\+C\+V.\+Image captured image \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A Particle\+Filter object 
+\end{DoxyReturn}
+\index{image\+\_\+support@{image\+\_\+support}!get\+\_\+best\+\_\+blob@{get\+\_\+best\+\_\+blob}}
 \index{get\+\_\+best\+\_\+blob@{get\+\_\+best\+\_\+blob}!image\+\_\+support@{image\+\_\+support}}
 \subsubsection[{get\+\_\+best\+\_\+blob}]{\setlength{\rightskip}{0pt plus 5cm}def image\+\_\+support.\+get\+\_\+best\+\_\+blob (
 \begin{DoxyParamCaption}
@@ -44,31 +43,40 @@ Returns:
 \item[{}]{particle\+\_\+filter}
 \end{DoxyParamCaption}
 )}\label{namespaceimage__support_a0cebf9b300caec4b9e3f7725204f7f63}
-\begin{DoxyVerb}Returns the best blob out of the provided set and particle filter.
 
-Args:
-    blobs: list of potential HSV blobs
-    particle_filter: initialized ParticleFilter object 
 
-Returns:
-    The largest blob found or None.
-\end{DoxyVerb}
- \index{image\+\_\+support@{image\+\_\+support}!get\+\_\+hue\+\_\+blobs@{get\+\_\+hue\+\_\+blobs}}
+Returns the best blob out of the provided set and particle filter. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em blobs} & list of potential H\+S\+V blobs \\
+\hline
+{\em particle\+\_\+filter} & initialized Particle\+Filter object \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The largest blob found or None. 
+\end{DoxyReturn}
+\index{image\+\_\+support@{image\+\_\+support}!get\+\_\+hue\+\_\+blobs@{get\+\_\+hue\+\_\+blobs}}
 \index{get\+\_\+hue\+\_\+blobs@{get\+\_\+hue\+\_\+blobs}!image\+\_\+support@{image\+\_\+support}}
 \subsubsection[{get\+\_\+hue\+\_\+blobs}]{\setlength{\rightskip}{0pt plus 5cm}def image\+\_\+support.\+get\+\_\+hue\+\_\+blobs (
 \begin{DoxyParamCaption}
 \item[{}]{img}
 \end{DoxyParamCaption}
 )}\label{namespaceimage__support_aaa6d938c26b4ad5878e1bfb6870e749b}
-\begin{DoxyVerb}Gets basket blobs after hue distance filtering.
 
-Args:
-    img: SimpleCV captured image.
 
-Returns:
-    Set of 'black' potential blobs.
-\end{DoxyVerb}
- \index{image\+\_\+support@{image\+\_\+support}!image\+\_\+hue\+\_\+filter@{image\+\_\+hue\+\_\+filter}}
+Gets basket blobs after hue distance filtering. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em img} & Simple\+C\+V.\+Image captured image. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Set of \textquotesingle{}black\textquotesingle{} potential blobs. 
+\end{DoxyReturn}
+\index{image\+\_\+support@{image\+\_\+support}!image\+\_\+hue\+\_\+filter@{image\+\_\+hue\+\_\+filter}}
 \index{image\+\_\+hue\+\_\+filter@{image\+\_\+hue\+\_\+filter}!image\+\_\+support@{image\+\_\+support}}
 \subsubsection[{image\+\_\+hue\+\_\+filter}]{\setlength{\rightskip}{0pt plus 5cm}def image\+\_\+support.\+image\+\_\+hue\+\_\+filter (
 \begin{DoxyParamCaption}
@@ -76,6 +84,20 @@ Returns:
 \item[{}]{ball = {\ttfamily True}}
 \end{DoxyParamCaption}
 )}\label{namespaceimage__support_aff0422e55f0d6119a012115570442c3f}
+
+
+Converts given image to H\+S\+V based on the given color. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em img} & Simple\+C\+V.\+Image captured image \\
+\hline
+{\em color} & tuple of R\+G\+B values of singe \textquotesingle{}H\textquotesingle{} value of H\+S\+V \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+H\+S\+V converted image 
+\end{DoxyReturn}
 \index{image\+\_\+support@{image\+\_\+support}!is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper@{is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper}}
 \index{is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper@{is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper}!image\+\_\+support@{image\+\_\+support}}
 \subsubsection[{is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper}]{\setlength{\rightskip}{0pt plus 5cm}def image\+\_\+support.\+is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper (
@@ -84,18 +106,17 @@ Returns:
 \item[{}]{blob}
 \end{DoxyParamCaption}
 )}\label{namespaceimage__support_ae76ebc019a04c735f46210bc29e55f76}
-\begin{DoxyVerb}Determines whether the given blob is in ceter of image.
 
-Args:
-    img: SimpleCV caputed image
-    blob: SimpleCV Blob object
 
-Returns:
-    True if blob in middle of image, false otherwise.
-\end{DoxyVerb}
- 
+Determines whether the given blob is in ceter of image. 
 
-\subsection{Variable Documentation}
-\index{image\+\_\+support@{image\+\_\+support}!bcolor@{bcolor}}
-\index{bcolor@{bcolor}!image\+\_\+support@{image\+\_\+support}}
-\subsubsection[{bcolor}]{\setlength{\rightskip}{0pt plus 5cm}int image\+\_\+support.\+bcolor = 0}\label{namespaceimage__support_a1cfece0a81077dca0136b23884fb318d}
+
+\begin{DoxyParams}{Parameters}
+{\em img} & Simple\+C\+V.\+Image caputed image \\
+\hline
+{\em blob} & Simple\+C\+V.\+Blob Blob object \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if blob in middle of image, false otherwise. 
+\end{DoxyReturn}

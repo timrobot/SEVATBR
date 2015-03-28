@@ -8,7 +8,7 @@ def \hyperlink{classparticlefilter_1_1ParticleFilter_a6948f5fd9e23311a5d852d4cee
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a712cbf35d447e829bee6eb3511d6ed84}{iterate} (self, blobs)
 \begin{DoxyCompactList}\small\item\em For each blob, it updates the points in the tree increasing the score of those which are within the bounding square of the blob. \end{DoxyCompactList}\item 
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a14d4400ba16d6413f279baa8d0aaff2d}{score} (self, blob)
-\begin{DoxyCompactList}\small\item\em Returns the sum of the scores of the points found within this blob. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Returns the sum of the scores of the points found within this blob by querying the quadtree. \end{DoxyCompactList}\item 
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a23de668d643dfd03ef021b18129be7ec}{clear\+\_\+scores} (self)
 \begin{DoxyCompactList}\small\item\em Resets all scores of blobs This should be used when changing the webcam view. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Public Attributes}
@@ -83,7 +83,7 @@ For each blob, it updates the points in the tree increasing the score of those w
 )}\label{classparticlefilter_1_1ParticleFilter_a14d4400ba16d6413f279baa8d0aaff2d}
 
 
-Returns the sum of the scores of the points found within this blob. 
+Returns the sum of the scores of the points found within this blob by querying the quadtree. 
 
 
 \begin{DoxyParams}{Parameters}
@@ -91,7 +91,7 @@ Returns the sum of the scores of the points found within this blob.
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-int The score of the passed blob 
+int The sum of the scores of the points contained in the passed blob 
 \end{DoxyReturn}
 
 

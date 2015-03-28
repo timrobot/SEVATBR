@@ -1,5 +1,10 @@
 \section{prquadtree.\+Point Class Reference}
 \label{classprquadtree_1_1Point}\index{prquadtree.\+Point@{prquadtree.\+Point}}
+
+
+Represents an (x,y) coordinate point on a grid.  
+
+
 Inheritance diagram for prquadtree.\+Point\+:\begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -10,11 +15,11 @@ Inheritance diagram for prquadtree.\+Point\+:\begin{figure}[H]
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{classprquadtree_1_1Point_a1179022b24fec8ea7a8e0a7e9e7f664d}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, \hyperlink{classprquadtree_1_1Point_a769eeb814487b26593281a720cc43813}{x}, \hyperlink{classprquadtree_1_1Point_acc50fd274155e9a89996263a7e9f20db}{y})
-\item 
+\begin{DoxyCompactList}\small\item\em Constructs a coordinate \hyperlink{classprquadtree_1_1Point}{Point}. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1Point_ad33b3a05f6dce4daea0b307a42aa2453}{\+\_\+\+\_\+str\+\_\+\+\_\+} (self)
-\item 
+\begin{DoxyCompactList}\small\item\em Overwritting the default to string method of the \hyperlink{classprquadtree_1_1Point}{Point} class. \end{DoxyCompactList}\item 
 def \hyperlink{classprquadtree_1_1Point_a8a9a5215cda0279f6958a0b55b4bc11d}{\+\_\+\+\_\+repr\+\_\+\+\_\+} (self)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Needed for printing via \textquotesingle{}print\textquotesingle{}. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
@@ -25,9 +30,9 @@ def \hyperlink{classprquadtree_1_1Point_a8a9a5215cda0279f6958a0b55b4bc11d}{\+\_\
 
 
 \subsection{Detailed Description}
-\begin{DoxyVerb}Represents an (x,y) coordinate point on a grid.
-\end{DoxyVerb}
- 
+Represents an (x,y) coordinate point on a grid. 
+
+
 
 \subsection{Constructor \& Destructor Documentation}
 \index{prquadtree\+::\+Point@{prquadtree\+::\+Point}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
@@ -39,13 +44,18 @@ def \hyperlink{classprquadtree_1_1Point_a8a9a5215cda0279f6958a0b55b4bc11d}{\+\_\
 \item[{}]{y}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1Point_a1179022b24fec8ea7a8e0a7e9e7f664d}
-\begin{DoxyVerb}Constructs a coordinate Point.
 
-Args:
-    x: x-position
-    y: y-position
-\end{DoxyVerb}
- 
+
+Constructs a coordinate \hyperlink{classprquadtree_1_1Point}{Point}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & float/int x-\/position \\
+\hline
+{\em y} & float/int y-\/position \\
+\hline
+\end{DoxyParams}
+
 
 \subsection{Member Function Documentation}
 \index{prquadtree\+::\+Point@{prquadtree\+::\+Point}!\+\_\+\+\_\+repr\+\_\+\+\_\+@{\+\_\+\+\_\+repr\+\_\+\+\_\+}}
@@ -55,6 +65,10 @@ Args:
 \item[{}]{self}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1Point_a8a9a5215cda0279f6958a0b55b4bc11d}
+
+
+Needed for printing via \textquotesingle{}print\textquotesingle{}. 
+
 \index{prquadtree\+::\+Point@{prquadtree\+::\+Point}!\+\_\+\+\_\+str\+\_\+\+\_\+@{\+\_\+\+\_\+str\+\_\+\+\_\+}}
 \index{\+\_\+\+\_\+str\+\_\+\+\_\+@{\+\_\+\+\_\+str\+\_\+\+\_\+}!prquadtree\+::\+Point@{prquadtree\+::\+Point}}
 \subsubsection[{\+\_\+\+\_\+str\+\_\+\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}def prquadtree.\+Point.\+\_\+\+\_\+str\+\_\+\+\_\+ (
@@ -62,10 +76,14 @@ Args:
 \item[{}]{self}
 \end{DoxyParamCaption}
 )}\label{classprquadtree_1_1Point_ad33b3a05f6dce4daea0b307a42aa2453}
-\begin{DoxyVerb}Overwritting the default to string method
-of the Point class.
-\end{DoxyVerb}
- 
+
+
+Overwritting the default to string method of the \hyperlink{classprquadtree_1_1Point}{Point} class. 
+
+\begin{DoxyReturn}{Returns}
+String representation of \hyperlink{classprquadtree_1_1Point}{Point} 
+\end{DoxyReturn}
+
 
 \subsection{Member Data Documentation}
 \index{prquadtree\+::\+Point@{prquadtree\+::\+Point}!x@{x}}
