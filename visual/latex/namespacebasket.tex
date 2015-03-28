@@ -4,11 +4,11 @@
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{namespacebasket_a6244ca5fd7cf7706c81e45e270087d17}{is\+\_\+basket\+\_\+middle} (img)
-\begin{DoxyCompactList}\small\item\em Single entry function returning True/\+False if basket is in the middle of. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Single entry function returning True/\+False if basket is in the middle of the screen. \end{DoxyCompactList}\item 
 def \hyperlink{namespacebasket_a0cb50ef447247bf29a40cbdfcd275bc0}{run\+\_\+middle} ()
-\item 
+\begin{DoxyCompactList}\small\item\em Runs continuously and prints if the best detected blob is in the middle. \end{DoxyCompactList}\item 
 def \hyperlink{namespacebasket_a00c6a996da6d264c30c7b6c710cacddc}{run}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Runs continuously outlines best matched blob if it is in the middle. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -32,9 +32,9 @@ tuple \hyperlink{namespacebasket_aa3007fa12430ca814f5bf5890bb2fb0f}{base\+\_\+fi
 )}\label{namespacebasket_a6244ca5fd7cf7706c81e45e270087d17}
 
 
-Single entry function returning True/\+False if basket is in the middle of. 
+Single entry function returning True/\+False if basket is in the middle of the screen. 
 
-the screen 
+
 \begin{DoxyParams}{Parameters}
 {\em img} & Simple\+C\+V.\+Image The image to test \\
 \hline
@@ -46,6 +46,15 @@ the screen
 \item[{}]{best\+Blob\+Callback = {\ttfamily False}}
 \end{DoxyParamCaption}
 )}\label{namespacebasket_a00c6a996da6d264c30c7b6c710cacddc}
+
+
+Runs continuously outlines best matched blob if it is in the middle. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em best\+Blob\+Callback} & function Callback called passing the best blob found \\
+\hline
+\end{DoxyParams}
 \index{basket@{basket}!run\+\_\+middle@{run\+\_\+middle}}
 \index{run\+\_\+middle@{run\+\_\+middle}!basket@{basket}}
 \subsubsection[{run\+\_\+middle}]{\setlength{\rightskip}{0pt plus 5cm}def basket.\+run\+\_\+middle (
@@ -53,9 +62,11 @@ the screen
 {}
 \end{DoxyParamCaption}
 )}\label{namespacebasket_a0cb50ef447247bf29a40cbdfcd275bc0}
-\begin{DoxyVerb}Runs continuously and prints if the best detected blob is in the middle
-\end{DoxyVerb}
- 
+
+
+Runs continuously and prints if the best detected blob is in the middle. 
+
+
 
 \subsection{Variable Documentation}
 \index{basket@{basket}!base\+\_\+filename@{base\+\_\+filename}}

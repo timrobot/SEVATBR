@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=latex 2015.3.27)  27 MAR 2015 21:34
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=latex 2015.3.27)  27 MAR 2015 22:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1009,16 +1009,18 @@ LaTeX Font Info:    Font shape `T1/phv/m/n' will be
  [3
 
 ]
+Underfull \vbox (badness 1968) has occurred while \output is active []
+
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <7> not available
 (Font)              Font shape `T1/phv/b/n' tried instead on input line 70.
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
 (Font)              scaled to size 6.29996pt on input line 70.
- [4] [5] [6])
+ [4]
+[5] [6])
 \tf@toc=\write5
 \openout5 = `refman.toc'.
 
-
-[7] [8
+ [7] [8
 
 ]
 Chapter 1.
@@ -1069,35 +1071,48 @@ File: ts1phv.fd 2001/06/04 scalable font definitions for TS1/phv.
 )
 LaTeX Font Info:    Font shape `TS1/phv/m/n' will be
 (Font)              scaled to size 8.99994pt on input line 6.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <9> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 7.
+LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
+(Font)              scaled to size 8.09995pt on input line 7.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 7.
+LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
+(Font)              scaled to size 6.29996pt on input line 7.
 LaTeX Font Info:    Font shape `T1/phv/bc/n' will be
-(Font)              scaled to size 8.99994pt on input line 34.
+(Font)              scaled to size 8.99994pt on input line 32.
 LaTeX Font Info:    Font shape `T1/phv/bc/n' will be
-(Font)              scaled to size 6.29996pt on input line 34.
+(Font)              scaled to size 6.29996pt on input line 32.
 LaTeX Font Info:    Font shape `T1/phv/bc/it' in size <10> not available
-(Font)              Font shape `T1/phv/bc/sl' tried instead on input line 34.
+(Font)              Font shape `T1/phv/bc/sl' tried instead on input line 32.
 LaTeX Font Info:    Font shape `T1/phv/bc/sl' will be
-(Font)              scaled to size 8.99994pt on input line 34.
-LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 7.19995pt on input line 35.
-LaTeX Font Info:    Try loading font information for T1+pcr on input line 35.
+(Font)              scaled to size 8.99994pt on input line 32.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <10> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 39.
+LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
+(Font)              scaled to size 8.99994pt on input line 39.
+LaTeX Font Info:    Font shape `T1/phv/bc/it' in size <7> not available
+(Font)              Font shape `T1/phv/bc/sl' tried instead on input line 48.
+LaTeX Font Info:    Font shape `T1/phv/bc/sl' will be
+(Font)              scaled to size 6.29996pt on input line 48.
+LaTeX Font Info:    Try loading font information for T1+pcr on input line 48.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 )
-LaTeX Font Info:    Font shape `T1/phv/bc/it' in size <7> not available
-(Font)              Font shape `T1/phv/bc/sl' tried instead on input line 55.
-LaTeX Font Info:    Font shape `T1/phv/bc/sl' will be
-(Font)              scaled to size 6.29996pt on input line 55.
-
 
 LaTeX Font Warning: Font shape `T1/pcr/bc/it' undefined
-(Font)              using `T1/pcr/m/n' instead on input line 55.
+(Font)              using `T1/pcr/m/n' instead on input line 48.
 
-[9]) (./namespacebasket__test.tex) (./namespaceexperiment.tex)
-(./namespaceimage__support.tex [10] [11]) (./namespaceparticlefilter.tex)
-(./namespaceprquadtree.tex) (./namespaceprquadtree__test.tex)
-(./namespaceprquadtree__test__example.tex [12]) (./namespacetennis__ball.tex)
-(./namespacetennis__ball__test.tex [13]) [14]
+[9]) (./namespacebasket__runner.tex) (./namespacebasket__test.tex)
+(./namespaceexperiment.tex
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 7.19995pt on input line 19.
+ [10]) (./namespaceimage__support.tex [11])
+(./namespaceparticlefilter.tex) (./namespaceprquadtree.tex)
+(./namespaceprquadtree__test.tex) (./namespaceprquadtree__test__example.tex
+[12]) (./namespacetennis__ball.tex [13]) (./namespacetennis__ball__runner.tex)
+(./namespacetennis__ball__test.tex) [14]
 Chapter 6.
 (./classprquadtree_1_1Box.tex [15
 
@@ -1105,63 +1120,68 @@ Chapter 6.
 File: classprquadtree_1_1Particle.eps Graphic file (type eps)
 
 <classprquadtree_1_1Particle.eps> [16])
-(./classparticlefilter_1_1ParticleFilter.tex) (./classprquadtree_1_1Point.tex
-File: classprquadtree_1_1Point.eps Graphic file (type eps)
+(./classparticlefilter_1_1ParticleFilter.tex [17]
+Underfull \hbox (badness 10000) detected at line 93
+[][][]
+ []
 
-<classprquadtree_1_1Point.eps> [17]) (./classprquadtree_1_1PRQuadTree.tex
-[18] [19]
+) (./classprquadtree_1_1Point.tex
+File: classprquadtree_1_1Point.eps Graphic file (type eps)
+ <classprquadtree_1_1Point.eps> [18])
+(./classprquadtree_1_1PRQuadTree.tex [19] [20]
 
 LaTeX Font Warning: Font shape `T1/pcr/bc/n' undefined
 (Font)              using `T1/pcr/m/n' instead on input line 152.
 
-[20]) (./classprquadtree__test_1_1TestBox.tex
+) (./classprquadtree__test_1_1TestBox.tex
 File: classprquadtree__test_1_1TestBox.eps Graphic file (type eps)
 
-<classprquadtree__test_1_1TestBox.eps>)
+<classprquadtree__test_1_1TestBox.eps> [21])
 (./classprquadtree__test_1_1TestParticle.tex
 File: classprquadtree__test_1_1TestParticle.eps Graphic file (type eps)
 
-<classprquadtree__test_1_1TestParticle.eps> [21])
+<classprquadtree__test_1_1TestParticle.eps>)
 (./classprquadtree__test_1_1TestPoint.tex
 File: classprquadtree__test_1_1TestPoint.eps Graphic file (type eps)
 
-<classprquadtree__test_1_1TestPoint.eps>)
+<classprquadtree__test_1_1TestPoint.eps> [22])
 (./classprquadtree__test_1_1TestPrQuadTree.tex
 File: classprquadtree__test_1_1TestPrQuadTree.eps Graphic file (type eps)
 
-<classprquadtree__test_1_1TestPrQuadTree.eps> [22]) [23] [24
+<classprquadtree__test_1_1TestPrQuadTree.eps>) [23] [24
 
 ]
 Chapter 7.
-(./basket_8py.tex) (./basket__test_8py.tex) (./experiment_8py.tex [25])
-(./image__support_8py.tex) (./particlefilter_8py.tex) (./prquadtree_8py.tex
-[26]) (./prquadtree__test_8py.tex) (./prquadtree__test__example_8py.tex)
-(./tennis__ball_8py.tex) (./tennis__ball__test_8py.tex [27]) (./visual_8h.tex)
-[28] (./refman.ind [29
+(./basket_8py.tex) (./basket__runner_8py.tex) (./basket__test_8py.tex [25])
+(./experiment_8py.tex) (./image__support_8py.tex) (./particlefilter_8py.tex)
+(./prquadtree_8py.tex [26]) (./prquadtree__test_8py.tex)
+(./prquadtree__test__example_8py.tex) (./tennis__ball_8py.tex [27])
+(./tennis__ball__runner_8py.tex) (./tennis__ball__test_8py.tex)
+(./visual_8h.tex) [28] (./refman.ind [29
 
 
 
 ] [30] [31])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 186.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 186.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 190.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 190.
  (./refman.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 186.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 186.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 190.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 190.
 Package rerunfilecheck Info: File `refman.out' has not changed.
-(rerunfilecheck)             Checksum: 1BCE6FC678BC6996AE05EB047D8D2489;25473.
+(rerunfilecheck)             Checksum: 039A0CE7065F7E2E6B466451798AF4F7;26238.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 186.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 190.
  ) 
 Here is how much of TeX's memory you used:
- 12786 strings out of 495026
- 182556 string characters out of 6181541
- 307797 words of memory out of 5000000
- 15712 multiletter control sequences out of 15000+600000
- 44584 words of font info for 51 fonts, out of 8000000 for 9000
+ 12817 strings out of 495026
+ 183101 string characters out of 6181541
+ 309874 words of memory out of 5000000
+ 15730 multiletter control sequences out of 15000+600000
+ 49981 words of font info for 54 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  48i,16n,43p,2071b,495s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on refman.dvi (39 pages, 372320 bytes).
+Output written on refman.dvi (39 pages, 383680 bytes).

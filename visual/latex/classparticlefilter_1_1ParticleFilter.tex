@@ -4,13 +4,13 @@
 \begin{DoxyCompactItemize}
 \item 
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a6948f5fd9e23311a5d852d4cee9fcd74}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, box)
-\item 
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a712cbf35d447e829bee6eb3511d6ed84}{iterate} (self, blobs)
-\item 
+\begin{DoxyCompactList}\small\item\em For each blob, it updates the points in the tree increasing the score of those which are within the bounding square of the blob. \end{DoxyCompactList}\item 
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a14d4400ba16d6413f279baa8d0aaff2d}{score} (self, blob)
-\item 
+\begin{DoxyCompactList}\small\item\em Returns the sum of the scores of the points found within this blob. \end{DoxyCompactList}\item 
 def \hyperlink{classparticlefilter_1_1ParticleFilter_a23de668d643dfd03ef021b18129be7ec}{clear\+\_\+scores} (self)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Resets all scores of blobs This should be used when changing the webcam view. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
@@ -35,6 +35,15 @@ def \hyperlink{classparticlefilter_1_1ParticleFilter_a23de668d643dfd03ef021b1812
 )}\label{classparticlefilter_1_1ParticleFilter_a6948f5fd9e23311a5d852d4cee9fcd74}
 
 
+Constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em box} & Box the box representing the web cam view \\
+\hline
+\end{DoxyParams}
+
+
 \subsection{Member Function Documentation}
 \index{particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}!clear\+\_\+scores@{clear\+\_\+scores}}
 \index{clear\+\_\+scores@{clear\+\_\+scores}!particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}}
@@ -43,10 +52,11 @@ def \hyperlink{classparticlefilter_1_1ParticleFilter_a23de668d643dfd03ef021b1812
 \item[{}]{self}
 \end{DoxyParamCaption}
 )}\label{classparticlefilter_1_1ParticleFilter_a23de668d643dfd03ef021b18129be7ec}
-\begin{DoxyVerb}Resets all scores of blobs
-This should be used when changing the webcam view
-\end{DoxyVerb}
- \index{particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}!iterate@{iterate}}
+
+
+Resets all scores of blobs This should be used when changing the webcam view. 
+
+\index{particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}!iterate@{iterate}}
 \index{iterate@{iterate}!particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}}
 \subsubsection[{iterate}]{\setlength{\rightskip}{0pt plus 5cm}def particlefilter.\+Particle\+Filter.\+iterate (
 \begin{DoxyParamCaption}
@@ -54,10 +64,16 @@ This should be used when changing the webcam view
 \item[{}]{blobs}
 \end{DoxyParamCaption}
 )}\label{classparticlefilter_1_1ParticleFilter_a712cbf35d447e829bee6eb3511d6ed84}
-\begin{DoxyVerb}For each blob, it updates the points in the tree increasing the score of those
-which are within the bounding square of the blob
-\end{DoxyVerb}
- \index{particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}!score@{score}}
+
+
+For each blob, it updates the points in the tree increasing the score of those which are within the bounding square of the blob. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em blobs} & array An array of blob objects which were matched \\
+\hline
+\end{DoxyParams}
+\index{particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}!score@{score}}
 \index{score@{score}!particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}}
 \subsubsection[{score}]{\setlength{\rightskip}{0pt plus 5cm}def particlefilter.\+Particle\+Filter.\+score (
 \begin{DoxyParamCaption}
@@ -65,9 +81,19 @@ which are within the bounding square of the blob
 \item[{}]{blob}
 \end{DoxyParamCaption}
 )}\label{classparticlefilter_1_1ParticleFilter_a14d4400ba16d6413f279baa8d0aaff2d}
-\begin{DoxyVerb}Returns the sum of the scores of the points found within this blob
-\end{DoxyVerb}
- 
+
+
+Returns the sum of the scores of the points found within this blob. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em blob} & Blob A single blob \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int The score of the passed blob 
+\end{DoxyReturn}
+
 
 \subsection{Member Data Documentation}
 \index{particlefilter\+::\+Particle\+Filter@{particlefilter\+::\+Particle\+Filter}!image\+\_\+box@{image\+\_\+box}}

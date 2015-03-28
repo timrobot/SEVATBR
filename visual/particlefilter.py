@@ -1,6 +1,10 @@
 from prquadtree import *
 
 class ParticleFilter:
+    ##
+    # Constructor
+    # @param box Box the box representing the web cam view
+    #
     def __init__(self, box):
       self.pr_tree = PRQuadTree(box)
       self.image_box = box
@@ -17,12 +21,13 @@ class ParticleFilter:
       for x in range(subdivisions):
           for y in range(subdivisions):
               self.pr_tree.insert(Particle(x * cell_size, y * cell_size))
-
+    ##
+    # For each blob, it updates the points in the tree increasing the score of those
+    # which are within the bounding square of the blob
+    #
+    # @param blobs array An array of blob objects which were matched
+    #
     def iterate(self, blobs):
-        '''
-        For each blob, it updates the points in the tree increasing the score of those
-        which are within the bounding square of the blob
-        '''
         self.iterations += 1
         if self.iterations > self.iterations_before_clearing:
             self.clear_scores()
@@ -34,11 +39,14 @@ class ParticleFilter:
             points = self.pr_tree.query_range(box)
             for p in points:
                 p.score += 1
-
+    ##
+    # Returns the sum of the scores of the points found within this blob by querying
+    # the quadtree
+    # 
+    # @param blob Blob A single blob
+    # @return int The sum of the scores of the points contained in the passed blob
+    #
     def score(self, blob):
-        '''
-        Returns the sum of the scores of the points found within this blob
-        '''
         half_size = max(blob.minRectWidth(), blob.minRectHeight())/2
         box = Box(Point(blob.minRectX(), blob.minRectY()), half_size)
         points = self.pr_tree.query_range(box)
@@ -46,12 +54,11 @@ class ParticleFilter:
         for p in points:
             point_sum += p.score
         return point_sum
-
+    ##
+    # Resets all scores of blobs
+    # This should be used when changing the webcam view
+    #
     def clear_scores(self):
-        '''
-        Resets all scores of blobs
-        This should be used when changing the webcam view
-        '''
         points = self.pr_tree.query_range(self.image_box)
         for p in points:
             p.score = 0

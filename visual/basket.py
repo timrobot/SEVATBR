@@ -7,38 +7,35 @@ import experiment
 from particlefilter import ParticleFilter
 from image_support import *
 
-#silly globals
 particle_filter = None
 image_half_size = -1
 save_count = 1
 base_filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-
+##
+#Internal wrapper image hue filter.
+#param img SimpleCV.Image the image to apply the hue filter to
+#
 def _basket_image_hue_filter(img):
-    '''
-    Internal wrapper image hue filter.
-    @param img SimpleCV.Image the image to apply the hue filter to
-    '''
     color = 280
     return image_hue_filter(img, False)
-
+##
+#Saves an image to the current directory
+#@param img SimpleCV.Image the image to save
+#
 def _save_image(img):
-    '''
-    Saves an image to the current directory
-    @param img SimpleCV.Image the image to save
-    '''
     global save_count, base_filename
     f = "cam_capture_%s_%s.jpg" % (base_filename, save_count)
     img.save(f)
     print "saved image %s" % f
     save_count += 1
 
+##
+#Internal wrapper to particle filter initializer.
+#@param img SimpleCV.Image Any image captured from the Camera, used
+#to initialize the size
+#
 def _init_particle_filter(img):
-    '''
-    Internal wrapper to particle filter initializer.
-    @param img SimpleCV.Image Any image captured from the Camera, used
-    to initialize the size
-    '''
     global particle_filter
     if not particle_filter:
         particle_filter = external_init_particle_filter(img)
@@ -59,16 +56,20 @@ def is_basket_middle(img):
         return is_blob_in_middle_helper(img, best)
     return False
 
+##
+# Runs continuously and prints if the best detected blob is in the middle
+#
 def run_middle():
-    '''
-    Runs continuously and prints if the best detected blob is in the middle
-    '''
     def middle_callback(img, best):
         if is_blob_in_middle_helper(img, best):
             print "Basket in middle"
     run(middle_callback)
 
 
+##
+# Runs continuously outlines best matched blob if it is in the middle
+# @param bestBlobCallback function Callback called passing the best blob found
+#
 def run(bestBlobCallback=False):
     global particle_filter
 
