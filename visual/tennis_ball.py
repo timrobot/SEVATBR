@@ -17,31 +17,27 @@ import sys
 # error point elimination
 particle_filter = None
 
+## Internal wrapper to particle filter initializer.
+#
+# @param img SimpleCV.Image
 def _init_particle_filter(img):
-    '''
-    Internal wrapper to particle filter initializer.
-    @param img SimpleCV.Image
-    '''
     global particle_filter
     if not particle_filter:
         particle_filter = external_init_particle_filter(img)
 
+## Internal wrapper image hue filter. 
+#
+# @param img SimpleCV.Image 
+# @return img SimpleCV.Image converted to HSV
 def _ball_image_hue_filter(img):
-    '''
-    Internal wrapper image hue filter. 
-    @param img SimpleCV.Image 
-    @return img SimpleCV.Image converted to HSV
-    '''
     color = (185, 206, 111)
     return image_hue_filter(img, True)
 
+## Entry point for module which determines whether tennis ball is in the middle of the image.
+#
+# @param img SimpleCV.Image 
+# @return boolean. True if tennis ball is in middle, false otherwise.
 def is_ball_middle(img):
-    '''
-    Entry point for module which determines whether tennis 
-    ball is in the middle of the image.
-    @param img SimpleCV.Image 
-    @return boolean. True if tennis ball is in middle, false otherwise.
-    '''
     global particle_filter
 
     _init_particle_filter(img)
@@ -53,13 +49,8 @@ def is_ball_middle(img):
         return is_blob_in_middle_helper(img, best)
     return False
 
-
+## Continuously captures image from computer camera and feeds it to the is_ball_middle method to detect whether tennis ball is in the middle of the screen.
 def run():
-    '''
-    Continuously captures image from computer camera and 
-    feeds it to the is_ball_middle method to detect whether 
-    tennis ball is in the middle of the screen.
-    '''
     global particle_filter
 
     cam = Camera()
