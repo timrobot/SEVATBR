@@ -15,10 +15,8 @@ class Point():
     def __init__(self, x, y):
         '''
         Constructs a coordinate Point.
-
-        Args:
-            x: x-position
-            y: y-position
+        @param x float/int x-position
+        @param y float/int y-position
         '''
         self.x = float(x)
         self.y = float(y)
@@ -27,11 +25,15 @@ class Point():
         '''
         Overwritting the default to string method
         of the Point class.
+        @return String representation of Point
         '''
         return "(%s, %s)" % (self.x, self.y)
 
     def __repr__(self):
-            return self.__str__()
+        '''
+        Needed for printing via 'print'.
+        '''
+        return self.__str__()
 
 class Particle(Point):
     def __init__(self, x, y):
