@@ -13,53 +13,20 @@ image_half_size = -1
 save_count = 1
 base_filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-def basket_image_filter(img):
-    '''Image filter which removes colors out of basket color range. (Deprecated)
-    @param img SimpleCV.Image
-    @return img SimpleCV.Image The image with filtered colors turned to black
-    '''
-    #removes very-red reds
-    removal_mask = img.createBinaryMask(color1=(70,0,0), color2=(255,255,255)).invert()
-    img = img.applyBinaryMask(removal_mask)
-
-    #removes less-red reds if they don't have enough blue
-    removal_mask = img.createBinaryMask(color1=(30,0,0), color2=(70,255,100)).invert()
-    img = img.applyBinaryMask(removal_mask)
-
-    #removes very-green greens
-    removal_mask = img.createBinaryMask(color1=(0,100,0), color2=(255,255,255)).invert()
-    img = img.applyBinaryMask(removal_mask)
-
-    #removes very small reds if it has little blue
-    removal_mask = img.createBinaryMask(color1=(0,0,0), color2=(40,255,35)).invert()
-    img = img.applyBinaryMask(removal_mask)
-    return img
 
 def _basket_image_hue_filter(img):
     '''
     Internal wrapper image hue filter.
+    @param img SimpleCV.Image the image to apply the hue filter to
     '''
     color = 280
     return image_hue_filter(img, False)
 
-def _get_basket_blobs(img):
-    '''
-    Gets basket blobs with RGB range
-
-    CURRENTLY NOT BEING USED.
-    '''
-    # accepted color range
-    start_color = (0,0,35)
-    end_color = (255,255,255)
-
-    # create binary mask based on color ranges
-    mask = img.createBinaryMask(color1=start_color,color2=end_color)
-
-    # find binary blobs in the image
-    blobs = img.findBlobsFromMask(mask, appx_level=10, minsize=20)
-    return blobs
-
 def _save_image(img):
+    '''
+    Saves an image to the current directory
+    @param img SimpleCV.Image the image to save
+    '''
     global save_count, base_filename
     f = "cam_capture_%s_%s.jpg" % (base_filename, save_count)
     img.save(f)
@@ -69,17 +36,18 @@ def _save_image(img):
 def _init_particle_filter(img):
     '''
     Internal wrapper to particle filter initializer.
+    @param img SimpleCV.Image Any image captured from the Camera, used
+    to initialize the size
     '''
     global particle_filter
     if not particle_filter:
         particle_filter = external_init_particle_filter(img)
 
-
+## Single entry function returning True/False if basket is in the middle of the screen
+#
+# @param img SimpleCV.Image The image to test
+#
 def is_basket_middle(img):
-    '''
-    Single entry function returning True/False if basket is in the middle of
-    the screen
-    '''
     global particle_filter
 
     _init_particle_filter(img)

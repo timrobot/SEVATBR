@@ -1,0 +1,326 @@
+\begin{theindex}
+
+  \item {\+\_\+\+\_\+init\+\_\+\+\_\+}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+    \subitem {prquadtree\+::\+Box}, \hyperpage{15}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{19}
+    \subitem {prquadtree\+::\+Particle}, \hyperpage{16}
+    \subitem {prquadtree\+::\+Point}, \hyperpage{18}
+  \item {\+\_\+\+\_\+repr\+\_\+\+\_\+}
+    \subitem {prquadtree\+::\+Point}, \hyperpage{18}
+  \item {\+\_\+\+\_\+str\+\_\+\+\_\+}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{19}
+    \subitem {prquadtree\+::\+Point}, \hyperpage{18}
+
+  \indexspace
+
+  \item {b}
+    \subitem {prquadtree\+\_\+test\+\_\+example}, \hyperpage{13}
+  \item {b2}
+    \subitem {prquadtree\+\_\+test\+\_\+example}, \hyperpage{13}
+  \item {ball\+Missing}
+    \subitem {tennis\+\_\+ball\+\_\+test}, \hyperpage{14}
+  \item {ball\+Present}
+    \subitem {tennis\+\_\+ball\+\_\+test}, \hyperpage{14}
+  \item {base\+\_\+filename}
+    \subitem {basket}, \hyperpage{10}
+  \item {basket}, \hyperpage{9}
+    \subitem {base\+\_\+filename}, \hyperpage{10}
+    \subitem {basket\+\_\+image\+\_\+filter}, \hyperpage{9}
+    \subitem {image\+\_\+half\+\_\+size}, \hyperpage{10}
+    \subitem {is\+\_\+basket\+\_\+middle}, \hyperpage{9}
+    \subitem {particle\+\_\+filter}, \hyperpage{10}
+    \subitem {run}, \hyperpage{9}
+    \subitem {run\+\_\+middle}, \hyperpage{9}
+    \subitem {save\+\_\+count}, \hyperpage{10}
+  \item {basket.\+py}, \hyperpage{25}
+  \item {basket\+\_\+image\+\_\+filter}
+    \subitem {basket}, \hyperpage{9}
+  \item {basket\+\_\+test}, \hyperpage{10}
+    \subitem {basket\+Missing}, \hyperpage{10}
+    \subitem {basket\+Present}, \hyperpage{10}
+    \subitem {unit\+Test}, \hyperpage{10}
+  \item {basket\+\_\+test.\+py}, \hyperpage{25}
+  \item {basket\+Missing}
+    \subitem {basket\+\_\+test}, \hyperpage{10}
+  \item {basket\+Present}
+    \subitem {basket\+\_\+test}, \hyperpage{10}
+  \item {bcolor}
+    \subitem {image\+\_\+support}, \hyperpage{12}
+  \item {binary\+\_\+mask}
+    \subitem {experiment}, \hyperpage{10}
+  \item {blobs\+\_\+by\+\_\+mask}
+    \subitem {experiment}, \hyperpage{10}
+  \item {box}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+
+  \indexspace
+
+  \item {c}
+    \subitem {prquadtree\+\_\+test\+\_\+example}, \hyperpage{13}
+  \item {center}
+    \subitem {prquadtree\+::\+Box}, \hyperpage{16}
+  \item {clear\+\_\+scores}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+  \item {contains\+\_\+point}
+    \subitem {prquadtree\+::\+Box}, \hyperpage{15}
+
+  \indexspace
+
+  \item {dilation\+\_\+and\+\_\+blur}
+    \subitem {experiment}, \hyperpage{10}
+
+  \indexspace
+
+  \item {experiment}, \hyperpage{10}
+    \subitem {binary\+\_\+mask}, \hyperpage{10}
+    \subitem {blobs\+\_\+by\+\_\+mask}, \hyperpage{10}
+    \subitem {dilation\+\_\+and\+\_\+blur}, \hyperpage{10}
+    \subitem {experiment}, \hyperpage{10}
+    \subitem {hard\+\_\+threshold}, \hyperpage{10}
+  \item {experiment.\+py}, \hyperpage{26}
+  \item {external\+\_\+init\+\_\+particle\+\_\+filter}
+    \subitem {image\+\_\+support}, \hyperpage{11}
+
+  \indexspace
+
+  \item {get\+\_\+best\+\_\+blob}
+    \subitem {image\+\_\+support}, \hyperpage{11}
+  \item {get\+\_\+hue\+\_\+blobs}
+    \subitem {image\+\_\+support}, \hyperpage{11}
+  \item {get\+\_\+objects}
+    \subitem {visual.\+h}, \hyperpage{28}
+
+  \indexspace
+
+  \item {half\+\_\+size}
+    \subitem {prquadtree\+::\+Box}, \hyperpage{16}
+  \item {hard\+\_\+threshold}
+    \subitem {experiment}, \hyperpage{10}
+
+  \indexspace
+
+  \item {image\+\_\+box}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+  \item {image\+\_\+half\+\_\+size}
+    \subitem {basket}, \hyperpage{10}
+  \item {image\+\_\+hue\+\_\+filter}
+    \subitem {image\+\_\+support}, \hyperpage{11}
+  \item {image\+\_\+support}, \hyperpage{11}
+    \subitem {bcolor}, \hyperpage{12}
+    \subitem {external\+\_\+init\+\_\+particle\+\_\+filter}, 
+		\hyperpage{11}
+    \subitem {get\+\_\+best\+\_\+blob}, \hyperpage{11}
+    \subitem {get\+\_\+hue\+\_\+blobs}, \hyperpage{11}
+    \subitem {image\+\_\+hue\+\_\+filter}, \hyperpage{11}
+    \subitem {is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper}, 
+		\hyperpage{11}
+  \item {image\+\_\+support.\+py}, \hyperpage{26}
+  \item {insert}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{19}
+  \item {intersect}
+    \subitem {prquadtree\+::\+Box}, \hyperpage{15}
+  \item {is\+\_\+ball\+\_\+middle}
+    \subitem {tennis\+\_\+ball}, \hyperpage{13}
+  \item {is\+\_\+basket\+\_\+middle}
+    \subitem {basket}, \hyperpage{9}
+  \item {is\+\_\+blob\+\_\+in\+\_\+middle\+\_\+helper}
+    \subitem {image\+\_\+support}, \hyperpage{11}
+  \item {iterate}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+  \item {iterations}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+  \item {iterations\+\_\+before\+\_\+clearing}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+
+  \indexspace
+
+  \item {ne}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+  \item {nearby}
+    \subitem {prquadtree\+\_\+test\+\_\+example}, \hyperpage{13}
+  \item {nw}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+
+  \indexspace
+
+  \item {particle\+\_\+filter}
+    \subitem {basket}, \hyperpage{10}
+    \subitem {tennis\+\_\+ball}, \hyperpage{13}
+  \item {particlefilter}, \hyperpage{12}
+  \item {particlefilter.\+Particle\+Filter}, \hyperpage{17}
+  \item {particlefilter.\+py}, \hyperpage{26}
+  \item {particlefilter\+::\+Particle\+Filter}
+    \subitem {\+\_\+\+\_\+init\+\_\+\+\_\+}, \hyperpage{17}
+    \subitem {clear\+\_\+scores}, \hyperpage{17}
+    \subitem {image\+\_\+box}, \hyperpage{17}
+    \subitem {iterate}, \hyperpage{17}
+    \subitem {iterations}, \hyperpage{17}
+    \subitem {iterations\+\_\+before\+\_\+clearing}, \hyperpage{17}
+    \subitem {pr\+\_\+tree}, \hyperpage{17}
+    \subitem {score}, \hyperpage{17}
+  \item {points}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{21}
+  \item {pr\+\_\+tree}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+  \item {print\+\_\+all\+\_\+points}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+  \item {prquadtree}, \hyperpage{12}
+  \item {prquadtree.\+Box}, \hyperpage{15}
+  \item {prquadtree.\+P\+R\+Quad\+Tree}, \hyperpage{19}
+  \item {prquadtree.\+Particle}, \hyperpage{16}
+  \item {prquadtree.\+Point}, \hyperpage{18}
+  \item {prquadtree.\+py}, \hyperpage{26}
+  \item {prquadtree\+::\+Box}
+    \subitem {\+\_\+\+\_\+init\+\_\+\+\_\+}, \hyperpage{15}
+    \subitem {center}, \hyperpage{16}
+    \subitem {contains\+\_\+point}, \hyperpage{15}
+    \subitem {half\+\_\+size}, \hyperpage{16}
+    \subitem {intersect}, \hyperpage{15}
+  \item {prquadtree\+::\+P\+R\+Quad\+Tree}
+    \subitem {\+\_\+\+\_\+init\+\_\+\+\_\+}, \hyperpage{19}
+    \subitem {\+\_\+\+\_\+str\+\_\+\+\_\+}, \hyperpage{19}
+    \subitem {box}, \hyperpage{20}
+    \subitem {insert}, \hyperpage{19}
+    \subitem {ne}, \hyperpage{20}
+    \subitem {nw}, \hyperpage{20}
+    \subitem {points}, \hyperpage{21}
+    \subitem {print\+\_\+all\+\_\+points}, \hyperpage{20}
+    \subitem {Q\+T\+\_\+\+N\+O\+D\+E\+\_\+\+C\+A\+P\+A\+C\+I\+T\+Y}, 
+		\hyperpage{21}
+    \subitem {query\+\_\+k\+\_\+nearest}, \hyperpage{20}
+    \subitem {query\+\_\+range}, \hyperpage{20}
+    \subitem {se}, \hyperpage{21}
+    \subitem {size}, \hyperpage{20}
+    \subitem {sw}, \hyperpage{21}
+  \item {prquadtree\+::\+Particle}
+    \subitem {\+\_\+\+\_\+init\+\_\+\+\_\+}, \hyperpage{16}
+    \subitem {score}, \hyperpage{16}
+    \subitem {x}, \hyperpage{16}
+    \subitem {y}, \hyperpage{16}
+  \item {prquadtree\+::\+Point}
+    \subitem {\+\_\+\+\_\+init\+\_\+\+\_\+}, \hyperpage{18}
+    \subitem {\+\_\+\+\_\+repr\+\_\+\+\_\+}, \hyperpage{18}
+    \subitem {\+\_\+\+\_\+str\+\_\+\+\_\+}, \hyperpage{18}
+    \subitem {x}, \hyperpage{18}
+    \subitem {y}, \hyperpage{18}
+  \item {prquadtree\+\_\+test}, \hyperpage{12}
+  \item {prquadtree\+\_\+test.\+py}, \hyperpage{27}
+  \item {prquadtree\+\_\+test.\+Test\+Box}, \hyperpage{21}
+  \item {prquadtree\+\_\+test.\+Test\+Particle}, \hyperpage{21}
+  \item {prquadtree\+\_\+test.\+Test\+Point}, \hyperpage{22}
+  \item {prquadtree\+\_\+test.\+Test\+Pr\+Quad\+Tree}, \hyperpage{22}
+  \item {prquadtree\+\_\+test\+::\+Test\+Box}
+    \subitem {test\+\_\+box\+\_\+contains}, \hyperpage{21}
+    \subitem {test\+\_\+box\+\_\+insert}, \hyperpage{21}
+  \item {prquadtree\+\_\+test\+::\+Test\+Particle}
+    \subitem {test\+\_\+particle\+\_\+insert}, \hyperpage{22}
+  \item {prquadtree\+\_\+test\+::\+Test\+Point}
+    \subitem {test\+\_\+point\+\_\+insert}, \hyperpage{22}
+  \item {prquadtree\+\_\+test\+::\+Test\+Pr\+Quad\+Tree}
+    \subitem {test\+\_\+insert}, \hyperpage{23}
+    \subitem {test\+\_\+nearby}, \hyperpage{23}
+  \item {prquadtree\+\_\+test\+\_\+example}, \hyperpage{12}
+    \subitem {b}, \hyperpage{13}
+    \subitem {b2}, \hyperpage{13}
+    \subitem {c}, \hyperpage{13}
+    \subitem {nearby}, \hyperpage{13}
+    \subitem {pt}, \hyperpage{13}
+    \subitem {qt}, \hyperpage{13}
+  \item {prquadtree\+\_\+test\+\_\+example.\+py}, \hyperpage{27}
+  \item {pt}
+    \subitem {prquadtree\+\_\+test\+\_\+example}, \hyperpage{13}
+
+  \indexspace
+
+  \item {Q\+T\+\_\+\+N\+O\+D\+E\+\_\+\+C\+A\+P\+A\+C\+I\+T\+Y}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{21}
+  \item {qt}
+    \subitem {prquadtree\+\_\+test\+\_\+example}, \hyperpage{13}
+  \item {query\+\_\+k\+\_\+nearest}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+  \item {query\+\_\+range}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+
+  \indexspace
+
+  \item {run}
+    \subitem {basket}, \hyperpage{9}
+    \subitem {tennis\+\_\+ball}, \hyperpage{13}
+  \item {run\+\_\+middle}
+    \subitem {basket}, \hyperpage{9}
+
+  \indexspace
+
+  \item {save\+\_\+count}
+    \subitem {basket}, \hyperpage{10}
+  \item {score}
+    \subitem {particlefilter\+::\+Particle\+Filter}, \hyperpage{17}
+    \subitem {prquadtree\+::\+Particle}, \hyperpage{16}
+  \item {se}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{21}
+  \item {set\+\_\+objects}
+    \subitem {visual.\+h}, \hyperpage{28}
+  \item {size}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{20}
+  \item {start\+\_\+visual}
+    \subitem {visual.\+h}, \hyperpage{28}
+  \item {stop\+\_\+visual}
+    \subitem {visual.\+h}, \hyperpage{28}
+  \item {sw}
+    \subitem {prquadtree\+::\+P\+R\+Quad\+Tree}, \hyperpage{21}
+
+  \indexspace
+
+  \item {tennis\+\_\+ball}, \hyperpage{13}
+    \subitem {is\+\_\+ball\+\_\+middle}, \hyperpage{13}
+    \subitem {particle\+\_\+filter}, \hyperpage{13}
+    \subitem {run}, \hyperpage{13}
+  \item {tennis\+\_\+ball.\+py}, \hyperpage{27}
+  \item {tennis\+\_\+ball\+\_\+test}, \hyperpage{13}
+    \subitem {ball\+Missing}, \hyperpage{14}
+    \subitem {ball\+Present}, \hyperpage{14}
+    \subitem {unit\+Test}, \hyperpage{14}
+  \item {tennis\+\_\+ball\+\_\+test.\+py}, \hyperpage{28}
+  \item {test\+\_\+box\+\_\+contains}
+    \subitem {prquadtree\+\_\+test\+::\+Test\+Box}, \hyperpage{21}
+  \item {test\+\_\+box\+\_\+insert}
+    \subitem {prquadtree\+\_\+test\+::\+Test\+Box}, \hyperpage{21}
+  \item {test\+\_\+insert}
+    \subitem {prquadtree\+\_\+test\+::\+Test\+Pr\+Quad\+Tree}, 
+		\hyperpage{23}
+  \item {test\+\_\+nearby}
+    \subitem {prquadtree\+\_\+test\+::\+Test\+Pr\+Quad\+Tree}, 
+		\hyperpage{23}
+  \item {test\+\_\+particle\+\_\+insert}
+    \subitem {prquadtree\+\_\+test\+::\+Test\+Particle}, \hyperpage{22}
+  \item {test\+\_\+point\+\_\+insert}
+    \subitem {prquadtree\+\_\+test\+::\+Test\+Point}, \hyperpage{22}
+
+  \indexspace
+
+  \item {unit\+Test}
+    \subitem {basket\+\_\+test}, \hyperpage{10}
+    \subitem {tennis\+\_\+ball\+\_\+test}, \hyperpage{14}
+
+  \indexspace
+
+  \item {visual.\+h}, \hyperpage{28}
+    \subitem {get\+\_\+objects}, \hyperpage{28}
+    \subitem {set\+\_\+objects}, \hyperpage{28}
+    \subitem {start\+\_\+visual}, \hyperpage{28}
+    \subitem {stop\+\_\+visual}, \hyperpage{28}
+
+  \indexspace
+
+  \item {x}
+    \subitem {prquadtree\+::\+Particle}, \hyperpage{16}
+    \subitem {prquadtree\+::\+Point}, \hyperpage{18}
+
+  \indexspace
+
+  \item {y}
+    \subitem {prquadtree\+::\+Particle}, \hyperpage{16}
+    \subitem {prquadtree\+::\+Point}, \hyperpage{18}
+
+\end{theindex}
