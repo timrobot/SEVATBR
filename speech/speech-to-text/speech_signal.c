@@ -41,6 +41,7 @@ int start_speech_signals(void) {
 /** Start two streams to record audio.
  *  @param args
  *    Does nothing.
+ *  @return NULL
  */
 static void *_update_signals(void *args) {
   rawrec_t rec[2];

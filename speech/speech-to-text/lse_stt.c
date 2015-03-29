@@ -14,7 +14,6 @@ typedef union {
   int16_t val;
 } note;
 
-
 static char *db[NTARGETS];
 static long length[NTARGETS];
 static int16_t *dbfiles[NTARGETS];
@@ -23,6 +22,11 @@ static unsigned long long square_error(int16_t *haystack, int hlen, int16_t *nee
 static char *text[NTARGETS];
 static char goodtogo;
 
+/** Initialize the speech engine for the lse matching.
+ *  @param info
+ *    info for the lse_stt engine
+ *  @return 0 on success, -1 on error
+ */
 int stt_init(stt_t *info) {
   int i;
   db[0] = "newreturn.raw";
@@ -41,7 +45,14 @@ int stt_init(stt_t *info) {
   return 0;
 }
 
-
+/** Load a file from a filename, and decode into 16000HZ,
+ *  16 bit signed little endian integers
+ *  @param fname
+ *    name of the raw file
+ *  @param s
+ *    the changable size variable
+ *  @return the array (malloc'd) of notes, else NULL
+ */
 int16_t *loadFile(char *fname, long *s) {
   FILE *fp = fopen(fname, "r");
   long start = ftell(fp);
@@ -66,6 +77,19 @@ int16_t *loadFile(char *fname, long *s) {
   return notes;
 }
 
+/** Get the least square error (lse) of the file to the dbfile comparison
+ *  @param haystack
+ *    the dbfile
+ *  @param hlen
+ *    length of the haystack
+ *  @param needle
+ *    the file inputted for lse comparison
+ *  @param nlen
+ *    the length of the needle
+ *  @param start
+ *    the changable pointer to the beginning of the array
+ *  @return the lse on success, else max error (uint64_t)-1
+ */
 unsigned long long square_error(int16_t *haystack, int hlen, int16_t *needle, int nlen, int *start) {
   unsigned long long sqerr = ((unsigned long long)-1);
   int index = -1;
@@ -88,6 +112,15 @@ unsigned long long square_error(int16_t *haystack, int hlen, int16_t *needle, in
   return sqerr;
 }
 
+/** Decipher the current file for some hypothesis
+ *  @param info
+ *    info for the lse_stt engine
+ *  @param fname
+ *    the name of the current file
+ *  @param buf
+ *    the buffer to store the deciphered hypothesis
+ *  @return length of the deciphered hypothesis on success, else -1
+ */
 int stt_decipher(stt_t *info, char *fname, char **buf) {
   if (!goodtogo) {
     *buf = NULL;
@@ -126,6 +159,10 @@ int stt_decipher(stt_t *info, char *fname, char **buf) {
   }
 }
 
+/** Free the current engine
+ *  @param info
+ *    info for the lse_stt engine
+ */
 void stt_free(stt_t *info) {
   if (!goodtogo) {
     return;
