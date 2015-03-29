@@ -1,10 +1,10 @@
 CC = gcc
 CFLAGS = -pedantic -Wall -Werror -std=c99 -O3
-INCLUDE = -I$(shell pwd)/tbr -I$(shell pwd)/../core -I$(shell pwd)/serial
-SUBDIRS = $(shell pwd)/tbr 
-OBJECTS = robot.o $(shell pwd)/serial/serial.o $(shell pwd)/tbr/tbr.o
-LIBOBJS = librobot.o $(shell pwd)/serial/libserial.o $(shell pwd)/tbr/libtbr.o
-TARGET = librobot.so librobot.a
+INCLUDE = -I$(shell pwd)/../core -I$(shell pwd)/../core/mesch -I$(shell pwd)/serial -I$(shell pwd)/tbr -I$(shell pwd)/tachikoma
+SUBDIRS = $(shell pwd)/tbr $(shell pwd)/tachikoma
+OBJECTS = robot.o $(shell pwd)/serial/serial.o $(shell pwd)/../core/mesch/meschach.a $(shell pwd)/tbr/tbr.o $(shell pwd)/tachikoma/tachikoma.o
+LIBOBJS = librobot.o $(shell pwd)/serial/libserial.o $(shell pwd)/tbr/libtbr.o $(shell pwd)/tachikoma/libtachikoma.o
+TARGET = librobot.a
 
 all: subdirs $(OBJECTS) $(TARGET)
 

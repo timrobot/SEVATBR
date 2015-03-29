@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <termios.h>
+#include <time.h>
 #include "tbr.h"
 
 #define NUM_DEV       3
@@ -23,6 +24,7 @@
 #define WHEEL_DEVID   1
 #define ARM_DEVID     2
 #define CLAW_DEVID    3
+#define SYNC_NSEC     500000000
 
 /** Initialize the communication layer
  *  @param robot
@@ -57,6 +59,7 @@ int tbr_connect(tbr_t *robot) {
       pport = (char *)malloc(sizeof(char) * (strlen("/dev/") + strlen(entry->d_name) + 1));
       sprintf(pport, "/dev/%s", entry->d_name);
       robot->possible_ports[i++] = pport;
+      // debug
       printf("possible port: %s\n", pport);
     }
   }
@@ -69,21 +72,25 @@ int tbr_connect(tbr_t *robot) {
   for (i = 0, n = 0; n < NUM_DEV && i < robot->num_possible; i++) {
     char *msg;
     int id;
+    struct timespec synctime;
+    synctime.tv_nsec = SYNC_NSEC % 1000000000;
+    synctime.tv_sec = SYNC_NSEC / 1000000000;
     // connect device
     serial_connect(&robot->connections[n], robot->possible_ports[i], DEV_BAUD);
     if (!robot->connections[n].connected) {
       continue;
     }
     // read a message
-    sleep(1);
+    nanosleep(&synctime, NULL);
     do  {
       msg = serial_read(&robot->connections[n]);
     } while (!msg || strlen(msg) == 0);
     // read another one in case that one was garbage
-    sleep(1);
+    nanosleep(&synctime, NULL);
     do {
       msg = serial_read(&robot->connections[n]);
     } while (!msg || strlen(msg) == 0);
+    // debug
     printf("Message: %s\n", msg);
     // if a valid device, add as connected, otherwise disconnect
     sscanf(msg, "[%d", &id);
@@ -95,8 +102,9 @@ int tbr_connect(tbr_t *robot) {
   }
 
   robot->connected = 1;
-  // disconnect if number of devices is not enough, or there are too many
+  // debug
   printf("number of devices connected: %d\n", n);
+  // disconnect if number of devices is not enough, or there are too many
   if (n != NUM_DEV) {
     tbr_disconnect(robot);
     return -1;

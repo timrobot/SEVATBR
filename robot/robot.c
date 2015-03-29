@@ -11,6 +11,7 @@ static uint32_t currid;
  *  which specifies the device
  *  @param robotid
  *    the id of the device
+ *  @return 0 on success, -1 otherwise
  */
 int robot_set(uint32_t robotid) {
   if (currid != NO_ROBOT) {
@@ -30,8 +31,10 @@ int robot_set(uint32_t robotid) {
       }
       break;
 
-    case SIMULATOR:
-      // TODO
+    case TACHIKOMA:
+      if (tachikoma_connect((tachikoma_t *)robot) == -1) {
+        printf("[ERROR] Could not connect all the devices on the tachikoma!\n");
+      }
       break;
 
     default:
@@ -55,8 +58,8 @@ int robot_unset(void) {
       tbr_disconnect((tbr_t *)robot);
       break;
 
-    case SIMULATOR:
-      // TODO
+    case TACHIKOMA:
+      tachikoma_disconnect((tachikoma_t *)robot);
       break;
 
     default:
@@ -71,6 +74,7 @@ int robot_unset(void) {
  *    either a direction or velocity (base)
  *  @param arm
  *    either a direction or velocity (arm)
+ *  @return 0 on success, -1 otherwise
  */
 int robot_move(pose3d_t *base, pose3d_t *arm) {
   switch (currid) {
@@ -85,10 +89,6 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
         int forward;
         int rotate;
         tbr_t *tbr;
-
-        printf("forward: %f, turn: %f, arm: %f, claw: %f\n",
-          base->y, base->yaw, arm->pitch, arm->yaw);
-
         tbr = (tbr_t *)robot;
         forward = (base->y > 0.0) - (base->y < 0.0);
         rotate = (base->yaw > 0.0) - (base->yaw < 0.0);
@@ -102,8 +102,15 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
       }
       break;
 
-    case SIMULATOR:
-      // TODO
+    case TACHIKOMA:
+      {
+        tachikoma_t *tachikoma;
+        tachikoma = (tachikoma_t *)robot;
+        tachikoma->move_nw_leg(base->yaw);
+        tachikoma->move_sw_leg(base->yaw);
+        tachikoma->move_ne_leg(-base->yaw);
+        tachikoma->move_se_leg(-base->yaw);
+      }
       break;
 
     default:

@@ -13,6 +13,9 @@ typedef struct tbr {
   int *ids;
   int8_t connected;
 
+  char **possible_ports;
+  int num_possible;
+
   int left;
   int right;
   int arm;
@@ -22,9 +25,6 @@ typedef struct tbr {
   int prev_right;
   int prev_arm;
   int prev_claw;
-
-  char **possible_ports;
-  int num_possible;
 } tbr_t;
 
 int tbr_connect(tbr_t *robot);
