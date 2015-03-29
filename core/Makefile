@@ -18,7 +18,7 @@ core.o: core.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 core: core.o
-	$(CC) $(CFLAGS) -pthread $(INCLUDE) -o $@ $^ $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

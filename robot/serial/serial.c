@@ -19,7 +19,6 @@ static char const *PREFIXES[3] = {
 
 static int _serial_setattr(serial_t *connection);
 static void _serial_update(serial_t *connection);
-static void _serial_sync(serial_t *connection);
 static char tempbuf[SWREADMAX];
 
 /** Connect to a serial device.
@@ -77,11 +76,9 @@ int serial_connect(serial_t *connection, char *port, int baudrate) {
   /* set connection attributes */
   connection->baudrate = baudrate;
   connection->parity = 0;
-  _serial_sync(connection);
   if (_serial_setattr(connection) == -1) {
     goto error; /* possible bad behavior */
   }
-  //sleep(1); /* wait for connection sync */
   tcflush(connection->fd, TCIFLUSH);
   tcflush(connection->fd, TCOFLUSH);
   connection->connected = 1;
@@ -138,47 +135,6 @@ static int _serial_setattr(serial_t *connection) {
     return -1;
   }
   return 0;
-}
-
-/** Helper method to sync serial via python script (hacky)
- *  @param connection
- *    the serial struct
- */
-static void _serial_sync(serial_t *connection) {
-#if 0
-  int pid;
-  char const *syncname;
-  FILE *syncfp;
-  char const *syncprog;
-
-  syncname = "_syncserial.py";
-  syncprog =
-    "import serial, time, sys\r\n"
-    "port = \"%s\"\r\n"
-    "s = serial.Serial(port, %d)\r\n"
-    "if s.isOpen():\r\n"
-    "  print \"Opened {0}\".format(port)\r\n"
-    "  for i in range(4):\r\n"
-    "    print \"reading...:\"\r\n"
-    "    print s.readline()\r\n"
-    "  s.close()\r\n"
-    "  print \"Read {0}\".format(port)\r\n"
-    "else:\r\n"
-    "  print \"Cannot open to {0}\".format(port)\r\n";
-
-  pid = fork();
-  if (pid == 0) {
-    syncfp = fopen(syncname, "w+");
-    fprintf(syncfp, syncprog, connection->port, connection->baudrate);
-    fclose(syncfp);
-    execlp("python", "python", "_syncserial.py", NULL);
-  } else {
-    waitpid(pid, NULL, 0);
-    if (access(syncname, F_OK) == 0) {
-      unlink(syncname);
-    }
-  }
-#endif
 }
 
 /** Method to update the readbuf of the serial communication,

@@ -16,19 +16,29 @@
 
 // Signal handler for killing the program
 static int stop_signal;
+
+/** Signal handler to stop the program
+ *  @param signum
+ *    the signal number (kernel dependent)
+ */
 void stop_program(int signum) {
   stop_signal = 1;
 }
 
 /** This is the starting program for the robot
+ *  @param argc
+ *    standard exec argument number
+ *  @param argv
+ *    standard exec argument list
+ *  @return 0 on success, -1 otherwise
  */
 int main(int argc, char *argv[]) {
   signal(SIGINT, stop_program);
   // init robot and manual
-  if (robot_set(TENNIS_BALL_ROBOT) == -1) {
+  if (robot_set(TENNIS_BALL_ROBOT) == -1) { // TENNIS_BALL_ROBOT
     return -1;
   }
-  manual_connect(MNL_CTRL);
+  manual_connect(MNL_SRVR); // not MNL_CTRL
   //agent_create(AGENT_SIMPLE);
 
   // change later
