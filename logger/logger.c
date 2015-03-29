@@ -7,6 +7,10 @@ void logger_destroy(void);
 
 static FILE *logfile;
 
+/** Start the logger
+ *  @param fname
+ *    name of the input file
+ */
 void logger_init(char *fname) {
   if (logfile) {
     logger_destroy();
@@ -17,10 +21,20 @@ void logger_init(char *fname) {
   logfile = fopen(fname, "w+");
 }
 
+/** Print something to the logger
+ *  @param msg
+ *    the message to print to the file
+ */
 void logger_print(char *msg) {
+  if (!logfile) {
+    return;
+  }
   fprintf(logfile, msg);
 }
 
+/** Get the current logger file
+ *  @return the entire message on success, NULL otherwise
+ */
 char *logger_scan(void) {
   if (logfile) {
     long start, end;
@@ -38,6 +52,8 @@ char *logger_scan(void) {
   }
 }
 
+/** Stop the logger
+ */
 void logger_destroy(void) {
   if (logfile) {
     fclose(logfile);
