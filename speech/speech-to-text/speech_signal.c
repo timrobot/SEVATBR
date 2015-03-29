@@ -1,6 +1,3 @@
-#include "rawrec.h"
-#include "stt.h"
-#include "speech_signal.h"
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -10,6 +7,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include "rawrec.h"
+#include "stt.h"
+#include "speech_signal.h"
 
 static unsigned char sslib_init;
 static unsigned char sslib_exit;

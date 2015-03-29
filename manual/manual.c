@@ -67,9 +67,9 @@ void manual_enable(void) {
     struct itimerval timer;
     // enable the timer to raise every 1/HZ time
     timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = 1E6 / HZ;
+    timer.it_value.tv_usec = 1000000 / HZ;
     timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = 1E6 / HZ;
+    timer.it_interval.tv_usec = 1000000 / HZ;
     setitimer(ITIMER_REAL, &timer, NULL);
   }
 }
@@ -183,8 +183,8 @@ static void server_update(void) {
     // reset after some time
     gettimeofday(&currtime, NULL);
     diff = (currtime.tv_usec - last_signal.tv_usec) +
-        (currtime.tv_sec - last_signal.tv_sec) * 1E6;
-    if (diff >= 1E6) { // specified time is one second (lost internet connection)
+        (currtime.tv_sec - last_signal.tv_sec) * 1000000;
+    if (diff >= 1000000) { // specified time is one second (lost internet connection)
       memset(&base, 0, sizeof(pose3d_t));
       memset(&arm, 0, sizeof(pose3d_t));
       gettimeofday(&last_signal, NULL);
