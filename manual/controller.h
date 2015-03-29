@@ -37,8 +37,6 @@ typedef struct controller {
   int8_t  START;
   int8_t  SELECT;
   int8_t  HOME;
-  int8_t  LB2;
-  int8_t  RB2;
 } controller_t;
 
 /* Prototypes */
