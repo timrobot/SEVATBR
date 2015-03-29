@@ -14,3 +14,6 @@ To do:
 - create new dict (somewhat finished)
 - create new adaption (http://cmusphinx.sourceforge.net/wiki/tutorialadapt)
 - create shared library
+
+Bugs:
+- the core pocketsphinx library seems to segfault when not throttled - test throttle values

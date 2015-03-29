@@ -1,4 +1,4 @@
-OBJECTS = rawrec.o lse_stt.o speech_signal.o test.o
+OBJECTS = rawrec.o stt.o speech_signal.o test.o
 TARGET = test
 
 all: $(OBJECTS) $(TARGET)
@@ -13,9 +13,9 @@ $(TARGET): $(OBJECTS)
 rawrec.o: rawrec.c
 	gcc -O3 -o $@ `pkg-config --cflags gstreamer-0.10` -c $<
 
-lse_stt.o: lse_stt.c
+stt.o: stt.c
 	gcc -O3 -o $@ -c $< \
-		-I/usr/include/pocketsphinx/
+		-I/usr/include/pocketsphinx/ \
 		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
 		`pkg-config --cflags --libs pocketsphinx sphinxbase`
 
