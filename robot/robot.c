@@ -3,6 +3,7 @@
 #include <string.h>
 #include "robot.h"
 #include "tbr.h"
+#include "tachikoma.h"
 
 static void *robot;
 static uint32_t currid;
@@ -104,12 +105,12 @@ int robot_move(pose3d_t *base, pose3d_t *arm) {
 
     case TACHIKOMA:
       {
-        tachikoma_t *tachikoma;
+        /*tachikoma_t *tachikoma;
         tachikoma = (tachikoma_t *)robot;
         tachikoma->move_nw_leg(base->yaw);
         tachikoma->move_sw_leg(base->yaw);
         tachikoma->move_ne_leg(-base->yaw);
-        tachikoma->move_se_leg(-base->yaw);
+        tachikoma->move_se_leg(-base->yaw);*/
       }
       break;
 
