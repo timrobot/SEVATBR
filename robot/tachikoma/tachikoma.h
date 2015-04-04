@@ -1,34 +1,40 @@
 #ifndef tachikoma_h
 #define tachikoma_h
 
-#include <stdint.h>
+#include <armadillo>
+#include "coord.h"
 #include "serial.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class tachikoma {
+  private:
+    serial_t *connections;
+    int *ids;
+    char **possible_ports;
+    int num_possible;
+    int num_connected;
 
-enum tachileg_t { nwleg = 1, neleg, swleg, seleg };
+    arma::vec leg_nw;
+    arma::vec leg_ne;
+    arma::vec leg_sw;
+    arma::vec leg_se;
 
-typedef struct tachikoma {
-  serial_t *connections;
-  int *ids;
-  int8_t connected;
+  public:
+    pose3d_t *arm;
+    pose3d_t *base;
+    int x;
+    int y;
+    int z;
+    int w;
 
-  char **possible_ports;
-  int num_possible;
+    tachikoma(void);
+    ~tachikoma(void);
 
-  pose3d_t leg[4];  
-} tachikoma_t;
-
-int tachikoma_connect(tachikoma_t *robot);
-void tachikoma_send(tachikoma_t *robot);
-void tachikoma_recv(tachikoma_t *robot);
-void tachikoma_disconnect(tachikoma_t *robot);
-void tachikoma_reset(tachikoma_t *robot);
-
-#ifdef __cplusplus
-}
-#endif
+    bool connect(void);
+    bool connected(void);
+    void send(void);
+    void recv(void);
+    void reset(void);
+    void disconnect(void);
+};
 
 #endif

@@ -34,11 +34,14 @@ void stop_program(int signum) {
 int main(int argc, char *argv[]) {
   signal(SIGINT, stop_program);
   // init robot and manual
-  if (robot_set(TENNIS_BALL_ROBOT) == -1) {
+  if (robot_set(TACHIKOMA) == -1) {
     return -1;
   }
-  manual_connect(MNL_SRVR);
+  if (manual_connect(MNL_CTRL) == -1) {
+    return -1;
+  }
   manual_enable();
+
 
   // start getting communication accesses
   while (!stop_signal) {
@@ -51,6 +54,7 @@ int main(int argc, char *argv[]) {
   // clean up
   manual_disconnect();
   robot_unset();
+  printf("done w/ robot\n");
 
   return 0;
 }
