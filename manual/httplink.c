@@ -57,7 +57,7 @@ int httplink_connect(httplink_t *connection, char *hostname) {
  *  @param type
  *    either "GET" or "POST" or "get" or "post"
  *  @param data
- *    the data to send over (only for httplink_POST)
+ *    the data to send over (only for httplink POST)
  *  @return n bytes sent over, -1 otherwise
  */
 int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
@@ -69,16 +69,23 @@ int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
   } else {
     typestr = type;
   }
-  // TODO; put data in here for later
-  sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n",
-      typestr, addr, connection->hostname);
+  if (strcmp(typestr, "GET") == 0) {
+    sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n",
+        typestr, addr, connection->hostname);
+  } else {
+    sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n"
+        "Content-Length: %zd\r\n"
+        "Content-Type: application/x-www-form-urlencoded\r\n\r\n",
+        typestr, addr, connection->hostname, strlen(data));
+    strcat(msgbuf, data);
+  }
   return send(connection->socket_fd, msgbuf, strlen(msgbuf), 0);
 }
 
 /** Try and receive a response from the main server
  *  @param connection
  *    the connection information for the server
- *  @return n bytes received, -1 otherwise
+ *  @return a message if it is received, otherwise NULL
  */
 char *httplink_recv(httplink_t *connection) {
   int n = recv(connection->socket_fd, response, sizeof(response) - sizeof(char), 0);
@@ -91,6 +98,7 @@ char *httplink_recv(httplink_t *connection) {
 /** Disconnect the connection
  *  @param connection
  *    the connection information for the server
+ *  @return 0
  */
 int httplink_disconnect(httplink_t *connection) {
   if (connection->connected) {

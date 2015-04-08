@@ -4,20 +4,19 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include "httplink.h"
-#include "controller.h"
 #include "manual.h"
 
 #define HZ  10
 
 static int input_id;
 static httplink_t server;
-static controller_t ctrl;
+static xboxctrl_t ctrl;
 static pose3d_t base;
 static pose3d_t arm;
 static int new_join;
 static struct timeval last_signal;
 static int manual_en;
-static int mnl_override;
+static int manual_ovr;
 static void server_update(void);
 static void raise_server_request(int signum);
 static void controller_update(void);
@@ -32,68 +31,50 @@ static void controller_update(void);
  *  @return 0 on success, -1 otherwise
  */
 int manual_connect(int id) {
+  int res;
+  struct itimerval timer;
   input_id = id;
   switch (id) {
-    case MNL_SRVR:
-      {
-        int res;
-        res = httplink_connect(&server, "sevatbr-v002.appspot.com");
-        if (res != -1) {
-          // assign unthrottle to sigalrm
-          struct sigaction action;
-          memset(&action, 0, sizeof(struct sigaction));
-          action.sa_handler = raise_server_request;
-          sigaction(SIGALRM, &action, NULL);
-          mnl_override = 1;
-        }
-        return res;
+    case MANUAL_SERVER:
+      res = httplink_connect(&server, "sevatbr-v002.appspot.com");
+      if (res != -1) {
+        // assign unthrottle to sigalrm
+        struct sigaction action;
+        memset(&action, 0, sizeof(struct sigaction));
+        action.sa_handler = raise_server_request;
+        sigaction(SIGALRM, &action, NULL);
+        manual_ovr = 1;
       }
+      // enable the timer to raise every 1/HZ time
+      timer.it_value.tv_sec = 0;
+      timer.it_value.tv_usec = 1000000 / HZ;
+      timer.it_interval.tv_sec = 0;
+      timer.it_interval.tv_usec = 1000000 / HZ;
+      setitimer(ITIMER_REAL, &timer, NULL);
+      return res;
 
-    case MNL_CTRL:
-      controller_connect(&ctrl);
+    case MANUAL_XBOXCTRL:
+      xboxctrl_connect(&ctrl);
       return 0;
-    
+
     default:
       break;
   }
   return -1;
-}
-
-/** Enable manual mode
- */
-void manual_enable(void) {
-  manual_en = 1;
-  if (input_id == MNL_SRVR) {
-    struct itimerval timer;
-    // enable the timer to raise every 1/HZ time
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = 1000000 / HZ;
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = 1000000 / HZ;
-    setitimer(ITIMER_REAL, &timer, NULL);
-  }
-}
-
-/** Disable manual mode
- */
-void manual_disable(void) {
-  memset(&base, 0, sizeof(pose3d_t));
-  memset(&arm, 0, sizeof(pose3d_t));
-  manual_en = 0;
 }
 
 /** Disconnect from the manual connection
  *  @return 0, else -1 on error
  */  
 int manual_disconnect(void) {
-  manual_disable();
+  manual_set_enable(MANUAL_DISABLE);
   switch (input_id) {
-    case MNL_SRVR:
+    case MANUAL_SERVER:
       // kill throttle timer
       return httplink_disconnect(&server);
 
-    case MNL_CTRL:
-      controller_disconnect(&ctrl);
+    case MANUAL_XBOXCTRL:
+      xboxctrl_disconnect(&ctrl);
       return 0;
 
     default:
@@ -102,65 +83,74 @@ int manual_disconnect(void) {
   return -1;
 }
 
-/** Get the status of the join
- *  @return 1 if a new join exists, else 0
+/** Set enable mode
+ *  @param en
+ *    enable flag
  */
-int manual_new_data(void) {
-  switch (input_id) {
-    case MNL_SRVR:
-      server_update();
-      return new_join;
-
-    case MNL_CTRL:
-      return 1;
-
-    default:
-      break;
+void manual_set_enable(int en) {
+  if (manual_en != en) {
+    manual_en = en;
+    if (en == 0) {
+      memset(&base, 0, sizeof(pose3d_t));
+      memset(&arm, 0, sizeof(pose3d_t));
+    }
   }
-  return 0;
 }
 
 /** User override
  *  @return 1 if overridden, else 0
  */
-int isOverriden(void) {
+int manual_get_ovrreq(void) {
   switch (input_id) {
-    case MNL_SRVR:
+    case MANUAL_SERVER:
       server_update();
-      return mnl_override;
+      return manual_ovr;
 
-    case MNL_CTRL:
+    case MANUAL_XBOXCTRL:
       return 1;
-    
+
     default:
       break;
   }
   return 0;
 }
 
-
 /** Get the poses
- *  @param the structs needed to hold the poses
+ *  @param b
+ *    the base struct
+ *  @param a
+ *    the arm struct
+ *  @ return 1 if valid device chose, else 0
  */
-void manual_get_poses(pose3d_t *b, pose3d_t *a) {
+int manual_get_poses(pose3d_t *b, pose3d_t *a) {
+  int val;
   switch (input_id) {
-    case MNL_SRVR:
+    case MANUAL_SERVER:
       server_update(); // flush the server
+      val = new_join;
       new_join = 0;
       memcpy(b, &base, sizeof(pose3d_t));
       memcpy(a, &arm, sizeof(pose3d_t));
-      break;
+      return val;
 
-    case MNL_CTRL:
+    case MANUAL_XBOXCTRL:
       controller_update();
       memcpy(b, &base, sizeof(pose3d_t));
       memcpy(a, &arm, sizeof(pose3d_t));
-      break;
+      return 0;
 
     default:
       memset(b, 0, sizeof(pose3d_t));
       memset(a, 0, sizeof(pose3d_t));
+      return -1;
   }
+}
+
+/** Get the full controller layout
+ *  @return the controller struct
+ */
+xboxctrl_t *manual_get_ctrl(void) {
+  return &ctrl;
 }
 
 /** Private method to get the information sent over from the server
@@ -174,7 +164,6 @@ static void server_update(void) {
   int ctrlsig;
   int up, down, left, right;
   int lift, drop, grab, release;
-  int ovr;
 
   // get message
   if (!(msg = httplink_recv(&server))) {
@@ -183,7 +172,7 @@ static void server_update(void) {
     // reset after some time
     gettimeofday(&currtime, NULL);
     diff = (currtime.tv_usec - last_signal.tv_usec) +
-        (currtime.tv_sec - last_signal.tv_sec) * 1000000;
+      (currtime.tv_sec - last_signal.tv_sec) * 1000000;
     if (diff >= 1000000) { // specified time is one second (lost internet connection)
       memset(&base, 0, sizeof(pose3d_t));
       memset(&arm, 0, sizeof(pose3d_t));
@@ -204,17 +193,15 @@ static void server_update(void) {
   ctrlsig = atoi(buf);
 
   // set the signals
-  up =      (ctrlsig & 0x00000001) >> 0;
-  down =    (ctrlsig & 0x00000002) >> 1;
-  left =    (ctrlsig & 0x00000004) >> 2;
-  right =   (ctrlsig & 0x00000008) >> 3;
-  lift =    (ctrlsig & 0x00000010) >> 4;
-  drop =    (ctrlsig & 0x00000020) >> 5;
-  grab =    (ctrlsig & 0x00000040) >> 6;
-  release = (ctrlsig & 0x00000080) >> 7;
-  ovr =     (ctrlsig & 0x00000100) >> 8;
-
-  mnl_override = ovr;
+  up =          (ctrlsig & 0x00000001) >> 0;
+  down =        (ctrlsig & 0x00000002) >> 1;
+  left =        (ctrlsig & 0x00000004) >> 2;
+  right =       (ctrlsig & 0x00000008) >> 3;
+  lift =        (ctrlsig & 0x00000010) >> 4;
+  drop =        (ctrlsig & 0x00000020) >> 5;
+  grab =        (ctrlsig & 0x00000040) >> 6;
+  release =     (ctrlsig & 0x00000080) >> 7;
+  manual_ovr =  (ctrlsig & 0x00000100) >> 8;
 
   memset(&base, 0, sizeof(pose3d_t));
   memset(&arm, 0, sizeof(pose3d_t));
@@ -247,13 +234,14 @@ static void raise_server_request(int signum) {
  */
 void controller_update(void) {
   int ltrunc, rtrunc;
-  ltrunc = (ctrl.LJOY.y > 0.4) ? 1 :
-      ((ctrl.LJOY.y < -0.4) ? -1 : 0);
-  rtrunc = (ctrl.RJOY.x > 0.4) ? 1 :
-      ((ctrl.RJOY.x < -0.4) ? -1 : 0);
-
+  xboxctrl_update(&ctrl);
   memset(&base, 0, sizeof(pose3d_t));
   memset(&arm, 0, sizeof(pose3d_t));
+
+  ltrunc = (ctrl.LJOY.y > 0.4) ? 1 :
+    ((ctrl.LJOY.y < -0.4) ? -1 : 0);
+  rtrunc = (ctrl.RJOY.x > 0.4) ? 1 :
+    ((ctrl.RJOY.x < -0.4) ? -1 : 0);
   if (ltrunc != 0) {
     base.y = ltrunc * 1.0;
   } else {
