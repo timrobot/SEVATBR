@@ -8,17 +8,12 @@
 #define TENNIS_BALL_ROBOT   0x00000002
 #define TACHIKOMA           0x00000003
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// You can only control 1 robot at a time.
-int robot_set(uint32_t robotid);
-int robot_unset(void);
-int robot_move(pose3d_t *base, pose3d_t *arm);
-
-#ifdef __cplusplus
+namespace robot {
+  // You can only control 1 robot at a time.
+  int set(uint32_t robotid);
+  int unset(void);
+  int move(pose3d_t *base, pose3d_t *arm);
+  pose3d_t **sense(void);
 }
-#endif
 
 #endif

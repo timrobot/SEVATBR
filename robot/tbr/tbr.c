@@ -67,7 +67,7 @@ int tbr_connect(tbr_t *robot) {
   // when finished adding all the possible filenames,
   // try to connect to a couple of them (NUM_DEV)
   // and identify their ids
-  robot->connections = (serial_t *)malloc(sizeof(serial_t) * NUM_DEV);
+  robot->connections = (serial_t *)calloc(NUM_DEV, sizeof(serial_t));
   robot->ids = (int *)malloc(sizeof(int) * NUM_DEV);
   for (i = 0, n = 0; n < NUM_DEV && i < robot->num_possible; i++) {
     char *msg;

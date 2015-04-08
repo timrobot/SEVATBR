@@ -35,6 +35,18 @@ static double deg2rad(double deg);
 static arma::vec *gen_leg_vec(int top_encoder, int bottom_encoder);
 static void leg_ik_solve(void **lp);
 
+const static double thigh_pivot_length = 10.16;
+const static double thigh_length = 45.72;
+const static double thigh_actuator_min = 0.0;
+const static double thigh_actuator_max = 180.0;
+const static double thigh_length_upper = 10.16;
+const static double thigh_length_lower = 35.56;
+const static double shin_length = 76.2;
+const static double shin_actuator_min = 0.0;
+const static double shin_actuator_max = 180.0;
+const static double shin_length_upper = 54.5;
+const static double shin_length_lower = 21.7;
+
 /** CLASS FUNCTIONS **/
 
 /** Constructor
