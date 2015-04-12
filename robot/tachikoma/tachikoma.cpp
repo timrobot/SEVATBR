@@ -22,30 +22,33 @@
 
 #define NUM_DEV       4
 #define DEV_BAUD      B38400
-#define NW_DEVID      1
-#define NE_DEVID      2
-#define SW_DEVID      3
-#define SE_DEVID      4
 #define SYNC_NSEC     500000000
 
 static int limit(int value, int min_value, int max_value);
-static double encoder2actuator(int encoder_reading);
-static double encoder2deg(int encoder_reading);
+static double enc2cm(int encoder_reading);
+static double enc2deg(int encoder_reading);
 static double deg2rad(double deg);
-static arma::vec *gen_leg_vec(int top_encoder, int bottom_encoder);
-static void leg_ik_solve(void **lp);
+static double mag(const arma::vec &v);
+static double cos_rule(double A, double B, double C);
+static arma::vec leg_fk_solve(int x, int y, const arma::vec &enc);
+static arma::vec leg_ik_solve(const arma::vec &curr, const arma::vec &target);
 
-const static double thigh_pivot_length = 10.16;
-const static double thigh_length = 45.72;
-const static double thigh_actuator_min = 0.0;
-const static double thigh_actuator_max = 180.0;
-const static double thigh_length_upper = 10.16;
-const static double thigh_length_lower = 35.56;
-const static double shin_length = 76.2;
-const static double shin_actuator_min = 0.0;
-const static double shin_actuator_max = 180.0;
-const static double shin_length_upper = 54.5;
-const static double shin_length_lower = 21.7;
+const static double waist_x = 6.4;
+const static double waist_y = 27.3;
+const static double waist_radius = 3.1;
+const static double waist_height = 33.3;
+const static double thigh_pivot_length = 6.4;
+const static double thigh_pivot_angle = 2.356194490192345;
+const static double thigh_length = 27.3;
+const static double thigh_actuator_min = 33.1;
+const static double thigh_actuator_max = 58.0;
+const static double thigh_length_upper = 7.0;
+const static double thigh_length_lower = 20.3;
+const static double shin_length = 43.1;
+const static double shin_actuator_min = 29.5;
+const static double shin_actuator_max = 50.0;
+const static double shin_length_upper = 33.0;
+const static double shin_length_lower = 10.1;
 
 /** CLASS FUNCTIONS **/
 
@@ -146,173 +149,6 @@ bool tachikoma::connect(void) {
   }
 }
 
-/** Determine whether or not the robot is connected.
- *  @return true if the robot is connected to a device, else false
- */
-bool tachikoma::connected(void) {
-  return this->num_connected > 0;
-}
-
-/** Send output to the communication layer.
- *  @note this is where you do all of the inverse kinematics
- */
-void tachikoma::send(void) {
-  int i;
-  char msg[128]; // careful of static sizes!
-  this->recv(); // just because we need to refresh constantly
-  for (i = 0; i < num_connected; i++) {
-    switch (this->ids[i]) {
-      case NW_DEVID:
-        break;
-      case NE_DEVID:
-        // this is a test suite :D
-        if (!this->arm || !this->base ||
-            (this->arm->x == this->x &&
-             this->arm->y == this->y &&
-             this->arm->z == this->z &&
-             this->base->x == this->w)) {
-          break;
-        }
-        sprintf(msg, "[%d %d %d %d]\n",
-            ((this->arm->x > 0.0) - (this->arm->x < 0.0)),
-            ((this->arm->y > 0.0) - (this->arm->y < 0.0)),
-            ((this->arm->z > 0.0) - (this->arm->z < 0.0)),
-            ((this->base->x > 0.0) - (this->base->x < 0.0))
-            );
-        this->x = this->arm->x;
-        this->y = this->arm->y;
-        this->z = this->arm->z;
-        this->w = this->base->x;
-        serial_write(&this->connections[i], msg);
-        break;
-      case SW_DEVID:
-        break;
-      case SE_DEVID:
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-/** Receive input from the communication layer.
- *  @note this is where you do forward kinematics
- */
-void tachikoma::recv(void) {
-  // there is actually nothing that we need at the moment
-  int i;
-  char *msg;
-
-  int id;
-  int rotate_encoder;
-  int top_encoder;
-  int bottom_encoder;
-  double rotation;
-  arma::mat T(4, 4); // transformation matrix
-  arma::vec *leg2;
-  arma::vec leg1;
-  double sinrot;
-  double cosrot;
-
-  for (i = 0; i < num_connected; i++) {
-    // read message, and unless valid id or no message, goto computation
-    if (this->ids[i] != 0) {
-      if (!(msg = serial_read(&this->connections[i]))) {
-        continue;
-      }
-    } else {
-      continue;
-    }
-    sscanf(msg, "[%d ", &id);
-    this->ids[i] = id;
-
-    // do something with the message (such as compute the forward knematics)
-    switch (id) {
-      case NW_DEVID:
-      case NE_DEVID:
-      case SW_DEVID:
-      case SE_DEVID:
-        sscanf(msg, "[%d %d %d %d]\n", &id, &rotate_encoder, &bottom_encoder, &top_encoder);
-        T.zeros();
-
-        // determine the rotation
-        rotation = deg2rad(encoder2deg(rotate_encoder));
-        switch (id) {
-          case NW_DEVID:
-            rotation += deg2rad(75.0);
-            T(0, 3) = -8.00;
-            T(1, 3) = 12.00;
-            break;
-          case NE_DEVID:
-            rotation += deg2rad(-15.0);
-            T(0, 3) = 8.00;
-            T(1, 3) = 12.00;
-            break;
-          case SW_DEVID:
-            rotation += deg2rad(165.0);
-            T(0, 3) = -8.00;
-            T(1, 3) = -12.00;
-            break;
-          case SE_DEVID:
-            rotation += deg2rad(255.0);
-            T(0, 3) = 8.00;
-            T(1, 3) = -12.00;
-            break;
-        }
-
-        // create a leg vector
-        leg2 = gen_leg_vec(top_encoder, bottom_encoder);
-        // create a new T matrix
-        sinrot = sin(rotation);
-        cosrot = cos(rotation);
-        T(0, 0) = cosrot;
-        T(0, 2) = sinrot;
-        T(2, 0) = -sinrot;
-        T(2, 2) = cosrot;
-        T(1, 1) = 1.0;
-        T(3, 3) = 1.0;
-
-        // get the new leg pose, assign to actual leg
-        leg1 = T * (*leg2);
-        switch (id) {
-          case NW_DEVID:
-            this->leg_nw = leg1;
-            break;
-          case NE_DEVID:
-            this->leg_ne = leg1;
-            break;
-          case SW_DEVID:
-            this->leg_sw = leg1;
-            break;
-          case SE_DEVID:
-            this->leg_se = leg1;
-            break;
-        }
-
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-/** Reset the robot values
- *  @param robot
- *    the robot information
- */
-void tachikoma::reset(void) {
-  this->leg_nw.zeros();
-  this->leg_ne.zeros();
-  this->leg_sw.zeros();
-  this->leg_se.zeros();
-  this->arm = NULL;
-  this->base = NULL;
-  this->x = 0;
-  this->y = 0;
-  this->z = 0;
-  this->w = 0;
-}
-
 /** Disconnect everything
  *  @param robot
  *    the robot information
@@ -325,7 +161,7 @@ void tachikoma::disconnect(void) {
     this->send();
     // delete the connections
     if (this->connections) {
-      for (i = 0; i < num_connected; i++) {
+      for (i = 0; i < this->num_connected; i++) {
         serial_disconnect(&this->connections[i]);
       }
       delete this->connections;
@@ -349,6 +185,153 @@ void tachikoma::disconnect(void) {
     this->num_possible = 0;
     this->num_connected = 0;
   }
+}
+
+/** Determine whether or not the robot is connected.
+ *  @return true if the robot is connected to a device, else false
+ */
+bool tachikoma::connected(void) {
+  return this->num_connected > 0;
+}
+
+/** Send output to the communication layer.
+ *  @note this is where you do all of the inverse kinematics
+ */
+void tachikoma::send(void) {
+  int i;
+  char msg[128]; // careful of static sizes!
+  this->recv(); // just because we need to refresh constantly
+  for (i = 0; i < this->num_connected; i++) {
+    switch (this->ids[i]) {
+      case NW_DEVID:
+        break;
+      case NE_DEVID:
+        // this is a test suite :D
+        if (this->outvalues[0] == this->prevvalues[0] &&
+            this->outvalues[1] == this->prevvalues[1] &&
+            this->outvalues[2] == this->prevvalues[2] &&
+            this->outvalues[3] == this->prevvalues[3]) {
+          break;
+        }
+        sprintf(msg, "[%d %d %d %d]\n",
+            ((this->outvalues[0] > 0.0) - (this->outvalues[0] < 0.0)),
+            ((this->outvalues[1] > 0.0) - (this->outvalues[1] < 0.0)),
+            ((this->outvalues[2] > 0.0) - (this->outvalues[2] < 0.0)),
+            ((this->outvalues[3] > 0.0) - (this->outvalues[3] < 0.0)));
+        this->prevvalues[0] = this->outvalues[0];
+        this->prevvalues[1] = this->outvalues[1];
+        this->prevvalues[2] = this->outvalues[2];
+        this->prevvalues[3] = this->outvalues[3];
+        serial_write(&this->connections[i], msg);
+        break;
+      case SW_DEVID:
+        break;
+      case SE_DEVID:
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+/** Receive input from the communication layer.
+ *  @note this is where you do forward kinematics
+ */
+void tachikoma::recv(void) {
+  // there is actually nothing that we need at the moment
+  int i;
+  char *msg;
+  int id;
+  int x, y;
+  arma::vec enc(3);
+
+  for (i = 0; i < this->num_connected; i++) {
+    // read message, and unless valid id or no message, goto computation
+    if (this->ids[i] != 0) {
+      if (!(msg = serial_read(&this->connections[i]))) {
+        continue;
+      }
+    } else {
+      continue;
+    }
+    sscanf(msg, "[%d ", &id);
+    this->ids[i] = id;
+
+    // do something with the message (such as compute the forward knematics)
+    switch (id) {
+      case NW_DEVID:
+        sscanf(msg, "[%d %lf %lf %lf]\n", &id, &enc(0), &enc(1), &enc(2));
+        x = -waist_x;
+        y = waist_y;
+        enc(0) += deg2rad(75.0);
+        this->leg_nw = leg_fk_solve(x, y, enc);
+        break;
+      case NE_DEVID:
+        sscanf(msg, "[%d %lf %lf %lf]\n", &id, &enc(0), &enc(1), &enc(2));
+        x = waist_x;
+        y = waist_y;
+        enc(0) += deg2rad(-15.0);
+        this->leg_ne = leg_fk_solve(x, y, enc);
+        break;
+      case SW_DEVID:
+        sscanf(msg, "[%d %lf %lf %lf]\n", &id, &enc(0), &enc(1), &enc(2));
+        x = -waist_x;
+        y = -waist_y;
+        enc(0) += deg2rad(165.0);
+        this->leg_sw = leg_fk_solve(x, y, enc);
+        break;
+      case SE_DEVID:
+        sscanf(msg, "[%d %lf %lf %lf]\n", &id, &enc(0), &enc(1), &enc(2));
+        x = waist_x;
+        y = -waist_y;
+        enc(0) += deg2rad(255.0);
+        this->leg_se = leg_fk_solve(x, y, enc);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+/** Reset the robot values
+ */
+void tachikoma::reset(void) {
+  this->leg_nw.zeros();
+  this->leg_ne.zeros();
+  this->leg_sw.zeros();
+  this->leg_se.zeros();
+  memset(this->outvalues, 0, sizeof(int) * 4);
+  memset(this->prevvalues, 0, sizeof(int) * 4);
+}
+
+/** Manually write the values for particular legs
+ *  @param legid
+ *    the id for which leg to set
+ *  @param message
+ *    the message to send to the leg
+ */
+void tachikoma::write_manual(int legid, char *message) {
+  int i;
+  for (i = 0; i < this->num_connected; i++) {
+    if (this->ids[i] == legid) {
+      serial_write(&this->connections[i], message);
+    }
+  }
+}
+
+/** Manually read the values for particular legs
+ *  @param legid
+ *    the id for which leg to get from
+ *  @return the message, or NULL if there isn't one
+ */
+char *tachikoma::read_manual(int legid) {
+  int i;
+  for (i = 0; i < this->num_connected; i++) {
+    if (this->ids[i] == legid) {
+      return serial_read(&this->connections[i]);
+    }
+  }
+  return NULL;
 }
 
 /** PRIVATE FUNCTIONS **/
@@ -377,10 +360,10 @@ static int limit(int value, int min_value, int max_value) {
  *    the encoder reading
  *  @return the conversion into distance (inches)
  */
-static double encoder2actuator(int encoder_reading) {
+static double enc2cm(int encoder_reading) {
   const int low_reading = 0; // configure
   const int high_reading = 100; // configure
-  const double low_distance = 20.0; // configure, inches
+  const double low_distance = 12.0; // configure, inches
   const double high_distance = 34.0; // configure, inches
   double ratio;
   ratio = (high_distance - low_distance) / (double)(high_reading - low_reading);
@@ -394,7 +377,7 @@ static double encoder2actuator(int encoder_reading) {
  *    the encoder reading
  *  @return the conversion into degrees
  */
-static double encoder2deg(int encoder_reading) {
+static double enc2deg(int encoder_reading) {
   const int low_reading = 0;
   const int high_reading = 100;
   const double low_degree = 0.0;
@@ -415,96 +398,130 @@ static double deg2rad(double deg) {
   return deg * M_PI / 180.0;
 }
 
-/** Forward kinematics for a single leg using the encoder values.
- *  @param final_pose
- *    the pose at which the bottom of the leg is positioned
- *  @param top_encoder
- *    the reading of the top encoder
- *  @param btm_encoder
- *    the reading of the bottom encoder
+/** Return the magnitude of a vector
+ *  @param v
+ *    the vector
+ *  @return the magnitude
  */
-static arma::vec *gen_leg_vec(int top_encoder, int bottom_encoder) {
-  arma::vec *final_pose;
-  double bottom_leg_theta;
-  double top_leg_theta;
-  double bottom_actuator;
-  double top_actuator;
-
-  // configure the following values
-  // note: cannot be zero!
-  const double bottom_lower_length = 18.0;
-  const double bottom_higher_length = 10.0;
-  const double top_lower_length = 10.0;
-  const double top_higher_length = 18.0;
-  const double bottom_length = 24.00;
-  const double top_length = 18.0;
-
-  double C;
-  double A;
-  double B;
-
-  final_pose = new arma::vec(4);
-  bottom_actuator = encoder2actuator(bottom_encoder);
-  top_actuator = encoder2actuator(top_encoder);
-
-  // use law of cosines
-  C = bottom_actuator * bottom_actuator;
-  A = bottom_lower_length * bottom_lower_length;
-  B = bottom_higher_length * bottom_higher_length;
-  bottom_leg_theta = acos((C - (A + B)) / (-2 * bottom_lower_length * bottom_higher_length)) - M_PI;
-
-  C = top_actuator * top_actuator;
-  A = top_higher_length * top_higher_length;
-  B = top_lower_length * top_lower_length;
-  top_leg_theta = M_PI_2 - acos((C - (A + B)) / (-2 * top_higher_length * top_lower_length));
-
-  // create the leg vector and send back
-  (*final_pose)(0) = top_length * cos(top_leg_theta) +
-    bottom_length * cos(bottom_leg_theta + top_leg_theta);
-  (*final_pose)(1) = 0.0;
-  (*final_pose)(2) = top_length * sin(top_leg_theta) +
-    bottom_length * sin(bottom_leg_theta + top_leg_theta);
-  (*final_pose)(3) = 1.0;
-
-  return final_pose;
-}
-
-static double mag(arma::vec *v) {
+static double mag(const arma::vec &v) {
   int i;
   double sum = 0.0;
-  for (i = 0; i < v->n_elem; i++) {
-    sum += (*v)(i) * (*v)(i);
+  for (i = 0; i < (int)v.n_elem; i++) {
+    sum += v(i) * v(i);
   }
   return sqrt(sum);
 }
 
-static double square(double x) {
-  return x * x;
+/** Cosine rule for finding an angle
+ *  @param A
+ *    side1
+ *  @param B
+ *    side2
+ *  @param C
+ *    side3
+ *  @return angle perpendicular to side3
+ */
+static double cos_rule_angle(double A, double B, double C) {
+  return acos((C * C - A * A - B * B) / (2.0 * A * B));
 }
 
-static arma::vec *leg_ik_solve(arma::vec *target) {
-  // define constants
-  const double thigh_pivot_length = 10.16; // centimeters
-  const double thigh_length = 45.72;
-  const double thigh_actuator_min = 0.0;
-  const double thigh_actuator_max = 180.0;
-  const double thigh_length_upper = 10.16;
-  const double thigh_length_lower = 35.56;
-  const double shin_length = 76.2;
-  const double shin_actuator_min = 0.0;
-  const double shin_actuator_max = 180.0;
-  const double shin_length_upper = 54.5;
-  const double shin_length_lower = 21.7;
+/** Cosine rule for finding a side
+ *  @param A
+ *    side1
+ *  @param B
+ *    side2
+ *  @param c
+ *    angle3
+ *  @return side perpendicular to angle3
+ */
+static double cos_rule_distance(double A, double B, double c) {
+  return sqrt(A * A + B * B - 2.0 * A * B * cos(c));
+}
+
+/** Solve the xyz coordinate of the leg using forward kinematics
+ *  @param x
+ *    offset in the x-axis
+ *  @param y
+ *    offset in the y-axis
+ *  @param enc
+ *    the encoder states (rotation, thigh_actuator, shin_acuator)
+ *  @return the xyz coordinate
+ */
+static arma::vec leg_fk_solve(int x, int y, const arma::vec &enc) {
+  double cosv, sinv;
+  double theta, delta;
+  double A, B, C;
+  arma::mat T(4, 4);
+  arma::vec L(4);
+  arma::vec temp(3);
+
+  // solve for reference frame 2
+  // find the delta corresponding to the bad differential
+  A = cos_rule_distance(thigh_pivot_length, thigh_length, thigh_pivot_angle);
+  delta = cos_rule_angle(A, thigh_length, thigh_pivot_length);
+  // find the theta after removing the delta for the shin transform
+  C = enc2cm(enc(2));
+  theta = cos_rule_angle(thigh_length_lower, shin_length_upper, C) - delta - M_PI;
+  // find the coordinates of the current leg according to the 2nd reference frame
+  L(0) = A + cos(theta) * shin_length;
+  L(1) = 0.0;
+  L(2) = sin(theta) * shin_length;
+  L(3) = 1.0;
+
+  // solve for the transformation in reference frame 1
+  // find the theta for the thigh transform
+  temp(0) = waist_radius;
+  temp(1) = 0.0;
+  temp(2) = waist_height;
+  B = mag(temp);
+  C = enc2cm(enc(1));
+  theta = -cos_rule_angle(A, B, C); // why negative? goes the other way
+  // do transformation
+  cosv = cos(theta);
+  sinv = sin(theta);
+  T(0, 0) = cosv;   T(0, 1) = 0.0;   T(0, 2) = sinv;  T(0, 3) = 0.0;
+  T(1, 0) = 0.0;    T(1, 1) = 1.0;   T(1, 2) = 0.0;   T(1, 3) = 0.0;
+  T(2, 0) = -sinv;  T(2, 1) = 0.0;   T(2, 2) = cosv;  T(2, 3) = 0.0;
+  T(3, 0) = 0.0;    T(3, 1) = 0.0;   T(3, 2) = 0.0;   T(3, 3) = 1.0;
+  L = T * L;
+
+  // solve for the transformation in reference frame 0
+  cosv = cos(enc2deg(enc(0)));
+  sinv = sin(enc2deg(enc(0)));
+  T(0, 0) = cosv;  T(0, 1) = -sinv;  T(0, 2) = 0.0;  T(0, 3) = x;
+  T(1, 0) = sinv;  T(1, 1) = cosv;   T(1, 2) = 0.0;  T(1, 3) = y;
+  T(2, 0) = 0.0;   T(2, 1) = 0.0;    T(2, 2) = 1.0;  T(2, 3) = 0.0;
+  T(3, 0) = 0.0;   T(3, 1) = 0.0;    T(3, 2) = 0.0;  T(3, 3) = 1.0;
+  L = T * L;
+
+  return L;
+}
+
+/** Solve the encoder values of the legs given a target
+ *  @param target
+ *    the target vector
+ *  @return a vector for the target ticks
+ */
+static arma::vec leg_ik_solve(const arma::vec &curr, const arma::vec &target) {
+  double cosv, sinv;
+  double theta, delta;
+  double A, B, C;
+  arma::vec diff;
+  arma::vec temp(3);
+
+  diff = target - curr;
+
+  // delete the 
+  C = mag(target);
+  cosv = cos(M_PI - thigh_pivot_angle);
+  sinv = sin(M_PI - thigh_pivot_angle);
+  temp(0) = cosv * thigh_pivot_length + thigh_length;
+  temp(2) = sinv * thigh_pivot_length;
+  A = mag(temp);
+  B = shin_length;
+  delta = atan2(sinv * thigh_pivot_length, cosv * thigh_pivot_length + thigh_length);
+  theta = cos_rule(A, B, C) + delta;
   
-  // refer to notes
-  int i;
-  double distance = mag(target);
-  double theta = acos((square(distance) - square(thigh_length) - square(shin_length)) /
-      (2 * thigh_length * shin_length));
-  double alpha = atan2((*target)(0), (*target)(1));
-  double beta = acos((square(shin_length) - square(thigh_length) - square(distance)) /
-      (2 * thigh_length * distance));
-  double phi = M_PI - alpha - beta;
 
-
+  return delta;
 }
