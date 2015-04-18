@@ -68,8 +68,6 @@ arma::vec ActionState::get_motion_vector(const arma::vec &currPos) {
       endTime = midTime;
     }
   }
-  midTime = (begTime + endTime) / 2;
-  midVec = this->motionFcn(this->startPos, this->stopPos, midTime);
 
   // do a weighted calculation for the motion vector
   diff1 = arma::normalise(endVec - currPos);
