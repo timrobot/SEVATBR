@@ -1,9 +1,12 @@
 CC = g++
-CFLAGS = -pedantic -Wall -O3
-INCLUDE = -I$(shell pwd)/../serial -I$(shell pwd)/../../core
-SUBDIRS = $(shell pwd)/../serial
+CFLAGS = -pedantic -Wall -std=c++11 -O3
+SERIAL = $(shell pwd)/../serial
+ACTIONSTATE = $(shell pwd)/../ActionState
+INCLUDE = -I$(SERIAL) -I $(ACTIONSTATE) -I$(shell pwd)/../../core
+SUBDIRS = $(SERIAL) $(ACTIONSTATE)
+SUBOBJS = $(SERIAL)/serial.o $(ACTIONSTATE)/ActionState.o
 OBJECTS = tachikoma.o
-LIBOBJS = libtachikoma.o
+LIBS = -larmadillo
 TEST = test.o test
 
 all: subdirs $(OBJECTS)
@@ -14,15 +17,15 @@ subdirs:
 tachikoma.o: tachikoma.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
-libtachikoma.o: tachikoma.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -fPIC -o $@ -c $<
+xboxctrl.o:
+	make -C ../../manual
 
 test.o: test.cpp
-	$(CC) -pedantic -std=c99 -O3 $(INCLUDE) -o $@ -c $<
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
-test: $(OBJECTS) test.o $(shell pwd)/../serial/serial.o
-	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^
+test: $(OBJECTS) $(SUBOBJS) test.o xboxctrl.o
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f $(OBJECTS) $(LIBOBJS) $(TEST)
+	rm -f $(OBJECTS) $(SUBOBJS) $(TEST)
 	$(foreach directory, $(SUBDIRS), make clean -C $(directory);)

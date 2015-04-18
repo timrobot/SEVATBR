@@ -19,9 +19,8 @@ int robot::set(uint32_t robotid) {
     return -1;
   }
   switch (robotid) {
-
     case STANDARD_OUT:
-      printf("Robot set\n");
+      printf("[STDOUT] Robot set\n");
       break;
 
     case TENNIS_BALL_ROBOT:
@@ -31,6 +30,8 @@ int robot::set(uint32_t robotid) {
         bot = NULL;
         printf("[ERROR] Could not get all arduinos! Recommend exiting.\n");
         return -1;
+      } else {
+        return ((tbr_t *)bot)->connected;
       }
       break;
 
@@ -41,8 +42,9 @@ int robot::set(uint32_t robotid) {
         bot = NULL;
         printf("[ERROR] Could not connect all the devices on the tachikoma!\n");
         return -1;
+      } else {
+        return (tachikoma *bot)->numconnected();
       }
-      break;
 
     default:
       return -1;
@@ -56,9 +58,8 @@ int robot::set(uint32_t robotid) {
  */
 int robot::unset(void) {
   switch (currid) {
-
     case STANDARD_OUT:
-      printf("Robot unset.\n");
+      printf("[STDOUT] Robot unset.\n");
       break;
 
     case TENNIS_BALL_ROBOT:
@@ -90,9 +91,14 @@ int robot::unset(void) {
  *  @return 0 on success, -1 otherwise
  */
 int robot::move(pose3d_t *base, pose3d_t *arm) {
+  int forward;
+  int rotate;
+  tbr_t *tbr;
+  tachikoma * t;
+
   switch (currid) {
     case STANDARD_OUT:
-      printf("arm->x: %f, arm->y: %f, arm->z: %f\n"
+      printf("[STDOUT] arm->x: %f, arm->y: %f, arm->z: %f\n"
           "arm->yaw: %f, arm->pitch: %f, arm->roll: %f\n"
           "base->x: %f, base->y: %f, base->z: %f\n"
           "base->yaw: %f, base->pitch: %f, base->roll: %f\n\n",
@@ -102,10 +108,7 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
           base->yaw, base->pitch, base->roll);
       break;
 
-    case TENNIS_BALL_ROBOT: {
-      int forward;
-      int rotate;
-      tbr_t *tbr;
+    case TENNIS_BALL_ROBOT:
       tbr = (tbr_t *)bot;
       forward = (base->y > 0.0) - (base->y < 0.0);
       rotate = (base->yaw > 0.0) - (base->yaw < 0.0);
@@ -118,16 +121,17 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
       tbr->arm = (arm->pitch > 0.0) - (arm->pitch < 0.0);
       tbr->claw = (arm->yaw > 0.0) - (arm->yaw < 0.0);
       tbr_send(tbr);
-    } break;
+      break;
 
-    case TACHIKOMA: {
-      tachikoma *t;
+    case TACHIKOMA:
       t = (tachikoma *)bot;
-      t->arm = arm;
-      t->base = base;
+      memcpy(&t->base[0], &base[0], sizeof(pose3d_t));
+      memcpy(&t->base[1], &base[1], sizeof(pose3d_t));
+      memcpy(&t->arm[0], &arm[0], sizeof(pose3d_t));
+      memcpy(&t->arm[1], &arm[1], sizeof(pose3d_t));
       t->send();
       t->recv();
-    } break;
+      break;
 
     default:
       return -1;
