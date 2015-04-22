@@ -48,6 +48,10 @@ int tbr_connect(tbr_t *robot) {
   }
   closedir(device_dir);
   robot->possible_ports = (char **)malloc(sizeof(char *) * robot->num_possible);
+  if (robot->possible_ports == 0) {
+    tbr_disconnect(robot);
+    return -1;
+  }
   device_dir = opendir("/dev/");
   i = 0;
   // add all the possible filenames to the list

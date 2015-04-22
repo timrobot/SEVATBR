@@ -13,7 +13,6 @@
 #define INPUT_DIR "/dev/"
 static char const *PREFIXES[3] = {
   "ttyACM",
-//  "ttyUSB", // not necessary if only using Arduino Uno or Teeensy
   NULL
 };
 
@@ -147,8 +146,9 @@ static int _serial_setattr(serial_t *connection) {
  *    however, the \n will be cut off
  */
 static void _serial_update(serial_t *connection) {
-  int numAvailable;
-  int totalBytes;
+  int bytesRead;
+  int bytesStored;
+  unsigned char analyzeBuffer;
 
   /* dynamically reconnect the device */
   if (access(connection->port, F_OK) == -1) {
@@ -171,25 +171,36 @@ static void _serial_update(serial_t *connection) {
   if (!connection->connected)
     return;
 
-  /* update buffer */
-  if ((numAvailable = read(connection->fd, tempbuf, SWREADMAX)) > 0) {
-    char *start_index, *end_index;
-    tempbuf[numAvailable] = '\0';
-    if ((totalBytes = strlen(connection->buffer) + numAvailable) >= SWBUFMAX) {
-      totalBytes -= SWREADMAX;
-      memmove(connection->buffer, &connection->buffer[totalBytes],
-          (SWBUFMAX - totalBytes) * sizeof(char));
-      connection->buffer[SWBUFMAX - totalBytes] = '\0';
+  /* update buffer constantly (be careful of overflow!) */
+  analyzeBuffer = 0;
+  while ((bytesRead = read(connection->fd, tempbuf, SWREADMAX)) > 0) {
+    if (bytesRead > 0) {
+      analyzeBuffer = 1; /* turn on buffer analysis signal */
+    }
+    tempbuf[bytesRead] = '\0';
+    bytesStored = strlen(connection->buffer); /* no \0 */
+    while (bytesStored + bytesRead >= SWBUFMAX) {
+      /* shorten it by only half of the readmax value */
+      bytesStored -= SWREADMAX / 2;
+      memmove(connection->buffer, &connection->buffer[SWREADMAX / 2],
+          (bytesStored + 1) * sizeof(char));
+      connection->buffer[bytesStored + 1] = '\0';
     }
     strcat(connection->buffer, tempbuf);
+  }
 
+  if (analyzeBuffer) {
+    char *start_index, *end_index;
+    size_t nbytes;
     if ((end_index = strrchr(connection->buffer, '\n'))) {
       end_index[0] = '\0';
       end_index = &end_index[1];
       start_index = strrchr(connection->buffer, '\n');
       start_index = start_index ? &start_index[1] : connection->buffer;
-      memcpy(connection->readbuf, start_index,
-          (strlen(start_index) + 1) * sizeof(char));
+      nbytes = (size_t)end_index - (size_t)start_index;
+      memcpy(connection->readbuf, start_index, nbytes * sizeof(char));
+      connection->readbuf[nbytes + 1] = '\n'; /* put the \n back */
+      connection->readbuf[nbytes + 2] = '\0';
       memmove(connection->buffer, end_index,
           (strlen(end_index) + 1) * sizeof(char));
       connection->readAvailable = 1;
@@ -223,7 +234,7 @@ char *serial_read(serial_t *connection) {
 void serial_write(serial_t *connection, char *message) {
   if (connection->fd != -1) {
     if (write(connection->fd, message, strlen(message)) != -1) {
-      printf("message write[%s]: %s\n", connection->port, message);
+      printf("[SERIAL] write [%s]: %s\n", connection->port, message);
     }
   }
 }

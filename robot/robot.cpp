@@ -125,12 +125,7 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
 
     case TACHIKOMA:
       t = (tachikoma *)bot;
-      memcpy(&t->base[0], &base[0], sizeof(pose3d_t));
-      memcpy(&t->base[1], &base[1], sizeof(pose3d_t));
-      memcpy(&t->arm[0], &arm[0], sizeof(pose3d_t));
-      memcpy(&t->arm[1], &arm[1], sizeof(pose3d_t));
-      t->send();
-      t->recv();
+      t->update(base[0], base[1], arm[0], arm[1]);
       break;
 
     default:

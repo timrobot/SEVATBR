@@ -5,11 +5,10 @@ static double mag(const arma::vec &v);
 
 /** Constructor
  */
-ActionState::ActionSttate(void) {
+ActionState::ActionState(void) {
   this->startPos = arma::vec(4, arma::fill::zeros);
   this->stopPos = arma::vec(4, arma::fill::zeros);
   this->motionFcn = (ActionFcn)NULL;
-  this->durationSec = 0.0;
   this->toleranceError = 0.0;
 }
 
@@ -20,17 +19,14 @@ ActionState::ActionSttate(void) {
  *    the stopping point
  *  @param motion
  *    the motion function
- *  @param duration
- *    the time it should take to complete the motion
  *  @param tolerance
  *    the tolerance for declaring a state to be finished
  */
 ActionState::ActionState(const arma::vec &start, const arma::vec &stop,
-    ActionFcn motion, double duration, double tolerance) {
+    ActionFcn motion, double tolerance) {
   this->startPos = start;
   this->stopPos = stop;
   this->motionFcn = motion;
-  this->durationSec = duration;
   this->toleranceError = tolerance;
 }
 
@@ -40,7 +36,7 @@ ActionState::ActionState(const arma::vec &start, const arma::vec &stop,
  *  @return the weighted interpolation of the error and approxiamation derivative
  */
 arma::vec ActionState::get_motion_vector(const arma::vec &currPos) {
-  // Use binary approxiamation method to determine the closest point to the fcn
+  // Use binary approxiamation method to determine the closest point to the function
   double begTime, midTime, endTime;
   arma::vec begVec, midVec, endVec;
   arma::vec diff1, diff2;
@@ -48,7 +44,7 @@ arma::vec ActionState::get_motion_vector(const arma::vec &currPos) {
   int i;
 
   begTime = 0.0;
-  endTime = this->durationSec;
+  endTime = 1.0; // this will always be the end time
   begVec = this->startPos;
   endVec = this->stopPos;
   weight1 = 1.0;
@@ -94,6 +90,30 @@ arma::vec ActionSequence::get_motion_vector(const arma::vec &currPos) {
     this->curr_action = (this->curr_action + 1) % this->sequence.size();
   }
   return this->sequence[this->curr_action].get_motion_vector(currPos);
+}
+
+/** Returns wheter or not the current action state has finished
+ *  @param currPos
+ *    the current position of the vector
+ *  @return true if finished, else false
+ */
+bool ActionSequence::finished(const arma::vec &currPos) {
+  return this->sequence[this->curr_action].finished(currPos);
+}
+
+/** Proceeds to the next action in the sequence
+ */
+void ActionSequence::next_action(void) {
+  this->curr_action++;
+  this->curr_action %= this->sequence.size();
+}
+
+/** Adds an action to the current action sequence
+ *  @param action
+ *    the action to be added to the sequence
+ */
+void ActionSequence::add_action(const ActionState &action) {
+  this->sequence.push_back(action);
 }
 
 /** Return the magnitude of a vector

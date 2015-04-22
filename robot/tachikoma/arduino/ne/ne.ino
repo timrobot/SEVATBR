@@ -1,19 +1,16 @@
 #include <string.h>
-#define DEV_ID     2
-#define WHEEL_1    A4
-#define WHEEL_2    A5
-#define BOTTOM_1   10
-#define BOTTOM_2    9
-#define TOP_1      12
+#define DEV_ID      2
+#define BOTTOM_1    3
+#define BOTTOM_2    5
+#define TOP_1      10
 #define TOP_2      11
-#define ROTATE1_1   5
-#define ROTATE1_2   6
-#define ROTATE2_1   8
-#define ROTATE2_2   7
-#define BTMENC_1  A2
-#define BTMENC_2  A3
-#define TOPENC_1  4
-#define TOPENC_2  3
+#define ROTATE_1    9
+#define ROTATE_2    6
+#define BTMENC_1   A2
+#define BTMENC_2   A3
+#define TOPENC_1    4
+#define TOPENC_2    2
+#define POT        A0
 
 class QuadEncoder {
   public:
@@ -127,12 +124,10 @@ class HBridgeMotor { // HBridge implementation
     }
 };
 
-HBridgeMotor wheel;
 HBridgeMotor bottom;
 HBridgeMotor top;
-HBridgeMotor rotate1;
-HBridgeMotor rotate2;
-int W, B, T, R;
+HBridgeMotor rotate;
+int B, T, R;
 
 QuadEncoder btmenc;
 QuadEncoder topenc;
@@ -155,38 +150,33 @@ int limit(int x, int a, int b) {
   }
 }
 
-void setleg(int w, int b, int t, int r) {
-  w = limit(w, -255, 255);
+void setleg(int b, int t, int r) {
   b = limit(b, -255, 255);
   t = limit(t, -255, 255);
   r = limit(r, -255, 255);
-  wheel.write(w);
   bottom.write(b);
   top.write(t);
-  rotate1.write(r);
-  rotate2.write(r);
+  rotate.write(r);
 }
 
 void setup() {
-  wheel.attach(WHEEL_1, WHEEL_2);
   bottom.attach(BOTTOM_1, BOTTOM_2);
   top.attach(TOP_1, TOP_2);
-  rotate1.attach(ROTATE1_1, ROTATE1_2);
-  rotate2.attach(ROTATE2_1, ROTATE2_2);
+  rotate.attach(ROTATE_1, ROTATE_2);
 
-  wheel.setdigital(true);
-  bottom.setdigital(true);
-  top.setdigital(true);
-  rotate1.setdigital(true);
-  rotate2.setdigital(true);
+  //bottom.setdigital(true);
+  //top.setdigital(true);
+  //rotate1.setdigital(true);
+  //rotate2.setdigital(true);
 
   btmenc.attach(BTMENC_1, BTMENC_2);
   topenc.attach(TOPENC_1, TOPENC_2);
+  pinMode(POT, INPUT);
 
   pinMode(13, OUTPUT);
 
   Serial.begin(38400);
-  setleg(0, 0, 0, 0);
+  setleg(0, 0, 0);
   digitalWrite(13, HIGH);
   msecs = millis();
 }
@@ -211,26 +201,25 @@ void loop() {
       e[0] = '\0';
       if ((s = strrchr(buf, '['))) {
         // CUSTOMIZE
-        sscanf(s, "[%d %d %d %d]", &W, &R, &T, &B);
-        W = limit(W * 255, -255, 255);
-        T = limit(T * 255, -255, 255);
-        B = limit(B * 255, -255, 255);
-        R = limit(R * 255, -255, 255);
+        sscanf(s, "[%d %d %d %d]", &R, &T, &B);
+        T = limit(T, -255, 255);
+        B = limit(B, -255, 255);
+        R = limit(R, -255, 255);
       }
       memmove(buf, &e[1], strlen(&e[1]) + sizeof(char));
     }
   }
 
-  if (W != 0 || B != 0 || T != 0 || R != 0) {
-    setleg(0, 0, 0, 0);
+  if (B != 0 || T != 0 || R != 0) {
+    setleg(0, 0, 0);
   }
-  setleg(W, B, T, R);
+  setleg(B, T, R);
 
   btmenc.read();
   topenc.read();
 
   if (millis() - msecs > 100) {
-    sprintf(wbuf, "[%d %d %d]\n", DEV_ID, btmenc.read(), topenc.read());
+    sprintf(wbuf, "[%d %d %d %d]\n", DEV_ID, analogRead(POT), topenc.read(), btmenc.read());
     Serial.print(wbuf);
     msecs = millis();
   }

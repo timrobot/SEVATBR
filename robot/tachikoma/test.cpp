@@ -11,7 +11,7 @@ void stopprog(int signum) {
   exitnow = 1;
 }
 
-void reset_tachikoma(tachikoma &robot) {
+void reset_tachikoma(const tachikoma &robot) {
   robot.write_manual(NW_DEVID, (char *)"[0 0 0]\n");
   robot.write_manual(NE_DEVID, (char *)"[0 0 0]\n");
   robot.write_manual(SW_DEVID, (char *)"[0 0 0]\n");

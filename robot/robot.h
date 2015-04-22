@@ -13,7 +13,12 @@ namespace robot {
   int set(uint32_t robotid);
   int unset(void);
   int move(pose3d_t *base, pose3d_t *arm);
+
+  // correct the following method:
   pose3d_t **sense(void);
+
+  // this is something which might be required later on:
+  // get_capabilities();
 }
 
 #endif

@@ -20,9 +20,10 @@
 #include <math.h>
 #include <vector>
 #include "tachikoma.h"
+#include "measurements.h"
 
 #define DEV_BAUD      B38400
-#define SYNC_NSEC     500000000
+#define SYNC_NSEC     100000000
 #define ENCODER_WAIST 0
 #define ENCODER_THIGH 1
 #define ENCODER_SHIN  2
@@ -32,54 +33,11 @@ static double enc2cm(int encoder_reading);
 static int cm2enc(double length);
 static double enc2rad(int encoder_reading);
 static int rad2enc(double radians);
-static double deg2rad(double deg);
-static double rad2deg(double rad);
 static double mag(const arma::vec &v);
 static double cos_rule_angle(double A, double B, double C);
 static double cos_rule_distance(double A, double B, double c);
-bool finished(int legid);
-
-const static double waist_x[4] = { -6.4, 6.4, -6.4, 6.4 };
-const static double waist_y[4] = { 27.3, 27.3, -27.3, -27.3 };
-const static double waist_angle[4] = { 75.0, -15.0, 165.0, -105.0 };
-const static double waist_radius = 3.1;
-const static double waist_height = 33.3;
-const static double thigh_pivot_length = 6.4;
-const static double thigh_pivot_angle = 2.356194490192345;
-const static double thigh_length = 27.3;
-const static double thigh_actuator_min = 33.1;
-const static double thigh_actuator_max = 58.0;
-const static double thigh_length_upper = 7.0;
-const static double thigh_length_lower = 20.3;
-const static double shin_length = 43.1;
-const static double shin_actuator_min = 29.5;
-const static double shin_actuator_max = 50.0;
-const static double shin_length_upper = 33.0;
-const static double shin_length_lower = 10.1;
-const double theta_bounds[8] = {
-  0.0, 10.0,
-  10.0, 20.0,
-  20.0, 30.0,
-  30.0, 40.0
-};
-
-/** Custom class for vectors, based off of the arma::vec
- */
-class tvec : public arma::vec {
-  public:
-    using arma::vec::vec;
-    bool operator==(const tvec &other) {
-      if (this->n_rows != other.n_rows) {
-        return false;
-      }
-      for (int i = 0; i < (int)other.n_rows; i++) {
-        if ((*this)(i) != other(i)) {
-          return false;
-        }
-      }
-      return true;
-    }
-};
+static arma::vec sin_motion(const arma::vec &start, const arma::vec &stop, double t);
+static arma::vec linear_motion(const arma::vec &start, const arma::vec &stop, double t);
 
 /** CLASS FUNCTIONS **/
 
@@ -162,10 +120,15 @@ bool tachikoma::connect(void) {
     } while (!msg || strlen(msg) == 0);
     // if a valid device, add as connected, otherwise disconnect
     sscanf(msg, "[%d", &id);
-    if (id == TACHI_NW_DEVID ||
-        id == TACHI_NE_DEVID ||
-        id == TACHI_SW_DEVID ||
-        id == TACHI_SE_DEVID) {
+    if (id == TACHI_NW_LEG_DEVID ||
+        id == TACHI_NE_LEG_DEVID ||
+        id == TACHI_SW_LEG_DEVID ||
+        id == TACHI_SE_LEG_DEVID ||
+        id == TACHI_NW_WHEEL_DEVID ||
+        id == TACHI_NE_WHEEL_DEVID ||
+        id == TACHI_SW_WHEEL_DEVID ||
+        id == TACHI_SE_WHEEL_DEVID) {
+      printf("Identified [%s] as [%d]\n", this->possible_ports[i], id);
       this->ids[n++] = id;
     } else {
       serial_disconnect(&this->connections[n]);
@@ -178,10 +141,9 @@ bool tachikoma::connect(void) {
     return false;
   } else {
     // reset
-    this->init_state_space();
+    // this->init_state_space(); // only needed for walking
     this->reset();
-    this->send();
-    this->recv();
+    this->update(this->base[0], this->base[1], this->arm[0], this->arm[1]);
     return true;
   }
 }
@@ -222,124 +184,68 @@ void tachikoma::disconnect(void) {
   }
 }
 
-/** Determine whether or not the robot is connected.
+/** Determine whether or not the robot is connected
  *  @return true if the robot is connected to a device, else false
  */
 bool tachikoma::connected(void) {
   return this->num_connected > 0;
 }
 
-/** Return the number of devices that are connected.
+/** Return the number of devices that are connected
  *  @return the number of devices that are connected
  */
 int tachikoma::numconnected(void) {
   return this->num_connected;
 }
 
-/** Send output to the communication layer.
- *  @note this is where you do all of the inverse kinematics
+/** Update the robot's incoming and outgoing signals
+ *  @param wheelbase
+ *    the pose for the wheels
+ *  @param legbase
+ *    the pose for the legs and waist
+ *  @param leftarm
+ *    the pose for the left arm
+ *  @param rightarm
+ *    the pose for the right arm
  */
-void tachikoma::send(void) {
+int tachikoma::update(pose3d_t wheelbase, pose3d_t legbase,
+    pose3d_t leftarm, pose3d_t rightarm) {
   int i;
-  char msg[128]; // NOTE: careful of static sizes!
-  int legid;
-
-  double forward;
-  double backward;
-  double turn_left;
-  double turn_right;
-
-  // receive the leg values to do forward kinematics
+  memcpy(&this->base[0], &wheelbase, sizeof(pose3d_t));
+  memcpy(&this->base[1], &legbase, sizeof(pose3d_t));
+  memcpy(&this->arm[0], &legbase, sizeof(pose3d_t));
+  memcpy(&this->arm[1], &legbase, sizeof(pose3d_t));
   this->recv();
 
-  // update the movement
-  forward = (double)(this->base[0].y > 0);
-  backward = (double)(this->base[0].y < 0);
-  turn_left = (double)(this->base[0].yaw > 0);
-  turn_right = (double)(this->base[0].yaw < 0);
-  this->update(forward, backward, turn_left, turn_right);
-
-  for (i = 0; i < this->num_connected; i++) {
-    switch (this->ids[i]) {
-      case TACHI_NW_DEVID:
-      case TACHI_NE_DEVID:
-      case TACHI_SW_DEVID:
-      case TACHI_SE_DEVID:
-        legid = this->getlegid(this->ids[i]);
-
-        if (tvec(this->outval[legid]) == tvec(this->prevval[legid])) {
-          break;
-        }
-        sprintf(msg, "[%.5lf %.5lf %.5lf]\n",
-            this->outval[legid](0),
-            this->outval[legid](1),
-            this->outval[legid](2));
-        this->prevval[legid] = this->outval[legid];
-        serial_write(&this->connections[i], msg);
-        break;
-      default:
-        break;
-    }
+  // update the legs
+  for (i = 0; i < TACHI_NUM_LEG_DEV; i++) {
+    this->leg_fk_solve(i);
   }
-}
+  this->update_stand();
+  this->update_drive();
 
-/** Receive input from the communication layer.
- *  @note this is where you do forward kinematics
- */
-void tachikoma::recv(void) {
-  // there is actually nothing that we need at the moment
-  int i;
-  char *msg;
-  int id;
-  int legid;
-  arma::vec encoder(3);
-
-  for (i = 0; i < this->num_connected; i++) {
-    // read message, and unless valid id or no message, go to computation
-    if (this->ids[i] != 0) {
-      if (!(msg = serial_read(&this->connections[i]))) {
-        continue;
-      }
-    } else {
-      continue;
-    }
-    sscanf(msg, "[%d ", &id);
-    this->ids[i] = id;
-
-    // do something with the message (such as compute the forward knematics)
-    switch (id) {
-      case TACHI_NW_DEVID:
-      case TACHI_NE_DEVID:
-      case TACHI_SW_DEVID:
-      case TACHI_SE_DEVID:
-        legid = this->getlegid(id);
-        sscanf(msg, "[%d %lf %lf %lf]\n", &id,
-            &encoder(ENCODER_WAIST),
-            &encoder(ENCODER_THIGH),
-            &encoder(ENCODER_SHIN));
-        this->curr_enc[legid] = encoder;
-        this->leg_fk_solve(legid);
-        break;
-      default:
-        break;
-    }
-  }
+  this->send();
+  return 0;
 }
 
 /** Reset the robot values
  */
 void tachikoma::reset(void) {
   int i;
-  for (i = 0; i < 4; i++) {
+  for (i = 0; i < TACHI_NUM_LEG_DEV; i++) {
     this->curr_pos[i] = arma::vec(4, arma::fill::zeros);
     this->curr_enc[i] = arma::vec(3, arma::fill::zeros);
     this->target_pos[i] = arma::vec(4, arma::fill::zeros);
     this->target_enc[i] = arma::vec(3, arma::fill::zeros);
-    this->outval[i] = arma::vec(3, arma::fill::zeros);
-    this->prevval[i] = arma::vec(3, arma::fill::zeros);
+    memset(this->legval[i], 0, sizeof(int) * 3);
+    memset(this->plegval[i], 0, sizeof(int) * 3);
   }
-  memset(this->base, 0, sizeof(pose3d_t) * 2);
-  memset(this->arm, 0, sizeof(pose3d_t) * 2);
+  for (i = 0; i < TACHI_NUM_WHEEL_DEV; i++) {
+    memset(this->wheelval[i], 0, sizeof(int));
+    memset(this->wheelval[i], 0, sizeof(int));
+  }
+  memset(this->base, 0, sizeof(this->base) * 2);
+  memset(this->arm, 0, sizeof(this->arm) * 2);
 
   // state space
   this->overall_state = 0;
@@ -347,110 +253,33 @@ void tachikoma::reset(void) {
 }
 
 /** Manually write the values for particular legs
- *  @param legid
- *    the id for which leg to set
+ *  @param devid
+ *    the id for which device
  *  @param message
  *    the message to send to the leg
  */
-void tachikoma::write_manual(int legid, char *message) {
+void tachikoma::write_manual(int devid, char *message) {
   int i;
   for (i = 0; i < this->num_connected; i++) {
-    if (this->ids[i] == legid) {
+    if (this->ids[i] == devid) {
       serial_write(&this->connections[i], message);
     }
   }
 }
 
 /** Manually read the values for particular legs
- *  @param legid
- *    the id for which leg to get from
+ *  @param devid
+ *    the id for which device
  *  @return the message, or NULL if there isn't one
  */
-char *tachikoma::read_manual(int legid) {
+char *tachikoma::read_manual(int devid) {
   int i;
   for (i = 0; i < this->num_connected; i++) {
-    if (this->ids[i] == legid) {
+    if (this->ids[i] == devid) {
       return serial_read(&this->connections[i]);
     }
   }
   return NULL;
-}
-
-/** Update the states of the robot for the next action
- *  that the robot should do.
- *  @param forward
- *    the speed of the forward (0 to 1)
- *  @param backward
- *    the speed of the backward (0 to 1)
- *  @param turn_left
- *    the speed of the left turning (0 to 1)
- *  @param turn_right
- *    the speed of the right turning (0 to 1)
- */
-void tachikoma::update(double forward, double backward, double turn_left, double turn_right) {
-  enum m_states { M_STATIC, M_RESET };
-  enum p_states { P_TROT_LEFT, P_TROT_RIGHT };
-  enum v_states { V_IDLE, V_FORWARD, V_BACKWARD, V_LEFT, V_RIGHT };
-  arma::vec default_pos[4];
-
-  // ... lets pretend we made all of them
-  int i;
-  unsigned long dt;
-  bool onchangestate;
-
-  // change the state machine if necessary (careful of these states -
-  // they use heuristics which are not machine learned)
-  onchangestate = false;
-  switch (this->overall_state) {
-    case V_IDLE: // idle state
-      // place a state here for idle reset
-      break;
-    case V_FORWARD:
-      if (!forward) {
-        this->overall_state = V_IDLE;
-        onchangestate = true;
-      } else {
-        switch (this->sub_state) {
-          case P_TROT_LEFT:
-            if (finished(this->getlegid(TACHI_NW_DEVID)) &&
-                finished(this->getlegid(TACHI_SE_DEVID))) {
-              this->sub_state = P_TROT_RIGHT;
-              onchangestate = true;
-            }
-            break;
-          case P_TROT_RIGHT:
-            if (finished(this->getlegid(TACHI_NE_DEVID))) {
-              this->sub_state = P_TROT_LEFT;
-              onchangestate = true;
-            }
-            break;
-        }
-      }
-      break;
-  }
-
-  if (onchangestate) {
-    // save new start time, save current states
-  }
-
-  // update the velocity of the mechanism
-  switch (this->overall_state) {
-    case V_IDLE:
-      // TODO
-      break;
-    case V_FORWARD:
-      switch (this->sub_state) {
-        case P_TROT_LEFT:
-          // find destination vector based on particle filters
-          // apply the ik solver after this
-          break;
-      }
-  }
-
-  for (int i = 0; i < 4; i++) {
-    this->leg_ik_solve(i, this->target_pos[i]);
-    this->outval[i] = this->target_enc[i];
-  }
 }
 
 /** Lookup the legid of a particular devid.
@@ -462,6 +291,233 @@ int tachikoma::getlegid(int devid) {
   return devid - 1;
 }
 
+/** Lookup the wheelid of a particular devid.
+ *  @param devid
+ *    the devid
+ *  @return the wheelid
+ */
+int tachikoma::getwheelid(int devid) {
+  return devid - 5;
+}
+
+/** Initialize the state space
+ */
+void tachikoma::init_state_space(void) {
+  arma::mat forward_transform = arma::reshape(arma::mat({
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 12.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+        }), 4, 4).t();
+  // TODO: configure below
+  arma::vec default_leg_pos[4];
+  default_leg_pos[1] = arma::vec({ waist_x[1] + 20.0, waist_y[1], -30, 1.0 });
+  this->leg_seq[1].add_action(ActionState(
+      default_leg_pos[1],
+      forward_transform * default_leg_pos[1],
+      sin_motion));
+  this->leg_seq[1].add_action(ActionState(
+      forward_transform * default_leg_pos[1],
+      default_leg_pos[1],
+      linear_motion));
+}
+
+/** Send output to the communication layer
+ */
+void tachikoma::send(void) {
+  int i;
+  char msg[128]; // NOTE: careful of static sizes!
+  int legid;
+  int wheelid;
+
+  for (i = 0; i < this->num_connected; i++) {
+    switch (this->ids[i]) {
+      case TACHI_NW_LEG_DEVID:
+      case TACHI_NE_LEG_DEVID:
+      case TACHI_SW_LEG_DEVID:
+      case TACHI_SE_LEG_DEVID:
+        legid = this->getlegid(this->ids[i]);
+        if (this->legval[legid][0] == this->plegval[legid][0] &&
+            this->legval[legid][1] == this->plegval[legid][1] &&
+            this->legval[legid][2] == this->plegval[legid][2]) {
+          break;
+        }
+        sprintf(msg, "[%d %d %d]\n",
+            limit(this->legval[legid][0], -255, 255),
+            limit(this->legval[legid][1], -255, 255),
+            limit(this->legval[legid][2], -255, 255));
+        this->plegval[legid][0] = this->legval[legid][0];
+        this->plegval[legid][1] = this->legval[legid][1];
+        this->plegval[legid][2] = this->legval[legid][2];
+        serial_write(&this->connections[i], msg);
+        break;
+      case TACHI_NW_WHEEL_DEVID:
+      case TACHI_NE_WHEEL_DEVID:
+      case TACHI_SW_WHEEL_DEVID:
+      case TACHI_SE_WHEEL_DEVID:
+        wheelid = this->getwheelid(this->ids[i]);
+        if (this->wheelval[wheelid][0] == this->pwheelval[wheelid][0]) {
+            break;
+        }
+        sprintf(msg, "[%d]\n",
+            limit(this->wheelval[wheelid][0], -255, 255));
+        this->pwheelval[wheelid][0] = this->wheelval[wheelid][0];
+        serial_write(&this->connections[i], msg);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+/** Receive input from the communication layer
+ */
+void tachikoma::recv(void) {
+  int i;
+  char *msg;
+  int legid;
+  int wheelid;
+  int encoder[3];
+
+  for (i = 0; i < this->num_connected; i++) {
+    int n;
+    // read message, and unless valid id or no message, go to computation
+    if (this->ids[i] != 0) {
+      if (!(msg = serial_read(&this->connections[i]))) {
+        continue;
+      }
+    } else {
+      continue;
+    }
+
+    // update the id of the connection
+    sscanf(msg, "[%d ", &this->ids[i]);
+
+    switch (this->ids[i]) {
+      case TACHI_NW_LEG_DEVID:
+      case TACHI_NE_LEG_DEVID:
+      case TACHI_SW_LEG_DEVID:
+      case TACHI_SE_LEG_DEVID:
+        legid = this->getlegid(this->ids[i]);
+        sscanf(msg, "[%d %d %d %d]\n", &this->ids[i],
+            &encoder[ENCODER_WAIST],
+            &encoder[ENCODER_THIGH],
+            &encoder[ENCODER_SHIN]);
+        for (n = 0; n < 3; n++) {
+          this->curr_enc[legid](n) = (double)encoder[n];
+        }
+        break;
+      case TACHI_NW_WHEEL_DEVID:
+      case TACHI_NE_WHEEL_DEVID:
+      case TACHI_SW_WHEEL_DEVID:
+      case TACHI_SE_WHEEL_DEVID:
+        wheelid = this->getwheelid(this->ids[i]);
+        printf("%d\n", wheelid); // TODO: remove
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+/** Update the walking pose
+ *  @param forward
+ *    the speed of the forward (0 to 1)
+ *  @param backward
+ *    the speed of the backward (0 to 1)
+ *  @param turn_left
+ *    the speed of the left turning (0 to 1)
+ *  @param turn_right
+ *    the speed of the right turning (0 to 1)
+ */
+void tachikoma::update_walk(double forward, double backward, double turn_left, double turn_right) {
+  // TODO: COMPLETE THIS METHOD
+}
+
+/** Update the standing pose
+ */
+void tachikoma::update_stand(void) {
+  // TODO: COMPLETE THIS METHOD
+}
+
+/** Update the wheels and their poses
+ */
+void tachikoma::update_drive(void) {
+  double angle;
+  arma::vec angles(4);
+  arma::vec enc(4);
+  arma::vec p;
+  arma::vec q[4];
+  int i;
+  arma::vec speed(4);
+  arma::vec direction(4);
+  arma::vec turning(4);
+  arma::vec wheel_vel;
+  double vel;
+ 
+  // TODO: test
+  // Three particular states:
+  // 1) forward motion
+  // 2) sideways motion
+  // 3) everything else
+
+  if (this->base[0].y != 0.0 &&
+      this->base[0].x == 0.0 &&
+      this->base[0].yaw == 0.0) {
+    vel = this->base[0].y * 255.0;
+    direction = arma::vec({ -1.0, 1.0, -1.0, 1.0 });
+    angle = 0.0;
+    wheel_vel = direction * vel;
+    for (i = 0; i < 4; i++) {
+      enc(i) = rad2enc(angle + waist_angle[i]);
+      this->legval[i][ENCODER_WAIST] = 255 *
+          (enc(i) < this->curr_enc[i](0) ? 1 :
+            (enc(i) > this->curr_enc[i](0) ? -1 : 0));
+      this->wheelval[i][0] = limit((int)round(wheel_vel(i) * 255.0), -255, 255);
+    }
+  } else if (this->base[0].y == 0.0 &&
+             this->base[0].x != 0.0 &&
+             this->base[0].yaw == 0.0) {
+    vel = this->base[0].x * 255.0;
+    direction = arma::vec({ -1.0, -1.0, 1.0, 1.0 });
+    angle = M_PI_2;
+    wheel_vel = direction * vel;
+    for (i = 0; i < 4; i++) {
+      enc(i) = rad2enc(angle + waist_angle[i]);
+      this->legval[i][ENCODER_WAIST] = 255 *
+          (enc(i) < this->curr_enc[i](0) ? 1 :
+            (enc(i) > this->curr_enc[i](0) ? -1 : 0));
+      this->wheelval[i][0] = limit((int)round(wheel_vel(i) * 255.0), -255, 255);
+    }
+  } else {
+    angle = M_PI_4; // this will have to be calibrated
+    p = arma::vec({ this->base[0].x, this->base[0].y });
+
+    // place the angle onto the robot's waist motors
+    for (i = 0; i < TACHI_NUM_WHEEL_DEV; i++) {
+      enc(i) = rad2enc(angle + waist_angle[i]);
+      this->legval[i][ENCODER_WAIST] = 255 *
+          (enc(i) < this->curr_enc[i](0) ? 1 :
+            (enc(i) > this->curr_enc[i](0) ? -1 : 0));
+
+      // get wheel angles
+      angles(i) = waist_angle[i] + enc2rad(this->curr_enc[i](ENCODER_WAIST));
+      // move the wheels according the to direction of the current angle, and its normal
+      q[i] = arma::vec({ -sin(angles(i)), cos(angles(i)) });
+      speed(i) = arma::dot(p, q[i]);
+      direction(i) = speed(i) / abs(speed(i));
+      speed(i) = abs(speed(i));
+      turning(i) = base[0].yaw;
+    }
+    // normalize according to the largest speed
+    speed /= arma::max(speed);
+    wheel_vel = speed % direction + turning;
+    for (i = 0; i < TACHI_NUM_WHEEL_DEV; i++) {
+      this->wheelval[i][0] = limit((int)round(wheel_vel(i) * 255.0), -255, 255);
+    }
+  }
+}
+
 /** Solve the xyz coordinate of the leg using forward kinematics
  *  @param legid
  *    the legid to solve for
@@ -470,7 +526,7 @@ void tachikoma::leg_fk_solve(int legid) {
   double cosv, sinv;
   double theta, delta;
   double A, B, C;
-  arma::mat T(4, 4);
+  arma::mat T;
   arma::vec L;
 
   // define reference frame 3
@@ -481,7 +537,7 @@ void tachikoma::leg_fk_solve(int legid) {
   A = cos_rule_distance(thigh_pivot_length, thigh_length, thigh_pivot_angle);
   delta = cos_rule_angle(A, thigh_length, thigh_pivot_length); // account for curve
   C = enc2cm(this->curr_enc[legid](ENCODER_SHIN));
-  theta = -(cos_rule_angle(thigh_length_lower, shin_length_upper, C) - delta - M_PI);
+  theta = -(cos_rule_angle(thigh_lower_length, shin_upper_length, C) - delta - M_PI);
   // do transformation
   cosv = cos(theta);
   sinv = sin(theta);
@@ -495,7 +551,7 @@ void tachikoma::leg_fk_solve(int legid) {
 
   // solve for the transformation in reference frame 1
   // find the theta for the thigh transform
-  B = cos_rule_distance(waist_radius, waist_height, M_PI_2);
+  B = cos_rule_distance(thigh_x, thigh_z, M_PI_2);
   C = enc2cm(this->curr_enc[legid](ENCODER_THIGH));
   theta = -cos_rule_angle(A, B, C);
   // do transformation
@@ -535,7 +591,6 @@ void tachikoma::leg_fk_solve(int legid) {
 void tachikoma::leg_ik_solve(int legid, const arma::vec &target) {
   double theta, delta;
   double A, B, C;
-  arma::mat T(4, 4);
   arma::vec L;
   arma::vec encoder(3);
 
@@ -554,12 +609,12 @@ void tachikoma::leg_ik_solve(int legid, const arma::vec &target) {
   C = mag(arma::vec({ L(0), L(1), L(2) }));
   theta = cos_rule_angle(A, B, C) + delta;
   encoder(ENCODER_SHIN) = cm2enc(cos_rule_distance(
-        thigh_length_lower, shin_length_upper, theta));
+        thigh_lower_length, shin_upper_length, theta));
 
   // invert the transformation for reference frame 2
   theta -= delta;
-  theta = M_PI_2 + M_PI_4 - theta - atan2(waist_height, waist_radius);
-  B = mag(arma::vec({ waist_radius, 0.0, waist_height }));
+  theta = M_PI_2 + M_PI_4 - theta - atan2(thigh_z, thigh_x);
+  B = mag(arma::vec({ thigh_x, 0.0, thigh_z }));
   encoder(ENCODER_THIGH) = cm2enc(cos_rule_distance(A, B, theta));
 
   this->target_enc[legid] = encoder;
@@ -578,6 +633,25 @@ void tachikoma::leg_ik_solve(int legid, const arma::vec &target) {
  *  @return the limited value
  */
 static int limit(int value, int min_value, int max_value) {
+  if (value < min_value) {
+    return min_value;
+  } else if (value > max_value) {
+    return max_value;
+  } else {
+    return value;
+  }
+}
+
+/** Limit an a value between a range (double)
+ *  @param value
+ *    the value to be limited
+ *  @param min_value
+ *    minimum value
+ *  @param max_value
+ *    maximum value
+ *  @return the limited value
+ */
+static double limitf(double value, double min_value, double max_value) {
   if (value < min_value) {
     return min_value;
   } else if (value > max_value) {
@@ -618,7 +692,7 @@ static int cm2enc(double length) {
   ratio = (high_reading - low_reading) / (double)(high_distance - low_distance);
   // bound values
   length = limit(length, low_distance, high_distance);
-  return (int)(ratio * (length - low_distance) + low_reading);
+  return (int)round(ratio * (length - low_distance) + low_reading);
 }
 
 /** Conversion from encoder reading into radians
@@ -630,12 +704,12 @@ static double enc2rad(int encoder_reading) {
   const int low_reading = 0;
   const int high_reading = 100;
   const double low_degree = 0.0;
-  const double high_degree = 90.0;
+  const double high_degree = M_PI_2;
   double ratio;
   ratio = (high_degree - low_degree) / (double)(high_reading - low_reading);
   // boumd values
   encoder_reading = limit(encoder_reading, low_reading, high_reading);
-  return deg2rad(ratio * (encoder_reading - low_reading) + low_degree);
+  return ratio * (encoder_reading - low_reading) + low_degree;
 }
 
 /** Conversion from radians into encoder reading
@@ -644,33 +718,15 @@ static double enc2rad(int encoder_reading) {
  *  @return the conversion into encoder readings
  */
 static int rad2enc(double radians) {
-  const int low_reading = 0;
-  const int high_reading = 100;
+  const int low_reading = 19;
+  const int high_reading = 553;
   const double low_degree = 0.0;
-  const double high_degree = 90.0;
+  const double high_degree = M_PI_2;
   double ratio;
   ratio = (high_reading - low_reading) / (double)(high_degree - low_degree);
   // boumd values
   radians = limit(radians, low_degree, high_degree);
-  return (int)deg2rad(ratio * (radians - low_degree) + low_reading);
-}
-
-/** Conversion from degrees to radians
- *  @param deg
- *    the degrees
- *  @return radians
- */
-static double deg2rad(double deg) {
-  return deg * M_PI / 180.0;
-}
-
-/** Conversion from radians to degrees
- *  @param rad
- *    the radians
- *  @return degrees
- */
-static double rad2deg(double rad) {
-  return rad * 180.0 / M_PI;
+  return (int)round(ratio * (radians - low_degree) + low_reading);
 }
 
 /** Return the magnitude of a vector
@@ -708,13 +764,35 @@ static double cos_rule_distance(double A, double B, double c) {
   return sqrt(A * A + B * B - 2.0 * A * B * cos(c));
 }
 
-// TODO: replace
-bool finished(int legid) {
-  return true;
+/** Leg motion vector: sin function
+ *  @param start
+ *    the start position
+ *  @param stop
+ *    the stop position
+ *  @param t
+ *    the ratio of time (0.0 - 1.0)
+ *  @return the approximated curve position
+ */
+static arma::vec sin_motion(const arma::vec &start, const arma::vec &stop, double t) {
+  double theta = M_PI * t;
+  arma::vec diff = stop - start;
+  double height = 10.0; // TODO : configure
+  arma::vec delta = diff * t;
+  delta(1) += sin(theta / mag(diff)) * height;
+  return start + delta;
 }
 
-/** Leg motion vector: lift up and move forward
+/** Leg motion vector: linear function
+ *  @param start
+ *    the start position
+ *  @param stop
+ *    the stop position
+ *  @param t
+ *    the ratio of time (0.0 - 1.0)
+ *  @return the approximated curve position
  */
-arma::vec forward_lift(const arma::vec &start, const arma::vec &stop, double t) {
-  return arma::vec(4);
+static arma::vec linear_motion(const arma::vec &start, const arma::vec &stop, double t) {
+  arma::vec diff = stop - start;
+  arma::vec delta = diff * t;
+  return start + delta;
 }

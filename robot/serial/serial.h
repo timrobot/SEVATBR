@@ -2,9 +2,9 @@
 #define serial_h
 
 #include <stdint.h>
-#define SWBUFMAX    64
-#define SWREADMAX   32
-#define SWWRITEMAX  32
+#define SWBUFMAX    128
+#define SWREADMAX   64
+#define SWWRITEMAX  64
 
 #ifdef __cplusplus
 extern "C" {
