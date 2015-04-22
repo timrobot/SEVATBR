@@ -69,15 +69,16 @@ int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
   } else {
     typestr = type;
   }
-  if (strcmp(typestr, "GET") == 0) {
-    sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n",
-        typestr, addr, connection->hostname);
-  } else {
+  if (strcmp(typestr, "POST") == 0) {
     sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n"
         "Content-Length: %zd\r\n"
         "Content-Type: application/x-www-form-urlencoded\r\n\r\n",
         typestr, addr, connection->hostname, strlen(data));
     strcat(msgbuf, data);
+    strcat(msgbuf, "\r\n");
+  } else {
+    sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n",
+        typestr, addr, connection->hostname);
   }
   return send(connection->socket_fd, msgbuf, strlen(msgbuf), 0);
 }
@@ -88,7 +89,8 @@ int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
  *  @return a message if it is received, otherwise NULL
  */
 char *httplink_recv(httplink_t *connection) {
-  int n = recv(connection->socket_fd, response, sizeof(response) - sizeof(char), 0);
+  int n;
+  n = recv(connection->socket_fd, response, sizeof(response) - sizeof(char), 0);
   if (n == -1) {
     return NULL;
   }
