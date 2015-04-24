@@ -89,6 +89,9 @@ def run(bestBlobCallback=False):
                 best.drawRect(color=Color.BLUE, width=10)
             if bestBlobCallback:
                 bestBlobCallback(img, best)
+            if best is not None:
+                print "About %s inches away" % (880000.0 / best.area())
+
         img.save(disp)
         if disp.mouseLeft:
             break
