@@ -1,11 +1,11 @@
 CC = g++
 CFLAGS = -pedantic -Wall -std=c++11 -O3
 LIBS = -larmadillo
-OBJECTS = ActionState.o
+OBJECTS = actionstate.o
 
 all: $(OBJECTS)
 
-ActionState.o: ActionState.cpp
+actionstate.o: actionstate.cpp
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:

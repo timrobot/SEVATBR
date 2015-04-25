@@ -1,11 +1,11 @@
-#ifndef ActionState_h
-#define ActionState_h
+#ifndef actionstate_h
+#define actionstate_h
 
 #include <armadillo>
 
 typedef arma::vec (*ActionFcn)(const arma::vec &start, const arma::vec &stop, double t);
 
-class ActionState {
+class actionstate {
   private:
     arma::vec motion_vector;
 
@@ -15,8 +15,8 @@ class ActionState {
     ActionFcn motionFcn;
     double toleranceError;
 
-    ActionState(void);
-    ActionState(const arma::vec &start,
+    actionstate(void);
+    actionstate(const arma::vec &start,
                 const arma::vec &stop,
                 ActionFcn motion,
                 double tolerance = 1.0);
@@ -24,14 +24,14 @@ class ActionState {
     bool finished(const arma::vec &currpos);
 };
 
-class ActionSequence { // Piecewise functions
+class actionsequence { // Piecewise functions
   public:
-    std::vector<ActionState> sequence;
+    std::vector<actionstate> sequence;
     int curr_action;
     arma::vec get_motion_vector(const arma::vec &currPos);
     bool finished(const arma::vec &currPos);
     void next_action(void);
-    void add_action(const ActionState &action);
+    void add_action(const actionstate &action);
 };
 
 #endif
