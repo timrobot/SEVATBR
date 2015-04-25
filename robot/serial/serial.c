@@ -11,7 +11,7 @@
 #include "serial.h"
 
 #define INPUT_DIR "/dev/"
-static char const *PREFIXES[3] = {
+static char const *PREFIXES[] = {
   "ttyACM",
   NULL
 };
@@ -184,7 +184,6 @@ static void _serial_update(serial_t *connection) {
       bytesStored -= SWREADMAX / 2;
       memmove(connection->buffer, &connection->buffer[SWREADMAX / 2],
           (bytesStored + 1) * sizeof(char));
-      connection->buffer[bytesStored + 1] = '\0';
     }
     strcat(connection->buffer, tempbuf);
   }
