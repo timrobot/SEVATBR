@@ -2,6 +2,7 @@ from SimpleCV import *
 from prquadtree import *
 from particlefilter import ParticleFilter
 
+testing = 0
 ## Initializes particle filter.
 #
 #    @param img SimpleCV.Image captured image
@@ -21,12 +22,13 @@ def external_init_particle_filter(img):
 # @return HSV converted image 
 #
 def image_hue_filter(img, ball=True):
-    global bcolor
+    global testing
     if ball:
         # good tested values
         return img.hueDistance(32, minsaturation=72, minvalue=120)
     # good tested values
-    return img.hueDistance(105, minsaturation=80, minvalue=75)
+    return img.hueDistance(112, minsaturation=80, minvalue=75)
+
 
 ## Gets basket blobs after hue distance filtering.
 #
