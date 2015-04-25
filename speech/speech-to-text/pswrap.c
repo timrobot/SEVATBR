@@ -13,7 +13,7 @@ int pswrap_init(pswrap_t *info) {
   info->config = cmd_ln_init(NULL, ps_args(), TRUE,
       "-hmm", MODELDIR "/en-us/en-us",
       "-lm", MODELDIR "/en-us/en-us.lm.dmp",
-      "-dict", MODELDIR "/en-us/cmudict-en-us.dict",      // custom dictionary
+      "-dict", "custom.dict",      // custom dictionary
       NULL);
   if (!info->config) {
     fprintf(stderr, "[pswrap] Cannot init config.\n");
