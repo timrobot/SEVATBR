@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <signal.h>
-#include "speech_signal.h"
+#include "stt.h"
 
 static unsigned char stopsig;
 
@@ -9,17 +9,17 @@ void stop(int param) {
 }
 
 int main(int argc, char **argv) {
+  char hyp[256];
   signal(SIGINT, stop);
-
-  start_speech_signals();
-  speech_signal_t sigframe;
+  stt_start_listening();
 
   while (!stopsig) {
-    get_signal(&sigframe);
-//    printf("none: \t%d\ngo: \t%d\n, stop: \t%d\n, fetch: \t%d\n, ret: \t%d\n",
-//        sigframe.none, sigframe.go, sigframe.stop, sigframe.fetch, sigframe.ret);
+    int n = stt_listen(hyp);
+    if (n) {
+      printf("HYPOTHESIS: [%s]\n", hyp);
+    }
   }
 
-  stop_speech_signals();
+  stt_stop_listening();
   return 0;
 }

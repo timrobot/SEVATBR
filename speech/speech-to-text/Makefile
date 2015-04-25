@@ -1,35 +1,38 @@
-OBJECTS = rawrec.o stt.o speech_signal.o test.o
-TARGET = test
+CC = gcc
+CFLAGS = -O3
+GSTFLAGS = `pkg-config --cflags gstreamer-0.10`
+PSFLAGS = `pkg-config --cflags pocketsphinx sphinxbase`
+GSTLIBS = `pkg-config --libs gstreamer-0.10`
+PSLIBS = `pkg-config --libs pocketsphinx sphinxbase`
+INCLUDE = -I/usr/local/include/pocketsphinx/ -I/usr/local/include/sphinxbase/ \
+          -I/usr/include/gstreamer-0.10/ -I/usr/include/glib-2.0/
+MODELDIR = /usr/local/share/pocketsphinx/model
+OBJECTS = pswrap.o rawrec.o listen.o stt.o test.o
+TARGET = listen test
 
 all: $(OBJECTS) $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	gcc -O3 -o $@ $^ \
-		`pkg-config --cflags gstreamer-0.10` `pkg-config --libs gstreamer-0.10` \
-		-I/usr/include/pocketsphinx/ \
-		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
-		`pkg-config --cflags --libs pocketsphinx sphinxbase`
-
-rawrec.o: rawrec.c
-	gcc -O3 -o $@ `pkg-config --cflags gstreamer-0.10` -c $<
-
-stt.o: stt.c
-	gcc -O3 -o $@ -c $< \
-		-I/usr/include/pocketsphinx/ \
-		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
-		`pkg-config --cflags --libs pocketsphinx sphinxbase`
-
-speech_signal.o: speech_signal.c
-	gcc -O3 -o $@ -c $< \
-		-I/usr/include/pocketsphinx/ \
-		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
-		`pkg-config --cflags --libs pocketsphinx sphinxbase` -pthread
+test: stt.o test.o
+	$(CC) $(CFLAGS) -o $@ $^
 
 test.o: test.c
-	gcc -O3 -o $@ -c $< \
-		-I/usr/include/pocketsphinx/ \
-		-DMODELDIR=\"`pkg-config --variable=modeldir pocketsphinx`\" \
-		`pkg-config --cflags --libs pocketsphinx sphinxbase` -pthread
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+stt.o: stt.c
+	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE)
+
+listen: pswrap.o rawrec.o listen.o
+	$(CC) $(CFLAGS) $(PSFLAGS) $(GSTFLAGS) -o $@ $^ $(INCLUDE) \
+	$(LIBS) $(PSLIBS) $(GSTLIBS) -DMODELDIR=\"$(MODELDIR)\"
+
+listen.o: listen.c
+	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE)
+
+pswrap.o: pswrap.c
+	$(CC) $(CFLAGS) $(PSFLAGS) -o $@ -c $< $(INCLUDE) -DMODELDIR=\"$(MODELDIR)\"
+
+rawrec.o: rawrec.c
+	$(CC) $(CFLAGS) $(GSTFLAGS) -o $@ -c $< $(INCLUDE)
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

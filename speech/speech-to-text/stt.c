@@ -1,87 +1,101 @@
-#include "stt.h"
-#include <stdio.h>
-#include <string.h>
+#include <unistd.h>
 #include <signal.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include "stt.h"
 
-/** Initialize the speech engine
- *  @param info
- *    the information struct for the engine
- *  @return 0 on success, -1 otherwise
+static int lisinit;
+static int lispid;
+static int lisfd[2];
+static char readbuf[256];
+static int bufindex;
+static char phrase[128];
+static char interim[128];
+
+/** Start recording
+ *  @return 0 on success, otherwise -1
  */
-int stt_init(stt_t *info) {
-  info->config = cmd_ln_init(NULL, ps_args(), TRUE,
-      "-hmm", MODELDIR "/hmm/en_US/hub4wsj_sc_8k",
-      "-lm", MODELDIR "/lm/en_US/hub4.5000.DMP",
-      "-dict", MODELDIR "/lm/en_US/cmu07a.dic",      // custom dictionary
-      NULL);
-  if (!info->config) {
-    fprintf(stderr, "[stt] Cannot init config.\n");
-    goto error;
+int stt_start_listening(void) {
+  if (!lisinit) {
+    lisinit = 1;
+    // start pocketsphinx process (to get rid of stderr)
+    if (pipe(lisfd) == -1) {
+      fprintf(stderr, "[stt] Error: cannot create the listener pipe\n");
+      return -1;
+    }
+    lispid = fork();
+    if (lispid == 0) {
+      close(1);
+      if (dup(lisfd[1]) == -1) {
+        fprintf(stderr, "[stt] {child} Warning: cannot redirect listener output\n");
+        exit(1);
+      }
+      close(2); // stop seeing stderr INFO
+      execlp("./listen", "listen", NULL);
+      printf("[stt] {child} Error: bad ps subprocess exec\n");
+      exit(1);
+    } else if (lispid > 0) {
+      // make read nonblocking
+      int flags;
+      flags = fcntl(lisfd[0], F_GETFL, 0);
+      fcntl(lisfd[0], F_SETFL, flags | O_NONBLOCK);
+    } else {
+      fprintf(stderr, "[stt] Error: could not create ps subprocess\n");
+      return -1;
+    }
+    return 0;
   }
-
-  info->ps = ps_init(info->config);
-  if (!info->ps) {
-    fprintf(stderr, "[stt] Cannot init ps.\n");
-    goto error;
-  }
-
-  return 0;
-
-error:
-  memset(info, 0, sizeof(stt_t));
   return -1;
 }
 
-/** Try to decipher a file
- *  @param info
- *    the information struct for the engine
- *  @return n characters deciphered on success,
- *    -1 otherwise
+/** Gets the current state of signals for the sigframe
+ *  @param buffer
+ *    the buffer to copy the hypothesis to
+ *  @return the length of the buffer
  */
-int stt_decipher(stt_t *info, char *filename, char **buf) {
-  FILE *fh;
-  char *fncpy;
-  int rv;
-  char const *hyp, *uttid;
-  int score;
-
-  // open file
-  fh = fopen(filename, "rb");
-  if (!fh) {
-    fprintf(stderr, "[stt] Cannot find file: %s.\n", filename);
-    return -1;
+int stt_listen(char *buffer) {
+  char *decistr;
+  int found;
+  found = 0;
+  while (read(lisfd[0], interim, 127) > 0) {
+    int i;
+    if (bufindex + strlen(interim) >= sizeof(readbuf)) {
+      memmove(readbuf, &readbuf[128], 128);
+    }
+    // state machine
+    for (i = 0; i < strlen(interim); i++) {
+      if (interim[i] == '\n') {
+        if (strncmp(readbuf, "hypothesis:", 9) == 0) {
+          bufindex -= 13;
+          strncpy(phrase, &readbuf[12], bufindex);
+          phrase[bufindex] = '\0';
+          found = 1;
+        }
+        bufindex = 0;
+      } else {
+        readbuf[bufindex++] = interim[i];
+      }
+    }
   }
-
-  // get data
-  fncpy = (char *)malloc((strlen(filename) + 1) * sizeof(char));
-  strcpy(fncpy, filename);
-  fncpy[strlen(fncpy) - 4] = '\0';
-  rv = ps_decode_raw(info->ps, fh, fncpy, -1);
-  free(fncpy);
-  if (rv < 0) {
-    fprintf(stderr, "[stt] Couldn't decode file: %s.\n", filename);
-    return -1;
+  if (found) {
+    strcpy(buffer, phrase);
+    return strlen(phrase);
+  } else {
+    return 0;
   }
-
-  // decode
-  hyp = ps_get_hyp(info->ps, &score, &uttid);
-  if (!hyp) {
-    fprintf(stderr, "[stt] Cannot get hypothesis\n");
-    return -1;
-  }
-
-  *buf = (char *)hyp;
-  fclose(fh);
-  return strlen(*buf);
 }
 
-/** Remove the speech engine
- *  @param info
- *    the information struct for the engine
- */
-void stt_free(stt_t *info) {
-  if (info->ps) {
-    ps_free(info->ps);
-    memset(info, 0, sizeof(stt_t));
+/** Stop recording
+*/
+void stt_stop_listening(void) {
+  if (lisinit) {
+    close(lisfd[0]);
+    close(lisfd[1]);
+    kill(lispid, SIGINT);
+    waitpid(lispid, NULL, 0);
+    lisinit = 0;
   }
 }
