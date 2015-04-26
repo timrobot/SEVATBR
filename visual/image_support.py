@@ -27,7 +27,9 @@ def image_hue_filter(img, ball=True):
         # good tested values
         return img.hueDistance(32, minsaturation=72, minvalue=120)
     # good tested values
-    return img.hueDistance(112, minsaturation=80, minvalue=75)
+    #testing += 1
+    #print testing
+    return img.hueDistance(63, minsaturation=105, minvalue=60)
 
 
 ## Gets basket blobs after hue distance filtering.
@@ -64,7 +66,7 @@ def get_best_blob(blobs, particle_filter):
     for b in blobs:
         score = b.area()
         #take particle filter score into account
-        score += particle_filter.score(b)
+        #score += particle_filter.score(b)
         if largest_score is False or score > largest_score:
             best_blob = b
             largest_score = score
