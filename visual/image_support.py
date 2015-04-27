@@ -1,8 +1,11 @@
 from SimpleCV import *
 from prquadtree import *
 from particlefilter import ParticleFilter
+import sys
+import os
 
 testing = 0
+devnull = f = open(os.devnull, 'w')
 ## Initializes particle filter.
 #
 #    @param img SimpleCV.Image captured image
@@ -21,15 +24,17 @@ def external_init_particle_filter(img):
 # @param color tuple of RGB values of singe 'H' value of HSV
 # @return HSV converted image 
 #
-def image_hue_filter(img, ball=True):
+def image_hue_filter(img, mode):
     global testing
-    if ball:
-        # good tested values
-        return img.hueDistance(32, minsaturation=72, minvalue=120)
-    # good tested values
     #testing += 1
     #print testing
-    return img.hueDistance(63, minsaturation=105, minvalue=60)
+    if mode == "ball":
+        # good tested values
+        return img.hueDistance(41, minsaturation=30, minvalue=80)
+    elif mode == "basket":
+        # good tested values
+        #return img.hueDistance(110, minsaturation=105, minvalue=60)
+        return img.hueDistance(112, minsaturation=30, minvalue=80)
 
 
 ## Gets basket blobs after hue distance filtering.
@@ -54,22 +59,28 @@ def get_hue_blobs(img):
 # @param blobs: list of potential HSV blobs
 # @param particle_filter: initialized ParticleFilter object 
 # @return The largest blob found or None.
-def get_best_blob(blobs, particle_filter):
+def get_best_blob(blobs, particle_filter, mode):
     def c_diff(c1, c2):
         return sum([abs(x-y) for x,y in zip(c1,c2)]) #sums the abs diff
-
     if blobs is None:
         return None
     # find the largest blob which has closest mean color to target color
     largest_score = False
     best_blob = None
+    orig = sys.stdout
+    sys.stdout = devnull
     for b in blobs:
+        if mode == "basket" and not b.isRectangle():
+            continue
+        elif mode == "ball" and not b.isCircle(.2):
+            continue
         score = b.area()
         #take particle filter score into account
         #score += particle_filter.score(b)
         if largest_score is False or score > largest_score:
             best_blob = b
             largest_score = score
+    sys.stdout = orig
     return best_blob
 
 ## Determines whether the given blob is in ceter of image.
