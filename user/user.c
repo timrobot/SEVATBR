@@ -4,19 +4,19 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include "httplink.h"
-#include "manual.h"
+#include "user.h"
 
 #define HZ  10
 
 static int input_id;
 static httplink_t server;
 static xboxctrl_t ctrl;
-static pose3d_t base;
-static pose3d_t arm;
+static pose3d_t user_base;
+static pose3d_t user_arm;
 static int new_join;
 static struct timeval last_signal;
-static int manual_en;
-static int manual_ovr;
+static int user_en;
+static int user_ovr;
 static void server_update(void);
 static void raise_server_request(int signum);
 static void controller_update(void);
@@ -25,17 +25,17 @@ static void controller_update(void);
 //      as of now, it can only handle one request at a time
 //      look at js async request handling for inspiration
 
-/** Connect to the manual connection - do not enable just yet.
+/** Connect to the user connection - do not enable just yet.
  *  @param id
- *    the id of the manual connection to connect to
+ *    the id of the user connection to connect to
  *  @return 0 on success, -1 otherwise
  */
-int manual_connect(int id) {
+int user_connect(int id) {
   int res;
   struct itimerval timer;
   input_id = id;
   switch (id) {
-    case MANUAL_SERVER:
+    case USER_SERVER:
       res = httplink_connect(&server, "sevatbr-v002.appspot.com");
       if (res != -1) {
         // assign unthrottle to sigalrm
@@ -43,7 +43,7 @@ int manual_connect(int id) {
         memset(&action, 0, sizeof(struct sigaction));
         action.sa_handler = raise_server_request;
         sigaction(SIGALRM, &action, NULL);
-        manual_ovr = 1;
+        user_ovr = 1;
       }
       // enable the timer to raise every 1/HZ time
       timer.it_value.tv_sec = 0;
@@ -53,7 +53,7 @@ int manual_connect(int id) {
       setitimer(ITIMER_REAL, &timer, NULL);
       return res;
 
-    case MANUAL_XBOXCTRL:
+    case USER_XBOXCTRL:
       xboxctrl_connect(&ctrl);
       return 0;
 
@@ -66,14 +66,14 @@ int manual_connect(int id) {
 /** Disconnect from the manual connection
  *  @return 0, else -1 on error
  */  
-int manual_disconnect(void) {
-  manual_set_enable(MANUAL_DISABLE);
+int user_disconnect(void) {
+  user_set_enable(USER_DISABLE);
   switch (input_id) {
-    case MANUAL_SERVER:
+    case USER_SERVER:
       // kill throttle timer
       return httplink_disconnect(&server);
 
-    case MANUAL_XBOXCTRL:
+    case USER_XBOXCTRL:
       xboxctrl_disconnect(&ctrl);
       return 0;
 
@@ -87,12 +87,12 @@ int manual_disconnect(void) {
  *  @param en
  *    enable flag
  */
-void manual_set_enable(int en) {
-  if (manual_en != en) {
-    manual_en = en;
+void user_set_enable(int en) {
+  if (user_en != en) {
+    user_en = en;
     if (en == 0) {
-      memset(&base, 0, sizeof(pose3d_t));
-      memset(&arm, 0, sizeof(pose3d_t));
+      memset(&user_base, 0, sizeof(pose3d_t));
+      memset(&user_arm, 0, sizeof(pose3d_t));
     }
   }
 }
@@ -100,13 +100,13 @@ void manual_set_enable(int en) {
 /** User override
  *  @return 1 if overridden, else 0
  */
-int manual_get_ovrreq(void) {
+int user_get_override(void) {
   switch (input_id) {
-    case MANUAL_SERVER:
+    case USER_SERVER:
       server_update();
-      return manual_ovr;
+      return user_ovr;
 
-    case MANUAL_XBOXCTRL:
+    case USER_XBOXCTRL:
       return 1;
 
     default:
@@ -122,34 +122,42 @@ int manual_get_ovrreq(void) {
  *    the arm struct
  *  @ return 1 if valid device chose, else 0
  */
-int manual_get_poses(pose3d_t *b, pose3d_t *a) {
+int user_get_poses(pose3d_t *base, pose3d_t *arm) {
   int val;
   switch (input_id) {
-    case MANUAL_SERVER:
+    case USER_SERVER:
       server_update(); // flush the server
       val = new_join;
       new_join = 0;
-      memcpy(b, &base, sizeof(pose3d_t));
-      memcpy(a, &arm, sizeof(pose3d_t));
+      memcpy(base, &user_base, sizeof(pose3d_t));
+      memcpy(arm, &user_arm, sizeof(pose3d_t));
       return val;
 
-    case MANUAL_XBOXCTRL:
+    case USER_XBOXCTRL:
       controller_update();
-      memcpy(b, &base, sizeof(pose3d_t));
-      memcpy(a, &arm, sizeof(pose3d_t));
+      memcpy(base, &user_base, sizeof(pose3d_t));
+      memcpy(arm, &user_arm, sizeof(pose3d_t));
       return 0;
 
     default:
-      memset(b, 0, sizeof(pose3d_t));
-      memset(a, 0, sizeof(pose3d_t));
+      memset(&user_base, 0, sizeof(pose3d_t));
+      memset(&user_arm, 0, sizeof(pose3d_t));
       return -1;
   }
+}
+
+/** Send a log to the user
+ *  @param msg
+ *    the log message to send over
+ */
+void user_log(const char *msg) {
+  httplink_send(&server, "/manual_log", "post", msg);
 }
 
 /** Get the full controller layout
  *  @return the controller struct
  */
-xboxctrl_t *manual_get_ctrl(void) {
+xboxctrl_t *user_get_ctrl(void) {
   return &ctrl;
 }
 
@@ -174,8 +182,8 @@ static void server_update(void) {
     diff = (currtime.tv_usec - last_signal.tv_usec) +
       (currtime.tv_sec - last_signal.tv_sec) * 1000000;
     if (diff >= 1000000) { // specified time is one second (lost internet connection)
-      memset(&base, 0, sizeof(pose3d_t));
-      memset(&arm, 0, sizeof(pose3d_t));
+      memset(&user_base, 0, sizeof(pose3d_t));
+      memset(&user_arm, 0, sizeof(pose3d_t));
       gettimeofday(&last_signal, NULL);
       new_join = 1;
     }
@@ -201,14 +209,14 @@ static void server_update(void) {
   drop =        (ctrlsig & 0x00000020) >> 5;
   grab =        (ctrlsig & 0x00000040) >> 6;
   release =     (ctrlsig & 0x00000080) >> 7;
-  manual_ovr =  (ctrlsig & 0x00000100) >> 8;
+  user_ovr =    (ctrlsig & 0x00000100) >> 8;
 
-  memset(&base, 0, sizeof(pose3d_t));
-  memset(&arm, 0, sizeof(pose3d_t));
-  base.y = (double)(up - down);
-  base.yaw = (double)(left - right);
-  arm.pitch = (double)(lift - drop);
-  arm.yaw = (double)(grab - release);
+  memset(&user_base, 0, sizeof(pose3d_t));
+  memset(&user_arm, 0, sizeof(pose3d_t));
+  user_base.y = (double)(up - down);
+  user_base.yaw = (double)(left - right);
+  user_arm.pitch = (double)(lift - drop);
+  user_arm.yaw = (double)(grab - release);
 
   // update the time and signal
   gettimeofday(&last_signal, NULL);
@@ -220,7 +228,7 @@ static void server_update(void) {
  *    the id for the signal
  */
 static void raise_server_request(int signum) {
-  if (!manual_en) {
+  if (!user_en) {
     struct itimerval timer;
     memset(&timer, 0, sizeof(struct itimerval));
     setitimer(ITIMER_REAL, &timer, NULL);
@@ -235,19 +243,19 @@ static void raise_server_request(int signum) {
 void controller_update(void) {
   int ltrunc, rtrunc;
   xboxctrl_update(&ctrl);
-  memset(&base, 0, sizeof(pose3d_t));
-  memset(&arm, 0, sizeof(pose3d_t));
+  memset(&user_base, 0, sizeof(pose3d_t));
+  memset(&user_arm, 0, sizeof(pose3d_t));
 
   ltrunc = (ctrl.LJOY.y > 0.4) ? 1 :
     ((ctrl.LJOY.y < -0.4) ? -1 : 0);
   rtrunc = (ctrl.RJOY.x > 0.4) ? 1 :
     ((ctrl.RJOY.x < -0.4) ? -1 : 0);
   if (ltrunc != 0) {
-    base.y = ltrunc * 1.0;
+    user_base.y = ltrunc * 1.0;
   } else {
-    base.yaw = rtrunc * -1.0;
+    user_base.yaw = rtrunc * -1.0;
   }
 
-  arm.pitch = (ctrl.B - ctrl.A) * 1.0;
-  arm.yaw = (ctrl.RB - ctrl.LB) * 1.0;
+  user_arm.pitch = (ctrl.B - ctrl.A) * 1.0;
+  user_arm.yaw = (ctrl.RB - ctrl.LB) * 1.0;
 }

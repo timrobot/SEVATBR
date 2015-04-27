@@ -61,7 +61,11 @@ int httplink_connect(httplink_t *connection, char *hostname) {
  *  @return n bytes sent over, -1 otherwise
  */
 int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
-  char const *typestr;
+  const char *typestr;
+  if (strlen(data) > 512) {
+    fprintf(stderr, "[httplink] Error: message is too long\n");
+    return -1;
+  }
   if (strcmp(type, "get") == 0) {
     typestr = "GET";
   } else if (strcmp(type, "post") == 0) {
@@ -70,14 +74,15 @@ int httplink_send(httplink_t *connection, char *addr, char *type, char *data) {
     typestr = type;
   }
   if (strcmp(typestr, "POST") == 0) {
-    sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n"
+    sprintf(msgbuf, "%s %s HTTP/1.1\r\n"
+        "Host: %s\r\n"
+        "Content-Type: application/x-www-form-urlencoded\r\n\r\n"
         "Content-Length: %zd\r\n"
-        "Content-Type: application/x-www-form-urlencoded\r\n\r\n",
-        typestr, addr, connection->hostname, strlen(data));
-    strcat(msgbuf, data);
-    strcat(msgbuf, "\r\n");
+        "%s\r\n\r\n",
+        typestr, addr, connection->hostname, strlen(data), data);
   } else {
-    sprintf(msgbuf, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n",
+    sprintf(msgbuf, "%s %s HTTP/1.1\r\n"
+        "Host: %s\r\n\r\n",
         typestr, addr, connection->hostname);
   }
   return send(connection->socket_fd, msgbuf, strlen(msgbuf), 0);

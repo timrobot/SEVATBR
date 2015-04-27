@@ -1,13 +1,13 @@
 CFLAGS = `pkg-config --cflags opencv` \
-	`pkg-config --cflags gstreamer-1.0`
+	`pkg-config --cflags gstreamer-1.0` -g
 LIBS = `pkg-config --libs opencv` \
 	`pkg-config --libs gstreamer-1.0`
 
-TARGETS = custom_plugin
+TARGETS = test
 
 all: $(TARGETS)
 
-custom_plugin: custom_plugin.cpp
+test: test.cpp
 	g++ -o $@ $< $(CFLAGS) $(LIBS)
 
 clean:

@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "robot.h"
-#include "manual.h"
+#include "user.h"
 #include "coord.h"
 
 // Signal handler for killing the program
@@ -51,22 +51,22 @@ int main(int argc, char *argv[]) {
 
   printf("CORE INITIALIZING...\n");
   signal(SIGINT, stop_program);
-  // init robot and manual
+  // init robot and user
   if (robot::set(TACHIKOMA) == -1) {
     return -1;
   }
-  if (manual_connect(MNL_CTRL) == -1) {
+  if (user_connect(USER_XBOXCTRL) == -1) {
     return -1;
   }
 
   // start getting communication accesses
   while (!stop_signal) {
-    manual_get_poses(base, arm);
+    user_get_poses(base, arm);
     robot::move(base, arm);
   }
 
   // clean up
-  manual_disconnect();
+  user_disconnect();
   robot::unset();
   printf("CORE COMPLETE.\n");
 
