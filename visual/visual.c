@@ -13,9 +13,17 @@ FILE *cmd_output;
 char buf[1024];
 int status;
 int procID;
+int CUR_MODE;
+
+void set_detection(int mode) {
+    if(mode != CUR_MODE) {
+        CUR_MODE = mode;
+        kill(procID, SIGUSR1);
+    }
+}
 
 int start_visual(void) {
-
+    CUR_MODE = DETECT_BASKET;
     result = pipe(pipefd);
     if (result < 0) {
         perror("pipe");
@@ -36,9 +44,19 @@ int start_visual(void) {
         execl("./visual.py", "doesntmatter", NULL);
         _exit(1);
     } else if (result > 0){
+        // waits for python process to START
+        close(pipefd[1]); /* Close writing end of pipe */
+
+        cmd_output = fdopen(pipefd[0], "r");
+
+        while(fgets(buf, sizeof buf, cmd_output)) {
+            if(strstr(buf, "VISUAL-PROC-STARTED") != NULL) {
+                break;
+            }
+        } 
         int flags;
-      flags = fcntl(pipefd[0], F_GETFL, 0);
-      fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
+        flags = fcntl(pipefd[0], F_GETFL, 0);
+        fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
     }
 
 }
@@ -51,6 +69,13 @@ int main() {
         get_position(my_buff);
         printf("%d here's output: %s\n", x, my_buff);
         x++;
+        if(x % 50000 == 0) {
+            if(CUR_MODE == DETECT_BASKET) {
+                set_detection(DETECT_BALL);
+            } else {
+                set_detection(DETECT_BASKET);
+            }
+        }
         // this simulates while loop of decision engine
     }
 

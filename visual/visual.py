@@ -104,7 +104,9 @@ def run():
     global particle_filter, mode, quiet
     cam = Camera(0, {"width" : 320, "height" : 460})
     disp = Display()
-
+    
+    print "VISUAL-PROC-STARTED"
+    sys.stdout.flush()
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
