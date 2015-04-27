@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include "stt.h"
 
-static char const *blacklist[] = { "\n", NULL };
+static const char *blacklist[] = { "\n", NULL };
 static int blacklist_contains(char *phrase);
 
 /** Start the listening process
@@ -100,7 +100,7 @@ int stt_stop_listening(stt_t *info) {
  */
 static int blacklist_contains(char *phrase) {
   int i;
-  char const *str;
+  const char *str;
   for (i = 0, str = blacklist[0]; str != NULL; str = blacklist[++i]) {
     if (strncmp(str, phrase, strlen(str)) == 0) {
       return 1;

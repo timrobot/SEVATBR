@@ -42,7 +42,7 @@ error:
 int pswrap_decipher(pswrap_t *info, char *filename, char **buf) {
   FILE *fh;
   int rv;
-  char const *hyp;
+  char *hyp;
   int score;
 
   // open file
@@ -60,13 +60,13 @@ int pswrap_decipher(pswrap_t *info, char *filename, char **buf) {
   }
 
   // decode
-  hyp = ps_get_hyp(info->ps, &score);
+  hyp = (char *)ps_get_hyp(info->ps, &score);
   if (!hyp) {
     fprintf(stderr, "[pswrap] Cannot get hypothesis\n");
     return -1;
   }
 
-  *buf = (char *)hyp;
+  *buf = hyp;
   fclose(fh);
   return strlen(hyp);
 }

@@ -1,18 +1,18 @@
 #include <festival.h>
 #include "tts.h"
 
-static int festival_initialized;
-static int voice_selected;
+static bool festival_initialized;
+static bool voice_selected;
 static void tts_init(void);
 
 static void tts_init(void) {
   if (!festival_initialized) {
     festival_initialize(1, 2100000);
-    festival_initialized = 1;
+    festival_initialized = true;
   }
 }
 
-int tts_select_voice(char const *voicename) {
+int tts_select_voice(const char *voicename) {
   char voice_selection[64];
   int res;
   if (!festival_initialized) {
@@ -20,12 +20,12 @@ int tts_select_voice(char const *voicename) {
   }
   sprintf(voice_selection, "(%s)", voicename);
   res = festival_eval_command((EST_String)voice_selection);
-  voice_selected = 1;
+  voice_selected = true;
   return res;
 }
 
 
-int tts_say(char const *msg) {
+int tts_say(const char *msg) {
   if (!voice_selected) {
     tts_select_voice("(voice_kal_diphone)");
   }

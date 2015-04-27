@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-int tts_select_voice(char const *voicename);
-int tts_say(char const *msg);
+int tts_select_voice(const char *voicename);
+int tts_say(const char *msg);
 
 #ifdef __cplusplus
 }
