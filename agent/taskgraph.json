@@ -1,0 +1,15 @@
+{
+  "idle": {
+    "edges": [{
+        "condition": "ballcount == 0",
+        "effect": "",
+        "transition": "findball"
+      }, {
+        "condition": "ballcount != 0",
+        "effect": "",
+        "transition": "findtbox"
+      }]
+  },
+  "findtbox": {
+  }
+}

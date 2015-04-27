@@ -4,8 +4,8 @@
 #include "coord.h"
 #include "parietal.h"
 
-static pthread_t conciousness;
-static int end_conciousness;
+static pthread_t conscienceness;
+static int end_conscienceness;
 
 typedef struct info {
   speech_signal_t ss;
@@ -19,10 +19,10 @@ void wakeup() {
   start_speech_signals();
   start_visual();
   set_objects(VISUAL_TENNIS_BALL, VISUAL_BASKET, NULL);
-  pthread_create(&conciousness, NULL, concious_thought, NULL);
+  pthread_create(&conscienceness, NULL, conscience_thought, NULL);
 }
 
-void *concious_thought(void *information) {
+void *conscience_thought(void *information) {
   info_t *info = (info_t *)information;
   enum goal_states { go, ret, stop };
   enum action_states {
@@ -100,8 +100,8 @@ void *concious_thought(void *information) {
 }
 
 void gotosleep() {
-  end_conciousness = 1;
-  pthread_join(conciousness, NULL);
+  end_conscienceness = 1;
+  pthread_join(conscienceness, NULL);
   stop_visual();
   stop_speech_signals();
 }
