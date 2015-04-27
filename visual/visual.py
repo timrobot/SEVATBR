@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 Simple detection of ball using SimpleCV (much easier than OpenCV). The run method
 identifies a tennis ball in the camera stream image. 'is_ball_middle' function
@@ -149,14 +150,17 @@ def run():
         img.save(disp)
         sys.stdout.flush()
 
-def handler(signum, frame):
+def switch_handler(signum, frame):
     global mode
-    print signum
     if mode == "basket":
         mode = "ball"
     elif mode == "ball":
         mode = "basket"
 
-signal.signal(signal.SIGUSR1, handler)
+def end_handler(signum, frame):
+    sys.exit(1)
+    
+signal.signal(signal.SIGUSR1, switch_handler)
+signal.signal(signal.SIGINT, end_handler)
 
 run()
