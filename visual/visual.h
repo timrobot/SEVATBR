@@ -1,9 +1,13 @@
 #ifndef visual_h
 #define visual_h
 
+#define DETECT_BALL 12
+#define DETECT_BASKET 13
+
 int start_visual(void);
-void set_objects(object_t *objs);
-void get_objects(object_t *objs, point_t *locations);
+void set_detection(int mode);
+/*for now just return int of some sort, TOOD: change to use point_t*/
+int get_position(char *buffer);
 void stop_visual(void);
 
 #endif
