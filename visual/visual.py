@@ -107,13 +107,14 @@ def run():
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
-        img = img.dilate(1)
         # close window with left click
         if disp.mouseLeft:
             break
 
         if mode == "ball":        
             img = _ball_image_hue_filter(img)
+            #img = img.dilate(2)
+            img = img.smooth()
             blobs = get_hue_blobs(img)
             if blobs:
                 blobs.draw()

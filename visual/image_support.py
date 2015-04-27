@@ -26,11 +26,11 @@ def external_init_particle_filter(img):
 #
 def image_hue_filter(img, mode):
     global testing
-    #testing += 1
-    #print testing
+    testing += 1
+    print testing
     if mode == "ball":
         # good tested values
-        return img.hueDistance(41, minsaturation=30, minvalue=80)
+        return img.hueDistance(30, minsaturation=0, minvalue=0)
     elif mode == "basket":
         # good tested values
         #return img.hueDistance(110, minsaturation=105, minvalue=60)
@@ -45,13 +45,13 @@ def image_hue_filter(img, mode):
 def get_hue_blobs(img):
     # accepted color range
     start_color = (0,0,0)
-    end_color = (20,20,20)
+    end_color = (30,30,30)
 
     # create binary mask based on color ranges
     mask = img.createBinaryMask(color1=start_color,color2=end_color)
 
     # find binary blobs in the image
-    blobs = img.findBlobsFromMask(mask, appx_level=10, minsize=20)
+    blobs = img.findBlobsFromMask(mask, appx_level=11, minsize=20)
     return blobs
 
 ## Returns the best blob out of the provided set and particle filter.
