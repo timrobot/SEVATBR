@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include "visual.h"
 
