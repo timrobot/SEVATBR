@@ -73,7 +73,7 @@ def run_middle():
 def run(bestBlobCallback=False):
     global particle_filter
 
-    cam = Camera()
+    cam = Camera(1)
     disp = Display()
     while disp.isNotDone():
         sleep(.05)
@@ -86,11 +86,10 @@ def run(bestBlobCallback=False):
             #blobs.show()
             best = get_best_blob(blobs, particle_filter)
             if is_blob_in_middle_helper(img, best):
+                print "About %s inches away" % (880000.0 / best.area())
                 best.drawRect(color=Color.BLUE, width=10)
             if bestBlobCallback:
                 bestBlobCallback(img, best)
-            if best is not None:
-                print "About %s inches away" % (880000.0 / best.area())
 
         img.save(disp)
         if disp.mouseLeft:
