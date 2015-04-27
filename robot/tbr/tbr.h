@@ -25,6 +25,9 @@ typedef struct tbr {
   int prev_right;
   int prev_arm;
   int prev_claw;
+
+  double sonar[3];
+  int potentiometer;
 } tbr_t;
 
 int tbr_connect(tbr_t *robot);

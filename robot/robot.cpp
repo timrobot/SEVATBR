@@ -43,7 +43,7 @@ int robot::set(uint32_t robotid) {
         printf("[ERROR] Could not connect all the devices on the tachikoma!\n");
         return -1;
       } else {
-        return (tachikoma *bot)->numconnected();
+        return ((tachikoma *)bot)->numconnected();
       }
 
     default:
@@ -71,7 +71,7 @@ int robot::unset(void) {
 
     case TACHIKOMA:
       if (bot) {
-        delete ((tachikoma *)bot);
+        delete (tachikoma *)bot;
       }
       break;
 
@@ -137,6 +137,30 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
 /** Have the robot sense the world around it
  *  @return sensor list ending with a NULL, else NULL
  */
-pose3d_t **robot::sense(void) {
-  return NULL;
+pose3d_t *robot::sense(void) {
+  pose3d_t *sensor_data;
+  tbr_t *tbr;
+  tachikoma *t;
+
+  switch (currid) {
+    case STANDARD_OUT:
+      return NULL;
+
+    case TENNIS_BALL_ROBOT:
+      tbr = (tbr_t *)bot;
+      tbr_recv(tbr);
+      // memory leak:
+      sensor_data = (pose3d_t *)calloc(4, sizeof(pose3d_t));
+      sensor_data[0].y = tbr->sonar[0];
+      sensor_data[1].y = tbr->sonar[1];
+      sensor_data[2].y = tbr->sonar[2];
+      return sensor_data;
+
+    case TACHIKOMA:
+      t = (tachikoma *)bot;
+      return t->observe();
+
+    default:
+      return NULL;
+  }
 }

@@ -38,7 +38,9 @@ int main(int argc, char *argv[]) {
     robot->base[1].z = (double)(ctrl.B - ctrl.A);
     robot->base[0].y = ctrl.LJOY.y;
     robot->base[0].yaw = -ctrl.RJOY.x;
-    robot->send();
+
+    robot->update(robot->base[0], robot->base[1], robot->arm[0], robot->arm[1]);
+
     msg = robot->read_manual(TACHI_NE_DEVID);
     if (msg) {
       printf("read: %s\n", msg);
@@ -51,7 +53,7 @@ int main(int argc, char *argv[]) {
 
   memset(robot->base, 0, sizeof(pose3d_t) * 2);
   memset(robot->arm, 0, sizeof(pose3d_t) * 2);
-  robot->send();
+  robot->update(robot->base[0], robot->base[1], robot->arm[0], robot->arm[1]);
   delete robot;
   xboxctrl_disconnect(&ctrl);
 

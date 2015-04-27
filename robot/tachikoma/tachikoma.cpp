@@ -29,9 +29,10 @@
 #define ENCODER_SHIN  2
 
 static int limit(int value, int min_value, int max_value);
-static double enc2cm(int encoder_reading);
+static double limitf(double value, double min_value, double max_value);
+static double enc2cm(int reading);
 static int cm2enc(double length);
-static double enc2rad(int encoder_reading);
+static double enc2rad(int reading);
 static int rad2enc(double radians);
 static double mag(const arma::vec &v);
 static double cos_rule_angle(double A, double B, double C);
@@ -119,7 +120,7 @@ bool tachikoma::connect(void) {
       msg = serial_read(&this->connections[n]);
     } while (!msg || strlen(msg) == 0);
     // if a valid device, add as connected, otherwise disconnect
-    sscanf(msg, "[%d", &id);
+    sscanf(msg, "[%d ", &id);
     if (id == TACHI_NW_LEG_DEVID ||
         id == TACHI_NE_LEG_DEVID ||
         id == TACHI_SW_LEG_DEVID ||
@@ -210,7 +211,7 @@ int tachikoma::numconnected(void) {
  */
 int tachikoma::update(pose3d_t wheelbase, pose3d_t legbase,
     pose3d_t leftarm, pose3d_t rightarm) {
-  int i;
+//  int i;
   memcpy(&this->base[0], &wheelbase, sizeof(pose3d_t));
   memcpy(&this->base[1], &legbase, sizeof(pose3d_t));
   memcpy(&this->arm[0], &legbase, sizeof(pose3d_t));
@@ -218,14 +219,21 @@ int tachikoma::update(pose3d_t wheelbase, pose3d_t legbase,
   this->recv();
 
   // update the legs
-  for (i = 0; i < TACHI_NUM_LEG_DEV; i++) {
-    this->leg_fk_solve(i);
-  }
+//  for (i = 0; i < TACHI_NUM_LEG_DEV; i++) {
+//    this->leg_fk_solve(i);
+//  }
   this->update_stand();
   this->update_drive();
-
+  // TODO add conversion from target enc to actual
   this->send();
   return 0;
+}
+
+/** Observe the current world
+ *  @return NULL for now
+ */
+pose3d_t *tachikoma::observe(void) {
+  return NULL;
 }
 
 /** Reset the robot values
@@ -312,11 +320,11 @@ void tachikoma::init_state_space(void) {
   // TODO: configure below
   arma::vec default_leg_pos[4];
   default_leg_pos[1] = arma::vec({ waist_x[1] + 20.0, waist_y[1], -30, 1.0 });
-  this->leg_seq[1].add_action(ActionState(
+  this->leg_seq[1].add_action(actionstate(
       default_leg_pos[1],
       forward_transform * default_leg_pos[1],
       sin_motion));
-  this->leg_seq[1].add_action(ActionState(
+  this->leg_seq[1].add_action(actionstate(
       forward_transform * default_leg_pos[1],
       default_leg_pos[1],
       linear_motion));
@@ -376,7 +384,7 @@ void tachikoma::recv(void) {
   int i;
   char *msg;
   int legid;
-  int wheelid;
+//  int wheelid;
   int encoder[3];
 
   for (i = 0; i < this->num_connected; i++) {
@@ -411,8 +419,7 @@ void tachikoma::recv(void) {
       case TACHI_NE_WHEEL_DEVID:
       case TACHI_SW_WHEEL_DEVID:
       case TACHI_SE_WHEEL_DEVID:
-        wheelid = this->getwheelid(this->ids[i]);
-        printf("%d\n", wheelid); // TODO: remove
+//        wheelid = this->getwheelid(this->ids[i]);
         break;
       default:
         break;
@@ -437,7 +444,27 @@ void tachikoma::update_walk(double forward, double backward, double turn_left, d
 /** Update the standing pose
  */
 void tachikoma::update_stand(void) {
-  // TODO: COMPLETE THIS METHOD
+  const double stand_high_thigh_actuator = 300.0;
+  const double stand_high_shin_actuator = 300.0;
+  const double stand_mid_thigh_actuator = 200.0;
+  const double stand_mid_shin_actuator = 200.0;
+  const double stand_low_thigh_actuator = 100.0;
+  const double stand_low_shin_actuator = 100.0;
+  int i;
+  for (i = 0; i < 4; i++) {
+    if (this->base[1].z > 0.0) {
+      this->target_enc[i](ENCODER_THIGH) = stand_high_thigh_actuator;
+      this->target_enc[i](ENCODER_SHIN) = stand_high_shin_actuator;
+    } else if (this->base[1].z < 0.0) {
+      this->target_enc[i](ENCODER_THIGH) = stand_low_thigh_actuator;
+      this->target_enc[i](ENCODER_SHIN) = stand_low_shin_actuator;
+    } else {
+      this->target_enc[i](ENCODER_THIGH) = stand_mid_thigh_actuator;
+      this->target_enc[i](ENCODER_SHIN) = stand_mid_shin_actuator;
+    }
+    this->legval[i][ENCODER_THIGH] = 0;
+    this->legval[i][ENCODER_SHIN] = 0;
+  }
 }
 
 /** Update the wheels and their poses
@@ -447,7 +474,8 @@ void tachikoma::update_drive(void) {
   arma::vec angles(4);
   arma::vec enc(4);
   arma::vec p;
-  arma::vec q[4];
+//  arma::vec q[4];
+  const int k = 5; // speed factor
   int i;
   arma::vec speed(4);
   arma::vec direction(4);
@@ -464,44 +492,56 @@ void tachikoma::update_drive(void) {
   if (this->base[0].y != 0.0 &&
       this->base[0].x == 0.0 &&
       this->base[0].yaw == 0.0) {
+    angle = 0.0;
     vel = this->base[0].y * 255.0;
     direction = arma::vec({ -1.0, 1.0, -1.0, 1.0 });
-    angle = 0.0;
     wheel_vel = direction * vel;
     for (i = 0; i < 4; i++) {
-      enc(i) = rad2enc(angle + waist_angle[i]);
-      this->legval[i][ENCODER_WAIST] = 255 *
-          (enc(i) < this->curr_enc[i](0) ? 1 :
-            (enc(i) > this->curr_enc[i](0) ? -1 : 0));
-      this->wheelval[i][0] = limit((int)round(wheel_vel(i) * 255.0), -255, 255);
+      this->target_enc[i](ENCODER_WAIST) = waist_pot_read_min[i] +
+          rad2enc(angle - waist_pot_min[i]);
+      this->legval[i][0] = k * (int)round(this->target_enc[i](ENCODER_WAIST) -
+          this->curr_enc[i](ENCODER_WAIST));
+      this->wheelval[i][0] = (int)round(wheel_vel(i) * 255.0);
     }
   } else if (this->base[0].y == 0.0 &&
              this->base[0].x != 0.0 &&
              this->base[0].yaw == 0.0) {
+    angle = M_PI_2;
     vel = this->base[0].x * 255.0;
     direction = arma::vec({ -1.0, -1.0, 1.0, 1.0 });
-    angle = M_PI_2;
     wheel_vel = direction * vel;
     for (i = 0; i < 4; i++) {
-      enc(i) = rad2enc(angle + waist_angle[i]);
-      this->legval[i][ENCODER_WAIST] = 255 *
-          (enc(i) < this->curr_enc[i](0) ? 1 :
-            (enc(i) > this->curr_enc[i](0) ? -1 : 0));
-      this->wheelval[i][0] = limit((int)round(wheel_vel(i) * 255.0), -255, 255);
+      this->target_enc[i](ENCODER_WAIST) = waist_pot_read_min[i] +
+          rad2enc(angle - waist_pot_min[i]);
+      this->legval[i][0] = k * (int)round(this->target_enc[i](ENCODER_WAIST) -
+          this->curr_enc[i](ENCODER_WAIST));
+      this->wheelval[i][0] = (int)round(wheel_vel(i) * 255.0);
     }
   } else {
+    // FOR NOW, DO A SIMPLE IMPLEMENTATION, no speed accimation
     angle = M_PI_4; // this will have to be calibrated
-    p = arma::vec({ this->base[0].x, this->base[0].y });
+//    p = arma::vec({ this->base[0].x, this->base[0].y });
+    wheel_vel = arma::vec({
+        limitf(-base[0].y - base[0].x + base[0].yaw, -1.0, 1.0),
+        limitf( base[0].y - base[0].x + base[0].yaw, -1.0, 1.0),
+        limitf(-base[0].y + base[0].x + base[0].yaw, -1.0, 1.0),
+        limitf( base[0].y + base[0].x + base[0].yaw, -1.0, 1.0)});
+    for (i = 0; i < 4; i++) {
+      this->target_enc[i](ENCODER_WAIST) = waist_pot_read_min[i] +
+          rad2enc(angle - waist_pot_min[i]);
+      this->legval[i][0] = k * (int)round(this->target_enc[i](ENCODER_WAIST) -
+          this->curr_enc[i](ENCODER_WAIST));
+      this->wheelval[i][0] = (int)round(wheel_vel(i) * 255.0);
+    }
 
     // place the angle onto the robot's waist motors
+    if (0) {
+      arma::vec q[4];
     for (i = 0; i < TACHI_NUM_WHEEL_DEV; i++) {
-      enc(i) = rad2enc(angle + waist_angle[i]);
-      this->legval[i][ENCODER_WAIST] = 255 *
-          (enc(i) < this->curr_enc[i](0) ? 1 :
-            (enc(i) > this->curr_enc[i](0) ? -1 : 0));
-
+      this->target_enc[i](ENCODER_WAIST) = rad2enc(angle);
       // get wheel angles
-      angles(i) = waist_angle[i] + enc2rad(this->curr_enc[i](ENCODER_WAIST));
+      angles(i) = waist_pot_min[i] + enc2rad(-waist_pot_read_min[i] +
+          this->curr_enc[i](ENCODER_WAIST));
       // move the wheels according the to direction of the current angle, and its normal
       q[i] = arma::vec({ -sin(angles(i)), cos(angles(i)) });
       speed(i) = arma::dot(p, q[i]);
@@ -513,8 +553,8 @@ void tachikoma::update_drive(void) {
     speed /= arma::max(speed);
     wheel_vel = speed % direction + turning;
     for (i = 0; i < TACHI_NUM_WHEEL_DEV; i++) {
-      this->wheelval[i][0] = limit((int)round(wheel_vel(i) * 255.0), -255, 255);
-    }
+      this->wheelval[i][0] = round(wheel_vel(i) * 255.0);
+    }}
   }
 }
 
@@ -662,20 +702,15 @@ static double limitf(double value, double min_value, double max_value) {
 }
 
 /** Conversion from encoder reading to actuator reading
- *  @param encoder_reading
+ *  @param reading
  *    the encoder reading
  *  @return the conversion into distance (centimeters)
  */
-static double enc2cm(int encoder_reading) {
-  const int low_reading = 0; // configure
-  const int high_reading = 100; // configure
-  const double low_distance = 12.0; // configure, inches
-  const double high_distance = 34.0; // configure, inches
+static double enc2cm(int reading) {
   double ratio;
-  ratio = (high_distance - low_distance) / (double)(high_reading - low_reading);
-  // bound values
-  encoder_reading = limit(encoder_reading, low_reading, high_reading);
-  return ratio * (encoder_reading - low_reading) + low_distance;
+  ratio = (actuator_max - actuator_min) / (double)(actuator_read_max - actuator_read_min);
+  reading = limit(reading, actuator_read_min, actuator_read_max);
+  return ratio * (reading - actuator_read_min) + actuator_min;
 }
 
 /** Conversion from encoder reading to actuator reading
@@ -684,32 +719,19 @@ static double enc2cm(int encoder_reading) {
  *  @return the conversion into encoder values
  */
 static int cm2enc(double length) {
-  const int low_reading = 0; // configure
-  const int high_reading = 100; // configure
-  const double low_distance = 12.0; // configure, cm
-  const double high_distance = 34.0; // configure, cm
   double ratio;
-  ratio = (high_reading - low_reading) / (double)(high_distance - low_distance);
-  // bound values
-  length = limit(length, low_distance, high_distance);
-  return (int)round(ratio * (length - low_distance) + low_reading);
+  ratio = (double)(actuator_read_max - actuator_read_min) / (actuator_max - actuator_min);
+  length = limitf(length, actuator_min, actuator_max);
+  return ratio * (length - actuator_min) + actuator_read_min;
 }
 
 /** Conversion from encoder reading into radians
- *  @param encoder_reading
+ *  @param reading
  *    the encoder reading
  *  @return the conversion into radians
  */
-static double enc2rad(int encoder_reading) {
-  const int low_reading = 0;
-  const int high_reading = 100;
-  const double low_degree = 0.0;
-  const double high_degree = M_PI_2;
-  double ratio;
-  ratio = (high_degree - low_degree) / (double)(high_reading - low_reading);
-  // boumd values
-  encoder_reading = limit(encoder_reading, low_reading, high_reading);
-  return ratio * (encoder_reading - low_reading) + low_degree;
+static double enc2rad(int reading) {
+  return reading / pot_rad_ratio;
 }
 
 /** Conversion from radians into encoder reading
@@ -718,15 +740,7 @@ static double enc2rad(int encoder_reading) {
  *  @return the conversion into encoder readings
  */
 static int rad2enc(double radians) {
-  const int low_reading = 19;
-  const int high_reading = 553;
-  const double low_degree = 0.0;
-  const double high_degree = M_PI_2;
-  double ratio;
-  ratio = (high_reading - low_reading) / (double)(high_degree - low_degree);
-  // boumd values
-  radians = limit(radians, low_degree, high_degree);
-  return (int)round(ratio * (radians - low_degree) + low_reading);
+  return radians * pot_rad_ratio;
 }
 
 /** Return the magnitude of a vector
@@ -794,5 +808,5 @@ static arma::vec sin_motion(const arma::vec &start, const arma::vec &stop, doubl
 static arma::vec linear_motion(const arma::vec &start, const arma::vec &stop, double t) {
   arma::vec diff = stop - start;
   arma::vec delta = diff * t;
-  return start + delta;
+  return start + (stop - start) * t;
 }

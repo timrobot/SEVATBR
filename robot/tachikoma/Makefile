@@ -1,12 +1,12 @@
 CC = g++
 CFLAGS = -pedantic -Wall -std=c++11 -O3
 SERIAL = $(shell pwd)/../serial
-ACTIONSTATE = $(shell pwd)/../ActionState
-MANUAL = $(shell pwd)/../../manual
+ACTIONSTATE = $(shell pwd)/../actionstate
+USER = $(shell pwd)/../../user
 CORE = $(shell pwd)/../../core
-INCLUDE = -I$(SERIAL) -I$(ACTIONSTATE) -I$(MANUAL) -I$(CORE)
-SUBDIRS = $(SERIAL) $(ACTIONSTATE) $(MANUAL)
-SUBOBJS = $(SERIAL)/serial.o $(ACTIONSTATE)/ActionState.o $(MANUAL)/xboxctrl.o
+INCLUDE = -I$(SERIAL) -I$(ACTIONSTATE) -I$(USER) -I$(CORE)
+SUBDIRS = $(SERIAL) $(ACTIONSTATE) $(USER)
+SUBOBJS = $(SERIAL)/serial.o $(ACTIONSTATE)/actionstate.o $(USER)/xboxctrl.o
 OBJECTS = tachikoma.o
 LIBS = -larmadillo
 TEST = test.o test stage1test.o stage1test

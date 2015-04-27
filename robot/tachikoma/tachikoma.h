@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include "coord.h"
 #include "serial.h"
-#include "ActionState.h"
+#include "actionstate.h"
 
 #define TACHI_NUM_DEV         8
 #define TACHI_NUM_LEG_DEV     4
@@ -39,7 +39,7 @@ class tachikoma {
     // Action State stuff
     int overall_state;
     int sub_state;
-    ActionSequence leg_seq[4];
+    actionsequence leg_seq[4];
     
     int getlegid(int devid);
     int getwheelid(int devid);
@@ -68,6 +68,7 @@ class tachikoma {
     int numconnected(void);
     int update(pose3d_t wheelbase, pose3d_t legbase,
                pose3d_t leftclaw, pose3d_t rightclaw);
+    pose3d_t *observe(void);
     void reset(void);
 
     // WARNING: Only use the following

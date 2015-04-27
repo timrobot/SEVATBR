@@ -11,7 +11,7 @@
 #include "serial.h"
 
 #define INPUT_DIR "/dev/"
-static char const *PREFIXES[] = {
+static const char *PREFIXES[] = {
   "ttyACM",
   NULL
 };
