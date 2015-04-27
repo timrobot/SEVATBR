@@ -26,8 +26,8 @@ def external_init_particle_filter(img):
 #
 def image_hue_filter(img, mode):
     global testing
-    testing += 1
-    print testing
+    #testing += 1
+    #print testing
     if mode == "ball":
         # good tested values
         return img.hueDistance(30, minsaturation=0, minvalue=0)

@@ -128,7 +128,7 @@ def run():
                         print "%s %s %s" % (centroid[0], centroid[1], dist)
                 else:
                     if not quiet:
-                        print "-1"
+                        print "-1 -1 -1"
         elif mode == "basket":
             img = cam.getImage()
             img = _basket_image_hue_filter(img)
@@ -145,8 +145,9 @@ def run():
                         print "%s %s %s" % (centroid[0], centroid[1], dist)
                 else:
                     if not quiet:
-                        print "-1"
+                        print "-1 -1 -1"
         img.save(disp)
+        sys.stdout.flush()
 
 def handler(signum, frame):
     global mode
