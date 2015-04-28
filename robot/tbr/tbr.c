@@ -29,6 +29,8 @@
 #define BACK_SONAR    2
 #define SYNC_NSEC     500000000
 
+static double limitf(double x, double min, double max);
+
 /** Initialize the communication layer
  *  @param robot
  *    the robot information
@@ -142,17 +144,9 @@ void tbr_send(tbr_t *robot) {
           robot->prev_left = robot->left;
           robot->prev_right = robot->right;
         }
-        if (robot->left == 0 && robot->right == 0) {
-          sprintf(msg, " ");
-        } else if (robot->left > 0 && robot->right > 0) {
-          sprintf(msg, "w");
-        } else if (robot->left < 0 && robot->right < 0) {
-          sprintf(msg, "s");
-        } else if (robot->left > 0 || robot->right < 0) {
-          sprintf(msg, "d");
-        } else if (robot->left < 0 || robot->right > 0) {
-          sprintf(msg, "a");
-        }
+        sprintf(msg, "[%d %d]\n",
+            (int)(limitf(robot->left, -1.0, 1.0) * 255.0),
+            (int)(limitf(robot->right, -1.0, 1.0) * 255.0));
         serial_write(&robot->connections[i], msg);
         break;
       case ARM_DEVID:
@@ -161,13 +155,8 @@ void tbr_send(tbr_t *robot) {
         } else {
           robot->prev_arm = robot->arm;
         }
-        if (robot->arm == 0) {
-          sprintf(msg, " ");
-        } else if (robot->arm > 0) {
-          sprintf(msg, "p");
-        } else if (robot->arm < 0) {
-          sprintf(msg, "l");
-        }
+        sprintf(msg, "[%d]\n",
+            (int)(limitf(robot->arm, -1.0, 1.0) * 255.0));
         serial_write(&robot->connections[i], msg);
         break;
       case CLAW_DEVID:
@@ -202,8 +191,8 @@ void tbr_recv(tbr_t *robot) {
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
         msg = serial_read(&robot->connections[i]);
-        sscanf(msg, "[%d %lf]\n", &robot->ids[i],
-            &robot->sonar[BACK_SONAR]);
+        sscanf(msg, "[%d %lf %d]\n", &robot->ids[i],
+            &robot->sonar[BACK_SONAR], &robot->potentiometer);
         break;
       case ARM_DEVID:
         msg = serial_read(&robot->connections[i]);
@@ -212,7 +201,7 @@ void tbr_recv(tbr_t *robot) {
         break;
       case CLAW_DEVID:
         msg = serial_read(&robot->connections[i]);
-        sscanf(msg, "[%d %d]\n", &robot->ids[i], &robot->potentiometer);
+        sscanf(msg, "[%d ]\n", &robot->ids[i]);
         break;
       default:
         break;
@@ -265,4 +254,23 @@ void tbr_reset(tbr_t *robot) {
   robot->prev_right = 0;
   robot->prev_arm = 0;
   robot->prev_claw = 0;
+}
+
+/** Limit a value between min and max
+ *  @param x
+ *    the value
+ *  @param min
+ *    the lower bound
+ *  @param max
+ *    the upper bound
+ *  @return the limited value
+ */
+static double limitf(double x, double min, double max) {
+  if (x < min) {
+    return min;
+  } else if (x > max) {
+    return max;
+  } else {
+    return x;
+  }
 }

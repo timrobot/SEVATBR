@@ -59,21 +59,68 @@ class tachikoma {
     pose3d_t base[2];
     pose3d_t arm[2];
 
+    /** Constructor
+     */
     tachikoma(void);
+
+    /** Deconstructor
+     */
     ~tachikoma(void);
 
+    /** Initialize the communication layer.
+     *  @return whether or not the robot was able to connect with a device
+     */
     bool connect(void);
+
+    /** Disconnect everything
+     */
     void disconnect(void);
+
+    /** Determine whether or not the robot is connected
+     *  @return true if the robot is connected to a device, else false
+     */
     bool connected(void);
+
+    /** Return the number of devices that are connected
+     *  @return the number of devices that are connected
+     */
     int numconnected(void);
+
+    /** Update the robot's incoming and outgoing signals
+     *  @param wheelbase
+     *    the pose for the wheels
+     *  @param legbase
+     *    the pose for the legs and waist
+     *  @param leftarm
+     *    the pose for the left arm
+     *  @param rightarm
+     *    the pose for the right arm
+     */
     int update(pose3d_t wheelbase, pose3d_t legbase,
                pose3d_t leftclaw, pose3d_t rightclaw);
+
+    /** Observe the current world
+     *  @return NULL for now
+     */
     pose3d_t *observe(void);
+
+    /** Reset the robot values
+     */
     void reset(void);
 
-    // WARNING: Only use the following
-    // if you know what you are doing.
+    /** Manually write the values for particular legs
+     *  @param devid
+     *    the id for which device
+     *  @param message
+     *    the message to send to the leg
+     */
     void write_manual(int devid, char *msg);
+
+    /** Manually read the values for particular legs
+     *  @param devid
+     *    the id for which device
+     *  @return the message, or NULL if there isn't one
+     */
     char *read_manual(int devid);
 };
 

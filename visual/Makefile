@@ -1,9 +1,14 @@
 CC = gcc
-all:
-	g++ -o detect facedetect.cpp `pkg-config --cflags opencv` `pkg-config --libs opencv` -std=c++11
+all: visual.o
 
-visual: visual.o
-	$(CC) -o visual visual.o
+facedetect: facedetect.cpp
+	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` -std=c++11
+
+test.o: test.c
+	$(CC) -o $@ -c $<
+
+visual: visual.o test.o
+	$(CC) -o $@ $^
 
 visual.o: visual.c
 	$(CC) -c visual.c

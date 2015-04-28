@@ -4,6 +4,8 @@
 
 static char readbuf[128];
 
+// TODO: DOXY COMMENTS
+
 int speech::start(void) {
   int res;
   tts_select_voice("cmu_us_rms_cg");

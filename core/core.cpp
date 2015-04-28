@@ -5,27 +5,14 @@
  * devices. You can think of it as
  * the front end, as well as the
  * starting program.
- *
- * The core backbone relies on the
- * following paradigms:
- * 1) The user will always want to
- *    either control the robot
- *    initially, or transfer
- *    control to the AI until the
- *    wants control back.
- * 2) The robot can be a flexible
- *    machine, with many different
- *    parts or mechanisms, and that
- *    the programmer will want to
- *    connect them simply yet
- *    powerfully.
  ***********************************/
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
+#include "coord.h"
 #include "robot.h"
 #include "user.h"
-#include "coord.h"
+#include "agent.h"
 
 // Signal handler for killing the program
 static int stop_signal;
@@ -48,6 +35,8 @@ void stop_program(int signum) {
 int main(int argc, char *argv[]) {
   pose3d_t base[2];
   pose3d_t arm[2];
+  int input_id;
+  enum input_states { S_USER, S_AGENT };
 
   printf("CORE INITIALIZING...\n");
   signal(SIGINT, stop_program);
@@ -55,17 +44,44 @@ int main(int argc, char *argv[]) {
   if (robot::set(TACHIKOMA) == -1) {
     return -1;
   }
+  // for current testing purposes, connect to the controller first
   if (user_connect(USER_XBOXCTRL) == -1) {
     return -1;
   }
+  if (agent::wakeup() == -1) {
+    user_disconnect();
+    return -1;
+  }
+  input_id = S_AGENT;
+  agent::set_enable(true);
 
   // start getting communication accesses
   while (!stop_signal) {
-    user_get_poses(base, arm);
-    robot::move(base, arm);
+    switch (input_id) {
+      case S_USER:
+        user_get_poses(base, arm);
+        robot::move(base, arm);
+        if (!user_override()) {
+          user_set_enable(false);
+          agent::set_enable(true);
+          input_id = S_AGENT;
+        }
+        break;
+
+      case S_AGENT:
+        agent::get_poses(base, arm);
+        robot::move(base, arm);
+        if (user_override()) {
+          agent::set_enable(false);
+          user_set_enable(true);
+          input_id = S_USER;
+        }
+        break;
+    }
   }
 
   // clean up
+  agent::sleep();
   user_disconnect();
   robot::unset();
   printf("CORE COMPLETE.\n");

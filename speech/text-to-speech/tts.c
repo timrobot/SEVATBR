@@ -1,6 +1,8 @@
 #include <flite.h>
 #include "tts.h"
 
+// TODO; DOXY COMMENTS
+
 static int flite_initialized;
 static int voice_selected;
 static cst_voice *voice;

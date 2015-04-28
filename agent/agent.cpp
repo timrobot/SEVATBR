@@ -43,12 +43,10 @@ static std::vector<pose3d_t> get_filtered_basket_position(void);
 static bool can_pickup(pose3d_t pos);
 static bool can_drop(pose3d_t pos);
 
-using namespace agent;
-
 /** Wake the agent up, start all initial processes
  *  @return 0 on success, -1 on error
  */
-int wakeup(void) {
+int agent::wakeup(void) {
   // start the vision engine(s)
   start_visual();
   set_detection(DETECT_BALL);
@@ -58,11 +56,12 @@ int wakeup(void) {
   // start the speech to text listener
   speech::start();
   set_enable(true);
+  return 0;
 }
 
 /** Make the agent go to sleep, stop all processes
  */
-void sleep(void) {
+void agent::sleep(void) {
   set_enable(false);
   // stop the vision engine(s)
   stop_visual();
@@ -74,7 +73,7 @@ void sleep(void) {
  *  @param en
  *    true for enable, false for disable
  */
-void set_enable(bool en) {
+void agent::set_enable(bool en) {
   enable = en;
 }
 
@@ -85,7 +84,7 @@ void set_enable(bool en) {
  *    the arm struct
  *  @return 0
  */
-int get_poses(pose3d_t *base, pose3d_t *arm) {
+int agent::get_poses(pose3d_t *base, pose3d_t *arm) {
   conscious_thought();
   if (!enable) {
     memset(base, 0, sizeof(pose3d_t));
@@ -257,23 +256,19 @@ static void conscious_thought(void) {
       set_robot(0.0, -0.5, 0.0, 0.0);
       break;
     case S_GOTOBALL:
-      set_robot(1.0, limitf(-ballpos[0].x, -1.0, 1.0),
-          limitf(-ballpos[0].y, -1.0, 1.0), 0.0);
+      set_robot(1.0, -ballpos[0].x, -ballpos[0].y, 0.0);
       break;
     case S_PICKBALL:
-      set_robot(1.0, limitf(-ballpos[0].x, -1.0, 1.0),
-          limitf(-ballpos[0].y, -1.0, 1.0), 1.0);
+      set_robot(1.0, -ballpos[0].x, -ballpos[0].y, 1.0);
       break;
     case S_FINDBASKET:
       set_robot(0.0, -0.5, 0.0, 0.0);
       break;
     case S_GOTOBASKET:
-      set_robot(1.0, limitf(-basketpos[0].x, -1.0, 1.0),
-          limitf(-basketpos[0].y, -1.0, 1.0), 0.0);
+      set_robot(1.0, -basketpos[0].x, -basketpos[0].y, 0.0);
       break;
     case S_DROPBASKET:
-      set_robot(1.0, limitf(-basketpos[0].x, -1.0, 1.0),
-          limitf(-basketpos[0].y, -1.0, 1.0), -1.0);
+      set_robot(0.0, 0.0, -basketpos[0].y, -1.0);
       break;
     default:
       set_robot(0.0, 0.0, 0.0, 0.0);
@@ -309,6 +304,15 @@ static char *get_speech_command(void) {
   }
 }
 
+/** Limit a value between min and max
+ *  @param x
+ *    the value
+ *  @param min
+ *    the lower bound
+ *  @param max
+ *    the upper bound
+ *  @return the limited value
+ */
 static double limitf(double x, double min, double max) {
   if (x < min) {
     return min;
@@ -319,13 +323,28 @@ static double limitf(double x, double min, double max) {
   }
 }
 
+/** Set the robot pose in the global space,
+ *  where all the values are in the range (-1.0, 1.0)
+ *  @param forward
+ *    the forward percentage
+ *  @param left
+ *    the left percentage
+ *  @param raise
+ *    the raise percentage
+ *  @param grab
+ *    the grab percentage
+ */
 static void set_robot(double forward, double left, double raise, double grab) {
-  agent_base.y = forward;
-  agent_base.yaw = left;
-  agent_arm.pitch = raise;
-  agent_arm.yaw = grab;
+  agent_base.y = limitf(forward, -1.0, 1.0);
+  agent_base.yaw = limitf(left, -1.0, 1.0);
+  agent_arm.pitch = limitf(raise, -1.0, 1.0);
+  agent_arm.yaw = limitf(grab, -1.0, 1.0);
 }
 
+/** Set the state that the robot is supposed to be looking for
+ *  @param detectingstate
+ *    either S_BALL or S_BASKET
+ */
 static void look_for(int detectingstate) {
   if (detectingstate == S_BALL && visual_detect_type != S_BALL) {
     visual_detect_type = S_BALL;
@@ -336,6 +355,12 @@ static void look_for(int detectingstate) {
   }
 }
 
+/** Grab all positions in the image
+ *  @param n
+ *    the mutable integer used to measure message length,
+ *    this is 0 if nothing is recv'd
+ *  @return a vector of locations
+ */
 static std::vector<pose3d_t> grab_new_frame_object(int &n) {
   char buf[128];
   std::vector<pose3d_t> locs;
@@ -353,6 +378,9 @@ static std::vector<pose3d_t> grab_new_frame_object(int &n) {
   return updated_locs;
 }
 
+/** Get the number of balls in the basket
+ *  @return the number of balls
+ */
 static int num_balls_in_basket(void) {
   if (visual_detect_type == S_BALL) {
     std::vector<pose3d_t> locs;
@@ -370,6 +398,9 @@ static int num_balls_in_basket(void) {
   return numballs;
 }
 
+/** Get all possible ball locations
+ *  @return the ball locations
+ */
 static std::vector<pose3d_t> get_filtered_ball_positions(void) {
   if (visual_detect_type == S_BALL) {
     std::vector<pose3d_t> locs;
@@ -389,10 +420,18 @@ static std::vector<pose3d_t> get_filtered_ball_positions(void) {
   return ballpos;
 }
 
+/** Get the closest object in a location list
+ *  @param locs
+ *    the location list
+ *  @return the closest location
+ */
 static pose3d_t closest_object(std::vector<pose3d_t> locs) {
   return locs[0];
 }
 
+/** Get all possible locations of the basket
+ *  @return the most likely basket location
+ */
 static std::vector<pose3d_t> get_filtered_basket_position(void) {
   if (visual_detect_type == S_BASKET) {
     std::vector<pose3d_t> locs;
@@ -407,10 +446,20 @@ static std::vector<pose3d_t> get_filtered_basket_position(void) {
   return basketpos;
 }
 
+/** Queries if a ball at a position can be picked up
+ *  @param pos
+ *    the position of the object
+ *  @return true for now
+ */
 static bool can_pickup(pose3d_t pos) {
   return true; // for now, keep running
 }
 
+/** Queries if a ball can be dropped into the basket
+ *  @param pos
+ *    the likely position of the basket
+ *  @return true if close enough to drop, otherwise false
+ */
 static bool can_drop(pose3d_t pos) {
   pose3d_t *sonar = robot::sense();
   const double collision_baseline = 3.0; // TODO: CONFIGURE ME!

@@ -98,7 +98,7 @@ void user_set_enable(int en) {
 }
 
 /** User override
- *  @return 1 if overridden, else 0
+ *  @return overridden variable, else 0
  */
 int user_get_override(void) {
   switch (input_id) {
@@ -107,7 +107,7 @@ int user_get_override(void) {
       return user_ovr;
 
     case USER_XBOXCTRL:
-      return 1;
+      return user_ovr;
 
     default:
       break;
@@ -151,7 +151,7 @@ int user_get_poses(pose3d_t *base, pose3d_t *arm) {
  *    the log message to send over
  */
 void user_log(const char *msg) {
-  httplink_send(&server, "/manual_log", "post", msg);
+  httplink_send(&server, "/send_log", "post", (char *)msg);
 }
 
 /** Get the full controller layout
@@ -233,7 +233,7 @@ static void raise_server_request(int signum) {
     memset(&timer, 0, sizeof(struct itimerval));
     setitimer(ITIMER_REAL, &timer, NULL);
   } else {
-    httplink_send(&server, "/manual_feedback", "get", NULL);
+    httplink_send(&server, "/get_controls", "get", NULL);
   }
 }
 
@@ -258,4 +258,10 @@ void controller_update(void) {
 
   user_arm.pitch = (ctrl.B - ctrl.A) * 1.0;
   user_arm.yaw = (ctrl.RB - ctrl.LB) * 1.0;
+
+  if (ctrl.START) {
+    user_ovr = 1;
+  } else if (ctrl.SELECT) {
+    user_ovr = 0;
+  }
 }

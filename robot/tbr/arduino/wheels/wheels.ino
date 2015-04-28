@@ -1,75 +1,30 @@
+#include <Servo.h>
+#include <NewPing.h>
 #include <string.h>
-#define DEV_ID     1
-#define WHEEL_RT1 11
-#define WHEEL_RT2 10
-#define WHEEL_RM1  9
-#define WHEEL_RM2  8
-#define WHEEL_RB1  7
-#define WHEEL_RB2  6
-#define WHEEL_LT1 A0
-#define WHEEL_LT2 A1
-#define WHEEL_LM1 A2
-#define WHEEL_LM2 A3
-#define WHEEL_LB1 A4
-#define WHEEL_LB2 A5
+#define DEV_ID        1
+#define WHEEL_R1      3
+#define WHEEL_R2      5
+#define WHEEL_R3      6
+#define WHEEL_L1      9
+#define WHEEL_L2      10
+#define WHEEL_L3      11
+#define TRIGGER_PIN   7
+#define ECHO_PIN      8
+#define MAX_DISTANCE  200
+#define POT_PIN       A0
 
-class HBridgeMotor { // HBridge implementation
-  public:
-    short velocity; // PWM -255 to 255
-    char pin[2];
-    bool isdigital;
-    HBridgeMotor() {
-      reset();
-      isdigital = false;
-    }
-    void setdigital(bool d) {
-      isdigital = d;
-    }
-    void write(int v) {
-      velocity = v;
-      if (!isdigital) {
-        int limit = 255;
-        if (velocity < -limit) velocity = -limit;
-        if (velocity > limit) velocity = limit;
-        if (pin[0] == 0 || pin[1] == 0) return;
-        if (velocity < 0) {
-          analogWrite(pin[0], 0);
-          analogWrite(pin[1], -velocity);
-        } else {
-          analogWrite(pin[1], 0);
-          analogWrite(pin[0], velocity);
-        }
-      } else {
-        if (pin[0] == 0 || pin[1] == 0) return;
-        if (velocity < 0) {
-          digitalWrite(pin[0], LOW);
-          digitalWrite(pin[1], HIGH);
-        } else if (velocity > 0) {
-          digitalWrite(pin[1], LOW);
-          digitalWrite(pin[0], HIGH);
-        } else {
-          digitalWrite(pin[0], LOW);
-          digitalWrite(pin[1], LOW);
-        }
-      }
-    }
-    int attach(int pin1, int pin2) {
-      pinMode(pin1, OUTPUT);
-      pinMode(pin2, OUTPUT);
-      pin[0] = pin1;
-      pin[1] = pin2;
-    }
-    void reset() {
-      pin[0] = 0;
-      pin[1] = 0;
-      velocity = 0;
-    }
-};
+NewPing back_sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+Servo wheel_l[3];
+Servo wheel_r[3];
+static int left_value, right_value;
 
-HBridgeMotor wheel_l[3];
-HBridgeMotor wheel_r[3];
-unsigned long time;
-char msg[64];
+const int bufsize = 256;
+const int safesize = bufsize / 2;
+char buf[bufsize];
+char msg[bufsize];
+char wbuf[safesize];
+unsigned long msecs;
+char numbuf[4];
 
 int limit(int x, int a, int b) {
   if (x > b) {
@@ -82,102 +37,64 @@ int limit(int x, int a, int b) {
 }
 
 void setwheels(int left, int right) {
-  left = -limit(left, -255, 255);
-  right = limit(right, -255, 255);
-  wheel_l[0].write(left);
-  wheel_l[1].write(-left);
-  wheel_l[2].write(left);
-  wheel_r[0].write(right);
-  wheel_r[1].write(-right);
-  wheel_r[2].write(right);
-}
-
-void stopwheels() {
-  setwheels(0, 0);
-  //Serial.println("stopwheels");
-}
-
-void turnleft() {
-  stopwheels();
-  delay(50);
-  setwheels(-255, 255);
-  //Serial.println("turnleft");
-}
-
-void turnright() {
-  stopwheels();
-  delay(50);
-  setwheels(255, -255);
-  //Serial.println("turnright");
-}
-
-void forward() {
-  stopwheels();
-  delay(50);
-  setwheels(255, 255);
-  //Serial.println("forward");
-}
-
-void backward() {
-  stopwheels();
-  delay(50);
-  setwheels(-255, -255);
-  //Serial.println("backward");
+  left = -limit(left, -90, 90);
+  right = limit(right, -90, 90);
+  wheel_l[0].write(left + 90);
+  wheel_l[1].write(90 - left);
+  wheel_l[2].write(left + 90);
+  wheel_r[0].write(right + 90);
+  wheel_r[1].write(90 - right);
+  wheel_r[2].write(right + 90);
 }
 
 void setup() {
-  wheel_l[0].attach(WHEEL_LT1, WHEEL_LT2);
-  wheel_l[0].setdigital(true);
-  wheel_l[1].attach(WHEEL_LM1, WHEEL_LM2);
-  wheel_l[1].setdigital(true);
-  wheel_l[2].attach(WHEEL_LB1, WHEEL_LB2);
-  wheel_l[2].setdigital(true);
-
-  wheel_r[0].attach(WHEEL_RT1, WHEEL_RT2);
-  wheel_r[0].setdigital(true);
-  wheel_r[1].attach(WHEEL_RM1, WHEEL_RM2);
-  wheel_r[1].setdigital(true);
-  wheel_r[2].attach(WHEEL_RB1, WHEEL_RB2);
-  wheel_r[2].setdigital(true);
-
+  wheel_l[0].attach(WHEEL_L1);
+  wheel_r[0].attach(WHEEL_R1);
+  wheel_l[1].attach(WHEEL_L2);
+  wheel_r[1].attach(WHEEL_R2);
+  wheel_l[2].attach(WHEEL_L3);
+  wheel_r[2].attach(WHEEL_R3);
+  pinMode(POT_PIN, INPUT);
   pinMode(13, OUTPUT);
 
   Serial.begin(38400);
-  stopwheels();
+  setwheels(0, 0);
   digitalWrite(13, HIGH);
   time = millis();
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    char c = Serial.read();
-    switch (c) {
-      case ' ':
-        stopwheels();
-        break;
-      case 'a':
-        turnleft();
-        break;
-      case 's':
-        backward();
-        break;
-      case 'w':
-        forward();
-        break;
-      case 'd':
-        turnright();
-        break;
-      case '\n':
-        // do nothing
-        break;
-      default:
-        //Serial.println("err: bad command");
-        //Serial.println(c);
-        break;
+  int nbytes = 0;
+  if ((nbytes = Serial.available())) {
+    // read + attach null byte
+    int obytes = strlen(buf);
+    Serial.readBytes(&buf[obytes], nbytes);
+    buf[nbytes + obytes] = '\0';
+
+    // resize just in case
+    if (strlen(buf) > safesize) {
+      memmove(buf, &buf[strlen(buf) - safesize], safesize);
+      buf[safesize] = '\0';
+    }
+
+    // extract possible message
+    char *s, *e;
+    if ((e = strchr(buf, '\n'))) {
+      e[0] = '\0';
+      if ((s = strrchr(buf, '['))) {
+        // CUSTOMIZE
+        sscanf(s, "[%d %d]", &left_value, &right_value);
+        left_value = limit(left_value, -255, 255);
+        right_value = limit(right_value, -255, 255);
+      }
+      memmove(buf, &e[1], strlen(&e[1]) + sizeof(char));
     }
   }
-  if (millis() - time > 100) { // 10Hz
-    sprintf(msg, "[%d ]", DEV_ID);
+
+  setwheels(left_value * 90 / 255, right_value * 90 / 255);
+
+  if (millis() - msecs > 100) { // 10Hz
+    sprintf(msg, "[%d %lf %d]", DEV_ID, sonar.ping_cm(), analogRead(POT_PIN));
     Serial.println(msg);
     time = millis();
   }

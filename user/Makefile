@@ -1,9 +1,8 @@
 CC = gcc
 CFLAGS = -pedantic -Wall -Werror -std=gnu99 -O3
 INCLUDE = -I$(shell pwd)/../core
-OBJECTS = httplink.o xboxctrl.o user.o
+OBJECTS = user.o httplink.o xboxctrl.o
 TARGET = libuser.a
-TEST = test.o test
 
 all: $(OBJECTS) $(TARGET)
 
@@ -17,7 +16,7 @@ user.o: user.c
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE)
 
 libuser.a: $(OBJECTS)
-	ar rcs $@ $^
+	ar rvs $@ $^
 
 test.o: test.c
 	$(CC) -o $@ -c $< $(INCLUDE)

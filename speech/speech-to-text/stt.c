@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include "stt.h"
 
@@ -57,7 +58,6 @@ int stt_start_listening(void) {
  *  @return the length of the buffer
  */
 int stt_listen(char *buffer) {
-  char *decistr;
   int found;
   found = 0;
   while (read(lisfd[0], interim, 127) > 0) {

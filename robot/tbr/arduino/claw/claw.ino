@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <string.h>
 #define DEV_ID  3
-#define CLAW_L 10
+#define CLAW_L  10
 #define BOT_L   2
 #define TOP_L   3
 #define CLAW_R  9
