@@ -30,7 +30,8 @@ def image_hue_filter(img, mode):
     #print testing
     if mode == "ball":
         # good tested values
-        return img.hueDistance(30, minsaturation=0, minvalue=0)
+        #return img.hueDistance(30, minsaturation=100, minvalue=0)
+        return img.hueDistance(32, minsaturation=72, minvalue=120)
     elif mode == "basket":
         # good tested values
         #return img.hueDistance(110, minsaturation=105, minvalue=60)
@@ -70,10 +71,10 @@ def get_best_blob(blobs, particle_filter, mode):
     orig = sys.stdout
     sys.stdout = devnull
     for b in blobs:
-        if mode == "basket" and not b.isRectangle():
+        if mode == "basket" and not b.isRectangle(.2):
             continue
         elif mode == "ball" and not b.isCircle(.2):
-            continue
+            pass#continue
         score = b.area()
         #take particle filter score into account
         #score += particle_filter.score(b)

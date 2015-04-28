@@ -18,7 +18,7 @@ import signal
 # global particle filter
 # error point elimination
 particle_filter = None
-mode = "basket" # basket|ball
+mode = "ball" # basket|ball
 quiet = False
 
 ## Internal wrapper to particle filter initializer.
@@ -102,7 +102,7 @@ def run_middle():
 ## Continuously captures image from computer camera and feeds it to the is_ball_middle method to detect whether tennis ball is in the middle of the screen.
 def run():
     global particle_filter, mode, quiet
-    cam = Camera(0, {"width" : 320, "height" : 460})
+    cam = Camera(1, {"width" : 20, "height" : 40})
     disp = Display()
     
     print "VISUAL-PROC-STARTED"
@@ -110,6 +110,7 @@ def run():
     while disp.isNotDone():
         sleep(.05)
         img = cam.getImage()
+        orig_img = img
         # close window with left click
         if disp.mouseLeft:
             break
