@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -pedantic -Wall -std=c++11 -O3
+CFLAGS = -pedantic -Wall --std=c++11 -O3
 LIBS = -larmadillo
 OBJECTS = actionstate.o
 

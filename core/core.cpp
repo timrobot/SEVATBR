@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "coord.h"
 #include "robot.h"
 #include "user.h"
@@ -41,48 +42,54 @@ int main(int argc, char *argv[]) {
   printf("CORE INITIALIZING...\n");
   signal(SIGINT, stop_program);
   // init robot and user
-  if (robot::set(TACHIKOMA) == -1) {
+  if (robot::set(STANDARD_OUT) == -1) {
     return -1;
   }
   // for current testing purposes, connect to the controller first
-  if (user_connect(USER_XBOXCTRL) == -1) {
-    return -1;
-  }
+//  if (user_connect(USER_XBOXCTRL) == -1) {
+//    return -1;
+//  }
+  printf("initializing agent\n");
   if (agent::wakeup() == -1) {
-    user_disconnect();
+//    user_disconnect();
     return -1;
   }
   input_id = S_AGENT;
   agent::set_enable(true);
 
   // start getting communication accesses
+  printf("querying...\n");
+  struct timespec t;
+  t.tv_nsec = 100000000;
+  t.tv_sec = 0;
   while (!stop_signal) {
     switch (input_id) {
-      case S_USER:
+/*      case S_USER:
         user_get_poses(base, arm);
         robot::move(base, arm);
-        if (!user_override()) {
+        if (!user_get_override()) {
           user_set_enable(false);
           agent::set_enable(true);
           input_id = S_AGENT;
         }
         break;
-
+*/
       case S_AGENT:
         agent::get_poses(base, arm);
         robot::move(base, arm);
-        if (user_override()) {
+        nanosleep(&t, NULL);
+/*        if (user_get_override()) {
           agent::set_enable(false);
           user_set_enable(true);
           input_id = S_USER;
-        }
+        }*/
         break;
     }
   }
 
   // clean up
-  agent::sleep();
-  user_disconnect();
+  agent::gotosleep();
+//  user_disconnect();
   robot::unset();
   printf("CORE COMPLETE.\n");
 

@@ -2,12 +2,12 @@
 #include <NewPing.h>
 #include <string.h>
 #define DEV_ID        2
-#define ARM_R1        3
-#define ARM_L1        5
-#define ARM_R2        6
-#define ARM_L2        9
-#define ARM_R3        10
-#define ARM_L3        11
+#define ARM_L1        3
+#define ARM_L2        5
+#define ARM_L3        6
+#define ARM_R1        9
+#define ARM_R2        10
+#define ARM_R3        11
 #define LEFT_TRIGGER  4
 #define LEFT_ECHO     7
 #define RIGHT_TRIGGER 8

@@ -59,16 +59,18 @@ int stt_start_listening(void) {
  */
 int stt_listen(char *buffer) {
   int found;
+  int bytesread;
   found = 0;
-  while (read(lisfd[0], interim, 127) > 0) {
+  while ((bytesread = read(lisfd[0], interim, 127)) > 0) {
     int i;
-    if (bufindex + strlen(interim) >= sizeof(readbuf)) {
+    interim[bytesread] = '\0';
+    if (bufindex + bytesread >= sizeof(readbuf)) {
       memmove(readbuf, &readbuf[128], 128);
     }
     // state machine
-    for (i = 0; i < strlen(interim); i++) {
+    for (i = 0; i < bytesread; i++) {
       if (interim[i] == '\n') {
-        if (strncmp(readbuf, "hypothesis:", 9) == 0) {
+        if (strncmp(readbuf, "hypothesis:", 11) == 0) {
           bufindex -= 13;
           strncpy(phrase, &readbuf[12], bufindex);
           phrase[bufindex] = '\0';
@@ -76,8 +78,12 @@ int stt_listen(char *buffer) {
         }
         bufindex = 0;
       } else {
-        readbuf[bufindex++] = interim[i];
+        readbuf[bufindex] = interim[i];
+        if (interim[i] != '\0') {
+          bufindex++;
+        }
       }
+      readbuf[bufindex] = '\0';
     }
   }
   if (found) {

@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -pedantic -Wall -std=c++11 -O3
+CFLAGS = -pedantic -Wall --std=c++11 -O3
 SERIAL = $(shell pwd)/../serial
 ACTIONSTATE = $(shell pwd)/../actionstate
 USER = $(shell pwd)/../../user

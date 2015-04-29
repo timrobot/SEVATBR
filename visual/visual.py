@@ -20,6 +20,8 @@ import signal
 particle_filter = None
 mode = "ball" # basket|ball
 quiet = False
+VSIG_BALL = 40
+VSIG_BASKET = 41
 
 ## Internal wrapper to particle filter initializer.
 #
@@ -102,7 +104,7 @@ def run_middle():
 ## Continuously captures image from computer camera and feeds it to the is_ball_middle method to detect whether tennis ball is in the middle of the screen.
 def run():
     global particle_filter, mode, quiet
-    cam = Camera(1, {"width" : 20, "height" : 40})
+    cam = Camera(0, {"width" : 20, "height" : 40})
     disp = Display()
     
     print "VISUAL-PROC-STARTED"
@@ -129,10 +131,10 @@ def run():
                     img.drawCircle(centroid, rad, (0,255,0), 2)
                     dist = (38 * 1200) / best.area()
                     if not quiet:
-                        print "%s %s %s" % (centroid[0], centroid[1], dist)
+                        print "coordinate:[%s %s %s %s]" % (mode, centroid[0], centroid[1], dist)
                 else:
                     if not quiet:
-                        print "-1 -1 -1"
+                        print "notfound:[%s]" % (mode)
         elif mode == "basket":
             img = cam.getImage()
             img = _basket_image_hue_filter(img)
@@ -146,24 +148,25 @@ def run():
                     dist = (38 * 140) / height
                     best.drawRect(color=Color.BLUE, width=2)
                     if not quiet:
-                        print "%s %s %s" % (centroid[0], centroid[1], dist)
+                        print "coordinate:[%s %s %s %s]" % (mode, centroid[0], centroid[1], dist)
                 else:
                     if not quiet:
-                        print "-1 -1 -1"
+                        print "notfound:[%s]" % (mode)
         img.save(disp)
         sys.stdout.flush()
 
 def switch_handler(signum, frame):
     global mode
-    if mode == "basket":
+    if signum == VSIG_BALL:
         mode = "ball"
-    elif mode == "ball":
+    elif signum == VSIG_BASKET:
         mode = "basket"
 
 def end_handler(signum, frame):
     sys.exit(1)
     
-signal.signal(signal.SIGUSR1, switch_handler)
+signal.signal(VSIG_BALL, switch_handler)
+signal.signal(VSIG_BASKET, switch_handler)
 signal.signal(signal.SIGINT, end_handler)
 
 run()

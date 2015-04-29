@@ -1,17 +1,15 @@
 CC = gcc
-all: visual.o
-
-facedetect: facedetect.cpp
-	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` -std=c++11
+INCLUDE = -I$(shell pwd)/../core
+all: visual.o test.o visual
 
 test.o: test.c
-	$(CC) -o $@ -c $<
+	$(CC) $(INCLUDE) -o $@ -c $<
 
 visual: visual.o test.o
-	$(CC) -o $@ $^
+	$(CC) $(INCLUDE) -o $@ $^
 
 visual.o: visual.c
-	$(CC) -c visual.c
+	$(CC) $(INCLUDE) -o $@ -c $<
 
 clean:
 	rm -rf *.o visual

@@ -16,24 +16,35 @@ int status;
 int procID;
 int CUR_MODE;
 
-
+void psleep(double time) {
+  struct timespec t;
+  t.tv_nsec = (int)((time - ((double)(int)time)) * 1000000000);
+  t.tv_sec = (int)time;
+  nanosleep(&t, NULL);
+}
 
 int main() {
-    char my_buff[1500];
+    printf("starting visual...\n");
     start_visual();
+    printf("started\n");
     int x = 0;
     while(1) {
-        get_position(my_buff);
-        printf("%d here's output: %s\n", x, my_buff);
-        x++;
-        if(x % 50000 == 0) {
+        pose3d_t *pos = get_position(NULL);
+        if (pos) {
+          printf("%d here's output: { %lf %lf %lf }\n", x, pos->x, pos->y, pos->z);
+          x++;
+          if(x % 100 == 0) {
             if(CUR_MODE == DETECT_BASKET) {
+                CUR_MODE = DETECT_BALL;
                 set_detection(DETECT_BALL);
             } else {
+                CUR_MODE = DETECT_BASKET;
                 set_detection(DETECT_BASKET);
             }
+          }
         }
         // this simulates while loop of decision engine
+        psleep(0.01);
     }
 
 }

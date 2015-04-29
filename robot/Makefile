@@ -1,17 +1,12 @@
 CC = g++
-CFLAGS = -pedantic -Wall -Werror -std=c++11 -O3
+CFLAGS = -pedantic -Wall -Werror --std=c++11 -O3
 INCLUDE = -I$(shell pwd)/../core \
           -I$(shell pwd)/serial \
-          -I$(shell pwd)/actionstate \
-          -I$(shell pwd)/tbr \
-          -I$(shell pwd)/tachikoma
-SUBDIRS = $(shell pwd)/tbr $(shell pwd)/tachikoma
+          -I$(shell pwd)/tbr
+SUBDIRS = $(shell pwd)/tbr
 OBJECTS = robot.o
 LIBOBJS = $(shell pwd)/serial/serial.o \
-          $(shell pwd)/actionstate/actionstate.o \
-          $(shell pwd)/tbr/tbr.o \
-          $(shell pwd)/tachikoma/tachikoma.o
-LIBS = -larmadillo
+          $(shell pwd)/tbr/tbr.o
 TARGET = librobot.a
 
 all: subdirs $(OBJECTS) $(TARGET)
@@ -22,7 +17,7 @@ subdirs:
 robot.o: robot.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
-librobot.a: $(OBJECTS) $(LIBOBJS) $(LIBS)
+librobot.a: $(OBJECTS) $(LIBOBJS)
 	ar rvs $@ $^
 
 clean:

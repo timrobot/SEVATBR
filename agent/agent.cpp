@@ -1,6 +1,8 @@
-#include <vector>
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+#include <vector>
 #include "visual.h"
 #include "speech.h"
 #include "robot.h"
@@ -25,23 +27,24 @@ static pose3d_t agent_arm;
 // state space (2-level decision resolution)
 static const char *task;
 static int subtask;
-static int numballs;
 static int visual_detect_type;
-static std::vector<pose3d_t> updated_locs;
+static struct timeval actiontime;
 static std::vector<pose3d_t> ballpos;
 static std::vector<pose3d_t> basketpos;
+
 static void conscious_thought(void);
 static char *get_speech_command(void);
 static double limitf(double x, double min, double max);
 static void set_robot(double forward, double left, double raise, double grab);
 static void look_for(int detectingstate);
-static std::vector<pose3d_t> grab_new_frame_object(int &n);
+static void update_object_positions(void);
 static int num_balls_in_basket(void);
 static std::vector<pose3d_t> get_filtered_ball_positions(void);
-static pose3d_t closest_object(std::vector<pose3d_t> locs);
 static std::vector<pose3d_t> get_filtered_basket_position(void);
+static pose3d_t closest_object(std::vector<pose3d_t> locs);
 static bool can_pickup(pose3d_t pos);
 static bool can_drop(pose3d_t pos);
+double difftime(struct timeval t2, struct timeval t1);
 
 /** Wake the agent up, start all initial processes
  *  @return 0 on success, -1 on error
@@ -51,7 +54,7 @@ int agent::wakeup(void) {
   start_visual();
   set_detection(DETECT_BALL);
   visual_detect_type = S_BALL;
-  task = "stop";
+  task = "fetch";
   subtask = S_IDLE;
   // start the speech to text listener
   speech::start();
@@ -61,7 +64,7 @@ int agent::wakeup(void) {
 
 /** Make the agent go to sleep, stop all processes
  */
-void agent::sleep(void) {
+void agent::gotosleep(void) {
   set_enable(false);
   // stop the vision engine(s)
   stop_visual();
@@ -86,6 +89,11 @@ void agent::set_enable(bool en) {
  */
 int agent::get_poses(pose3d_t *base, pose3d_t *arm) {
   conscious_thought();
+//  pose3d_t *loc;
+//  int type;
+//  if ((loc = get_position(&type))) {
+//    printf("got: %lf %lf %lf\n", loc->x, loc->y, loc->z);
+//  }
   if (!enable) {
     memset(base, 0, sizeof(pose3d_t));
     memset(arm, 0, sizeof(pose3d_t));
@@ -103,6 +111,7 @@ int agent::get_poses(pose3d_t *base, pose3d_t *arm) {
 static void conscious_thought(void) {
   char *scmd;
   int execute;
+  struct timeval currtime;
   // get a speech command, and place that as
   // the priority task
   if ((scmd = get_speech_command())) {
@@ -111,6 +120,22 @@ static void conscious_thought(void) {
 
   // FSM (taskgraph)
   execute = 0;
+  printf("Updating objects...\n");
+  update_object_positions();
+  gettimeofday(&currtime, NULL);
+  printf("Object positions:\n");
+  printf("<ball>\n");
+  for (int n = 0; n < (int)ballpos.size(); n++) {
+    printf("Ball: %f %f %f\n", ballpos[n].x, ballpos[n].y, ballpos[n].z);
+  }
+  printf("</ball>\n");
+  printf("<basket>\n");
+  for (int n = 0; n < (int)basketpos.size(); n++) {
+    printf("Basket: %f %f %f\n", basketpos[n].x, basketpos[n].y, basketpos[n].z);
+  }
+  printf("</basket>\n");
+
+  printf("Updating states...\n");
   while (!execute) {
     if (strcmp(task, "fetch") == 0) {
       // transitions
@@ -118,6 +143,8 @@ static void conscious_thought(void) {
       // TODO: pick up more than 1 ball
       switch (subtask) {
         case S_IDLE:
+          printf("State: IDLE\n");
+          look_for(S_BALL);
           if (num_balls_in_basket() == 0) {
             subtask = S_FINDBALL;
           } else {
@@ -125,6 +152,7 @@ static void conscious_thought(void) {
           }
           break;
         case S_FINDBALL:
+          printf("State: FIND BALL\n");
           look_for(S_BALL);
           if (num_balls_in_basket() != 0) {
             subtask = S_FINDBASKET;
@@ -135,6 +163,7 @@ static void conscious_thought(void) {
           }
           break;
         case S_GOTOBALL:
+          printf("State: GOTO BALL\n");
           if (num_balls_in_basket() != 0) {
             subtask = S_FINDBASKET;
           } else if ((ballpos = get_filtered_ball_positions()).size() == 0) {
@@ -146,6 +175,7 @@ static void conscious_thought(void) {
           }
           break;
         case S_PICKBALL:
+          printf("State: PICK BALL\n");
           if (num_balls_in_basket() != 0) {
             subtask = S_FINDBASKET;
           } else if ((ballpos = get_filtered_ball_positions()).size() == 0) {
@@ -157,6 +187,7 @@ static void conscious_thought(void) {
           }
           break;
         case S_FINDBASKET:
+          printf("State: FIND BASKET\n");
           look_for(S_BASKET);
           if (num_balls_in_basket() == 0) {
             subtask = S_FINDBALL;
@@ -167,25 +198,26 @@ static void conscious_thought(void) {
           }
           break;
         case S_GOTOBASKET:
+          printf("State: GOTO BASKET\n");
           if (num_balls_in_basket() == 0) {
             subtask = S_FINDBALL;
           } else if ((basketpos = get_filtered_basket_position()).size() == 0) {
             subtask = S_FINDBASKET;
           } else if (can_drop(closest_object(basketpos))) {
+            // have to do a strange thing here with timers
+            gettimeofday(&actiontime, NULL);
             subtask = S_DROPBASKET;
           } else {
             execute = 1;
           }
           break;
         case S_DROPBASKET:
-          if (num_balls_in_basket() == 0) {
-            subtask = S_FINDBALL;
-          } else if ((basketpos = get_filtered_basket_position()).size() == 0) {
-            subtask = S_FINDBASKET;
-          } else if (!can_drop(closest_object(basketpos))) {
-            subtask = S_GOTOBASKET;
-          } else {
+          printf("State: DROP BASKET\n");
+          look_for(S_BALL); // preemptive
+          if (difftime(currtime, actiontime) < 1.0) {
             execute = 1;
+          } else {
+            subtask = S_IDLE;
           }
           break;
         default:
@@ -194,6 +226,8 @@ static void conscious_thought(void) {
     } else if (strcmp(task, "return") == 0) {
       switch (subtask) {
         case S_IDLE:
+          printf("State: IDLE\n");
+          look_for(S_BASKET);
           if ((basketpos = get_filtered_basket_position()).size() != 0 &&
               can_drop(closest_object(basketpos)) &&
               num_balls_in_basket() == 0) {
@@ -203,6 +237,8 @@ static void conscious_thought(void) {
           }
           break;
         case S_FINDBASKET:
+          printf("State: FIND BASKET\n");
+          look_for(S_BASKET);
           if ((basketpos = get_filtered_basket_position()).size() == 0) {
             execute = 1;
           } else if (!can_drop(closest_object(basketpos)) ||
@@ -213,22 +249,22 @@ static void conscious_thought(void) {
           }
           break;
         case S_GOTOBASKET:
+          printf("State: GOTO BASKET\n");
           if ((basketpos = get_filtered_basket_position()).size() == 0) {
             subtask = S_FINDBASKET;
           } else if (!can_drop(closest_object(basketpos))) {
             execute = 1;
           } else if (num_balls_in_basket() != 0) {
+            gettimeofday(&actiontime, NULL);
             subtask = S_DROPBASKET;
           } else {
             subtask = S_IDLE;
           }
           break;
         case S_DROPBASKET:
-          if ((basketpos = get_filtered_basket_position()).size() == 0) {
-            subtask = S_FINDBASKET;
-          } else if (!can_drop(closest_object(basketpos))) {
-            subtask = S_GOTOBASKET;
-          } else if (num_balls_in_basket() != 0) {
+          printf("State: DROP BASKET\n");
+          look_for(S_BALL);
+          if (difftime(currtime, actiontime) < 1.0) {
             execute = 1;
           } else {
             subtask = S_IDLE;
@@ -239,9 +275,13 @@ static void conscious_thought(void) {
       }
     } else if (strcmp(task, "stop") == 0) {
       subtask = S_IDLE;
+      printf("State: IDLE\n");
+      look_for(S_BALL);
       execute = 1;
     }
   }
+
+  printf("Executing...\n");
 
   // move accordingly to the state
   // TODO: do collision detection, stop the robot from moving
@@ -268,7 +308,7 @@ static void conscious_thought(void) {
       set_robot(1.0, -basketpos[0].x, -basketpos[0].y, 0.0);
       break;
     case S_DROPBASKET:
-      set_robot(0.0, 0.0, -basketpos[0].y, -1.0);
+      set_robot(0.0, 0.0, 0.0, -1.0);
       break;
     default:
       set_robot(0.0, 0.0, 0.0, 0.0);
@@ -297,7 +337,7 @@ static char *get_speech_command(void) {
       cmdindex = i;
     }
   }
-  if (lastptr == -1) {
+  if (lastptr == (size_t)-1) {
     return NULL;
   } else {
     return (char *)commands[cmdindex];
@@ -349,52 +389,59 @@ static void look_for(int detectingstate) {
   if (detectingstate == S_BALL && visual_detect_type != S_BALL) {
     visual_detect_type = S_BALL;
     set_detection(DETECT_BALL);
-  } else if (detectingstate = S_BASKET && visual_detect_type != S_BASKET) {
+    printf("Detection type set to BALL\n");
+  } else if (detectingstate == S_BASKET && visual_detect_type != S_BASKET) {
     visual_detect_type = S_BASKET;
     set_detection(DETECT_BASKET);
+    printf("Detection type set to BASKET\n");
   }
 }
 
 /** Grab all positions in the image
- *  @param n
- *    the mutable integer used to measure message length,
- *    this is 0 if nothing is recv'd
- *  @return a vector of locations
  */
-static std::vector<pose3d_t> grab_new_frame_object(int &n) {
-  char buf[128];
-  std::vector<pose3d_t> locs;
-  n = get_position(buf);
-  if (n) {
-    pose3d_t pt;
-    memset(&pt, 0, sizeof(pose3d_t));
-    // check to make sure this is the correct thingy
-    sscanf(buf, "%lf %lf %lf\n", &pt.x, &pt.y, &pt.z);
-    if (!(pt.z == -1 && pt.y == -1 && pt.x == -1)) {
-      locs.push_back(pt);
-    }
-    updated_locs = locs;
+static void update_object_positions(void) {
+  pose3d_t *loc;
+  int type;
+  loc = get_position(&type);
+  switch (type) {
+    case 1: //ball
+      if (loc) {
+        if (ballpos.size() == 0) {
+          ballpos.push_back(*loc);
+        } else {
+          ballpos[0] = *loc;
+        }
+      } else {
+        ballpos = std::vector<pose3d_t>();
+      }
+      break;
+
+    case 2: //basket
+      if (loc) {
+        if (basketpos.size() == 0) {
+          basketpos.push_back(*loc);
+        } else {
+          basketpos[0] = *loc;
+        }
+      } else {
+        basketpos = std::vector<pose3d_t>();
+      }
+      break;
   }
-  return updated_locs;
 }
 
 /** Get the number of balls in the basket
  *  @return the number of balls
  */
 static int num_balls_in_basket(void) {
-  if (visual_detect_type == S_BALL) {
-    std::vector<pose3d_t> locs;
-    int n;
-    const double in_basket_baseline = 10.0; // TODO: CONFIGURE ME!
-    locs = grab_new_frame_object(n);
-    if (n) {
-      numballs = 0;
-      // set baseline
-      for (int i = 0; i < locs.size(); i++) {
-        numballs += (locs[i].y > in_basket_baseline) ? 1 : 0;
-      }
-    }
+  printf("call nbib\n");
+  const double in_basket_baseline = 10.0; // TODO: CONFIGURE ME!
+  int numballs;
+  numballs = 0;
+  for (int i = 0; i < (int)ballpos.size(); i++) {
+    numballs += (ballpos[i].y > in_basket_baseline) ? 1 : 0;
   }
+  printf("ret nbib\n");
   return numballs;
 }
 
@@ -402,22 +449,25 @@ static int num_balls_in_basket(void) {
  *  @return the ball locations
  */
 static std::vector<pose3d_t> get_filtered_ball_positions(void) {
-  if (visual_detect_type == S_BALL) {
-    std::vector<pose3d_t> locs;
-    std::vector<pose3d_t> flocs;
-    int n;
-    const double in_basket_baseline = 10.0; // TODO: CONFIGURE ME!
-    locs = grab_new_frame_object(n);
-    if (n) {
-      for (int i = 0; i < locs.size(); i++) {
-        if (locs[i].y <= in_basket_baseline) {
-          flocs.push_back(locs[i]);
-        }
-      }
-      ballpos = flocs;
+  printf("call gfballp\n");
+  const double in_basket_baseline = 10.0; // TODO: CONFIGURE ME!
+  std::vector<pose3d_t> flocs;
+  for (int i = 0; i < (int)ballpos.size(); i++) {
+    if (ballpos[i].y <= in_basket_baseline) {
+      flocs.push_back(ballpos[i]);
     }
   }
-  return ballpos;
+  printf("ret gfballp\n");
+  return flocs;
+}
+
+/** Get all possible locations of the basket
+ *  @return the most likely basket location
+ */
+static std::vector<pose3d_t> get_filtered_basket_position(void) {
+  printf("call gfbasketp\n");
+  printf("ret gfbasketp\n");
+  return basketpos;
 }
 
 /** Get the closest object in a location list
@@ -426,24 +476,16 @@ static std::vector<pose3d_t> get_filtered_ball_positions(void) {
  *  @return the closest location
  */
 static pose3d_t closest_object(std::vector<pose3d_t> locs) {
-  return locs[0];
-}
-
-/** Get all possible locations of the basket
- *  @return the most likely basket location
- */
-static std::vector<pose3d_t> get_filtered_basket_position(void) {
-  if (visual_detect_type == S_BASKET) {
-    std::vector<pose3d_t> locs;
-    std::vector<pose3d_t> flocs;
-    int n;
-    locs = grab_new_frame_object(n);
-    if (n) {
-      flocs.push_back(locs[0]);
-    }
-    basketpos = flocs;
+  printf("call co\n");
+  pose3d_t nil;
+  memset(&nil, 0, sizeof(pose3d_t));
+  if (locs.size() > 0) {
+    printf("ret co\n");
+    return locs[0];
+  } else {
+    printf("ret co <nil>\n");
+    return nil;
   }
-  return basketpos;
 }
 
 /** Queries if a ball at a position can be picked up
@@ -461,10 +503,33 @@ static bool can_pickup(pose3d_t pos) {
  *  @return true if close enough to drop, otherwise false
  */
 static bool can_drop(pose3d_t pos) {
+  printf("call can drop\n");
   pose3d_t *sonar = robot::sense();
   const double collision_baseline = 3.0; // TODO: CONFIGURE ME!
   // dont really need position, just the ultrasonic sensors
-  bool no_left_collision = sonar[0].y > collision_baseline;
-  bool no_right_collision = sonar[1].y > collision_baseline;
-  return (!no_left_collision && !no_right_collision);
+  if (sonar) {
+    printf("gathering sensor 1\n");
+    bool no_left_collision = sonar[0].y > collision_baseline;
+    printf("gathering sensor 2\n");
+    bool no_right_collision = sonar[1].y > collision_baseline;
+    free(sonar); // TODO: REMOVE WORKAROUND
+    printf("ret can drop\n");
+    return (!no_left_collision && !no_right_collision);
+  } else {
+    return false;
+  }
+}
+
+/** Get the difference of time in seconds
+ *  @param t2
+ *    the end time
+ *  @param t1
+ *    the start time
+ *  @return the difference in seconds
+ */
+double difftime(struct timeval t2, struct timeval t1) {
+  double diff;
+  diff = (double)(t2.tv_sec - t1.tv_sec);
+  diff += ((double)(t2.tv_usec - t1.tv_usec)) / 1000000;
+  return diff;
 }

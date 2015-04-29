@@ -3,7 +3,6 @@
 #include <string.h>
 #include "robot.h"
 #include "tbr.h"
-#include "tachikoma.h"
 
 static void *bot;
 static uint32_t currid;
@@ -35,17 +34,6 @@ int robot::set(uint32_t robotid) {
       }
       break;
 
-    case TACHIKOMA:
-      bot = (void *)(new tachikoma());
-      if (!((tachikoma *)bot)->connected()) {
-        delete (tachikoma *)bot;
-        bot = NULL;
-        printf("[ERROR] Could not connect all the devices on the tachikoma!\n");
-        return -1;
-      } else {
-        return ((tachikoma *)bot)->numconnected();
-      }
-
     default:
       return -1;
   }
@@ -69,12 +57,6 @@ int robot::unset(void) {
       }
       break;
 
-    case TACHIKOMA:
-      if (bot) {
-        delete (tachikoma *)bot;
-      }
-      break;
-
     default:
       return -1;
   }
@@ -94,10 +76,9 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
   int forward;
   int rotate;
   tbr_t *tbr;
-  tachikoma * t;
 
   switch (currid) {
-    case STANDARD_OUT:
+    case 0x45:
       printf("[STDOUT] arm->x: %lf, arm->y: %lf, arm->z: %lf\n"
           "arm->yaw: %lf, arm->pitch: %lf, arm->roll: %lf\n"
           "base->x: %lf, base->y: %lf, base->z: %lf\n"
@@ -119,11 +100,6 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
       tbr_send(tbr);
       break;
 
-    case TACHIKOMA:
-      t = (tachikoma *)bot;
-      t->update(base[0], base[1], arm[0], arm[1]);
-      break;
-
     default:
       return -1;
   }
@@ -136,11 +112,11 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
 pose3d_t *robot::sense(void) {
   pose3d_t *sensor_data;
   tbr_t *tbr;
-  tachikoma *t;
 
   switch (currid) {
     case STANDARD_OUT:
-      return NULL;
+      sensor_data = (pose3d_t *)calloc(4, sizeof(pose3d_t));
+      return sensor_data;
 
     case TENNIS_BALL_ROBOT:
       tbr = (tbr_t *)bot;
@@ -151,10 +127,6 @@ pose3d_t *robot::sense(void) {
       sensor_data[1].y = tbr->sonar[1];
       sensor_data[2].y = tbr->sonar[2];
       return sensor_data;
-
-    case TACHIKOMA:
-      t = (tachikoma *)bot;
-      return t->observe();
 
     default:
       return NULL;

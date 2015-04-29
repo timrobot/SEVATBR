@@ -7,7 +7,7 @@ namespace agent {
   // Functions
   int wakeup(void);
   void set_enable(bool en);
-  void sleep(void);
+  void gotosleep(void);
   int get_poses(pose3d_t *base, pose3d_t *arm);
 }
 
