@@ -42,10 +42,11 @@ int main(int argc, char *argv[]) {
   printf("CORE INITIALIZING...\n");
   signal(SIGINT, stop_program);
   // init robot and user
-  if (robot::set(STANDARD_OUT) == -1) {
+  if (robot::set(TENNIS_BALL_ROBOT) == -1) {
     return -1;
   }
   // for current testing purposes, connect to the controller first
+  printf("INIT CTRL\n");
   if (user_connect(USER_XBOXCTRL) == -1) {
     return -1;
   }
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
   user_set_enable(true);
 
   // start getting communication accesses
-  printf("querying...\n");
+  printf("Querying commands...\n");
   while (!stop_signal) {
     switch (input_id) {
       case S_USER:

@@ -203,12 +203,18 @@ void tbr_recv(tbr_t *robot) {
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
         msg = serial_read(&robot->connections[i]);
+        if (!msg) {
+          break;
+        }
         sscanf(msg, "[%d %d %d]\n", &robot->ids[i],
             &back_sonar, &robot->potentiometer);
         robot->sonar[BACK_SONAR] = (double)back_sonar;
         break;
       case ARM_DEVID:
         msg = serial_read(&robot->connections[i]);
+        if (!msg) {
+          break;
+        }
         sscanf(msg, "[%d %d %d]\n", &robot->ids[i],
             &left_sonar, &right_sonar);
         robot->sonar[LEFT_SONAR] = (double)left_sonar;
@@ -216,6 +222,9 @@ void tbr_recv(tbr_t *robot) {
         break;
       case CLAW_DEVID:
         msg = serial_read(&robot->connections[i]);
+        if (!msg) {
+          break;
+        }
         sscanf(msg, "[%d ]\n", &robot->ids[i]);
         break;
       default:

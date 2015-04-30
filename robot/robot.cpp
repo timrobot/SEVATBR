@@ -30,6 +30,7 @@ int robot::set(uint32_t robotid) {
         printf("[ERROR] Could not get all arduinos! Recommend exiting.\n");
         return -1;
       } else {
+        currid = robotid;
         return ((tbr_t *)bot)->connected;
       }
       break;
