@@ -1,11 +1,11 @@
 CC = g++
 CFLAGS = -pedantic -Wall -O3
-INCLUDE = #-I$(shell pwd)/speech-to-text \
-#					-I$(shell pwd)/text-to-speech
-SUBDIRS = #$(shell pwd)/speech-to-text $(shell pwd)/text-to-speech
+INCLUDE = -I$(shell pwd)/text-to-speech
+          #-I$(shell pwd)/speech-to-text
+SUBDIRS = $(shell pwd)/text-to-speech #$(shell pwd)/speech-to-text 
 OBJECTS = speech.o
-LIBOBJS = #$(shell pwd)/speech-to-text/stt.o \
-#					$(shell pwd)/text-to-speech/tts.o
+LIBOBJS = $(shell pwd)/text-to-speech/tts.o
+          #$(shell pwd)/speech-to-text/stt.o
 TARGET = libspeech.a
 
 all: subdirs $(OBJECTS) $(TARGET)
