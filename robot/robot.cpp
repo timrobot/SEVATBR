@@ -78,15 +78,13 @@ int robot::move(pose3d_t *base, pose3d_t *arm) {
   tbr_t *tbr;
 
   switch (currid) {
-    case 0x45:
-      printf("[STDOUT] arm->x: %lf, arm->y: %lf, arm->z: %lf\n"
-          "arm->yaw: %lf, arm->pitch: %lf, arm->roll: %lf\n"
-          "base->x: %lf, base->y: %lf, base->z: %lf\n"
-          "base->yaw: %lf, base->pitch: %lf, base->roll: %lf\n\n",
-          arm->x, arm->y, arm->z,
-          arm->yaw, arm->pitch, arm->roll,
-          base->x, base->y, base->z,
-          base->yaw, base->pitch, base->roll);
+    //case 0x45:
+    case STANDARD_OUT:
+      printf("[STDOUT] "
+          "arm->yaw: %lf, arm->pitch: %lf, "
+          "base->y: %lf, base->yaw: %lf\n\n",
+          arm->yaw, arm->pitch,
+          base->y, base->yaw);
       break;
 
     case TENNIS_BALL_ROBOT:

@@ -30,7 +30,8 @@
 #define SYNC_NSEC     500000000
 
 const int botpot = 688;
-const int toppot = 615;
+const int midpot = 650; // TODO: CONFIGURE ME
+const int toppot = 630;
 
 static double limitf(double x, double min, double max);
 
@@ -158,6 +159,7 @@ void tbr_send(tbr_t *robot) {
         } else {
           robot->prev_arm = robot->arm;
         }
+        // limit the arm
         if ((robot->potentiometer > botpot && robot->arm < 0.0) ||
             (robot->potentiometer < toppot && robot->arm > 0.0)) {
           robot->arm = 0.0;
@@ -219,6 +221,11 @@ void tbr_recv(tbr_t *robot) {
       default:
         break;
     }
+  }
+  // adjust for sonar blockage by the arm
+  if (robot->potentiometer < 650) {
+    robot->sonar[0] = 200;
+    robot->sonar[1] = 200;
   }
 }
 

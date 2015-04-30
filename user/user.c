@@ -241,22 +241,22 @@ static void raise_server_request(int signum) {
  *  from the controller
  */
 void controller_update(void) {
-  int ltrunc, rtrunc;
   xboxctrl_update(&ctrl);
   memset(&user_base, 0, sizeof(pose3d_t));
   memset(&user_arm, 0, sizeof(pose3d_t));
 
-  ltrunc = (ctrl.LJOY.y > 0.4) ? 1 :
-    ((ctrl.LJOY.y < -0.4) ? -1 : 0);
-  rtrunc = (ctrl.RJOY.x > 0.4) ? 1 :
-    ((ctrl.RJOY.x < -0.4) ? -1 : 0);
-  if (ltrunc != 0) {
-    user_base.y = ltrunc * 1.0;
+  if (ctrl.LJOY.y < 0.015 && ctrl.LJOY.y > -0.015) {
+    user_base.y = 0.0;
   } else {
-    user_base.yaw = rtrunc * -1.0;
+    user_base.y = ctrl.LJOY.y;
+  }
+  if (ctrl.RJOY.x < 0.015 && ctrl.RJOY.x > -0.015) {
+    user_base.yaw = 0.0;
+  } else {
+    user_base.yaw = -ctrl.RJOY.x;
   }
 
-  user_arm.pitch = (ctrl.B - ctrl.A) * 1.0;
+  user_arm.pitch = ((ctrl.RT + 1.0) / 2.0 - (ctrl.LT + 1.0) / 2.0);
   user_arm.yaw = (ctrl.RB - ctrl.LB) * 1.0;
 
   if (ctrl.START) {
