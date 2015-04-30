@@ -58,7 +58,7 @@ void setup() {
   Serial.begin(38400);
   setarm(0);
   digitalWrite(13, HIGH);
-  time = millis();
+  msecs = millis();
 }
 
 void loop() {
@@ -75,7 +75,7 @@ void loop() {
       buf[safesize] = '\0';
     }
 
-    // extract possible message
+    // extract possible message 15 per side
     char *s, *e;
     if ((e = strchr(buf, '\n'))) {
       e[0] = '\0';
@@ -91,8 +91,10 @@ void loop() {
   setarm(arm_value * 90 / 255);
 
   if (millis() - msecs > 100) { // 10Hz
-    sprintf(msg, "[%d %lf %lf]", DEV_ID, left_sonar.ping_cm(), right_sonar.ping_cm());
+    sprintf(msg, "[%d %d %d]",
+        DEV_ID, left_sonar.ping() / US_ROUNDTRIP_CM,
+        right_sonar.ping() / US_ROUNDTRIP_CM);
     Serial.println(msg);
-    time = millis();
+    msecs = millis();
   }
 }
