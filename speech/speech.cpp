@@ -9,27 +9,25 @@ static char readbuf[128];
  *  @return 0 on success, -1 otherwise
  */
 int speech::start(void) {
-//  int res;
-//  res = stt_start_listening();
-//  return res;
+  return stt_start_listening();
 }
 
 /** Stop the speech engine
  */
 void speech::stop(void) {
-  //stt_stop_listening();
+  stt_stop_listening();
 }
 
 /** Listen for a speech phrase
  *  @return a phrase if found, otherwise NULL
  */
 char *speech::listen(void) {
-//  if (stt_listen(readbuf) == 0) {
-//    readbuf[0] = '\0';
-//    return NULL;
-//  } else {
-//    return readbuf;
-//  }
+  if (stt_listen(readbuf) == 0) {
+    readbuf[0] = '\0';
+    return NULL;
+  } else {
+    return readbuf;
+  }
 }
 
 /** Say something to the speakers

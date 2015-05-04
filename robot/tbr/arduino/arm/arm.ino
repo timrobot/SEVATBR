@@ -8,6 +8,7 @@
 #define ARM_R1        9
 #define ARM_R2        10
 #define ARM_R3        11
+#define TOP_SWITCH    A1
 #define LEFT_TRIGGER  4
 #define LEFT_ECHO     7
 #define RIGHT_TRIGGER 8
@@ -38,11 +39,29 @@ int limit(int x, int a, int b) {
   }
 }
 
+bool btmpress() {
+  return analogRead(TOP_SWITCH) >= 660;
+}
+
+bool toppress() {
+  return analogRead(TOP_SWITCH) <= 520;
+}
+
 void setarm(int vel) {
-  vel = limit(vel, -90, 90);
+  vel = limit(vel, -30, 40);
+  if (btmpress()) {
+    if (vel < 0) {
+      vel = 0;
+    }
+  }
+  if (toppress()) {
+    if (vel > 0) {
+      vel = 0;
+    }
+  }
   for (int i = 0; i < 3; i++) {
-    arm_l[i].write(90 - vel);
-    arm_r[i].write(vel + 90);
+    arm_l[i].write(vel + 90);
+    arm_r[i].write(90 - vel);
   }
 }
 
@@ -53,6 +72,7 @@ void setup() {
   arm_r[1].attach(ARM_R2);
   arm_l[2].attach(ARM_L3);
   arm_r[2].attach(ARM_R3);
+  pinMode(TOP_SWITCH, INPUT);
   pinMode(13, OUTPUT);
   
   Serial.begin(38400);
@@ -89,6 +109,8 @@ void loop() {
   }
 
   setarm(arm_value * 90 / 255);
+  
+  // 609 539
 
   if (millis() - msecs > 100) { // 10Hz
     sprintf(msg, "[%d %d %d]",

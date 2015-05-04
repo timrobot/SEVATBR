@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <stdio.h>
-#include "occugridmap.h"
+#include "gridmap.h"
 
 using namespace cv;
 using namespace std;
 
-occugridmap::occugridmap(int min_x, int max_x, int min_y, int max_y) {
+gridmap::gridmap(int min_x, int max_x, int min_y, int max_y) {
   this->left_range = min_x;
   this->right_range = max_x;
   this->up_range = max_y;
@@ -25,8 +25,8 @@ occugridmap::occugridmap(int min_x, int max_x, int min_y, int max_y) {
   }
 }
 
-occugridmap::~occugridmap() {
-  occugridmap *ptr;
+gridmap::~gridmap() {
+  gridmap *ptr;
   if ((ptr = this->left)) {
     this->left->right = NULL;
     this->left = NULL;
@@ -49,7 +49,7 @@ occugridmap::~occugridmap() {
   }
 }
 
-void occugridmap::set(int x, int y, int p) {
+void gridmap::set(int x, int y, int p) {
   int width = right_range - left_range;
   int height = up_range - down_range;
   if (x < this->left_range) {
@@ -59,7 +59,7 @@ void occugridmap::set(int x, int y, int p) {
       this->up->set(x, y, p);
     } else {
       if (!this->left) {
-        this->left = new occugridmap(
+        this->left = new gridmap(
             this->left_range - width,
             this->right_range - width,
             this->down_range,
@@ -75,7 +75,7 @@ void occugridmap::set(int x, int y, int p) {
       this->up->set(x, y, p);
     } else {
       if (!this->right) {
-        this->right = new occugridmap(
+        this->right = new gridmap(
             this->left_range + width,
             this->right_range + width,
             this->down_range,
@@ -86,7 +86,7 @@ void occugridmap::set(int x, int y, int p) {
     }
   } else if (y >= this->up_range) {
     if (!this->up) {
-      this->up = new occugridmap(
+      this->up = new gridmap(
           this->left_range,
           this->right_range,
           this->down_range + height,
@@ -96,7 +96,7 @@ void occugridmap::set(int x, int y, int p) {
     this->up->set(x, y, p);
   } else if (y < this->down_range) {
     if (!this->down) {
-      this->down = new occugridmap(
+      this->down = new gridmap(
           this->left_range,
           this->right_range,
           this->down_range - height,
@@ -111,7 +111,7 @@ void occugridmap::set(int x, int y, int p) {
   }
 }
 
-int occugridmap::get(int x, int y) {
+int gridmap::get(int x, int y) {
   if (x < this->left_range)
     return this->left ? this->left->get(x, y) : -1;
   else if (x >= this->right_range)
@@ -124,7 +124,7 @@ int occugridmap::get(int x, int y) {
     return this->data.at<Vec3b>(y, x)[0];
 }
 
-void occugridmap::dumpToFolder(string foldername) {
+void gridmap::dumpToFolder(string foldername) {
   DIR *dp;
   struct dirent *entry;
   char command[256];
@@ -143,7 +143,7 @@ void occugridmap::dumpToFolder(string foldername) {
   dumpVisit(foldername);
 }
 
-void occugridmap::clearVisit() {
+void gridmap::clearVisit() {
   if (this->visited) {
     this->visited = false;
     this->left->clearVisit();
@@ -153,7 +153,7 @@ void occugridmap::clearVisit() {
   }
 }
 
-void occugridmap::dumpVisit(string foldername) {
+void gridmap::dumpVisit(string foldername) {
   char filename[256];
   if (!this->visited) {
     this->visited = true;

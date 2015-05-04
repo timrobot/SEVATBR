@@ -7,6 +7,8 @@
 #define CLAW_R  9
 #define BOT_R   0
 #define TOP_R   1
+#define TOUCH   A0
+#define MAX_DISTANCE  200
 
 Servo claw_l;
 Servo claw_r;
@@ -21,6 +23,10 @@ int limit(int x, int a, int b) {
   } else {
     return x;
   }
+}
+
+bool touch() {
+  return analogRead(TOUCH) < 3;
 }
 
 void setclaw(int vel) {
@@ -67,6 +73,7 @@ void setup() {
   pinMode(BOT_L, OUTPUT);
   pinMode(TOP_R, OUTPUT);
   pinMode(BOT_R, OUTPUT);
+  pinMode(TOUCH, INPUT);
   pinMode(11, OUTPUT);
   
   Serial.begin(38400);
@@ -98,7 +105,8 @@ void loop() {
     }
   }
   if (millis() - time > 100) { // 10Hz
-    sprintf(msg, "[%d ]", DEV_ID);
+    sprintf(msg, "[%d %d]", DEV_ID,
+        touch());
     Serial.println(msg);
     time = millis();
   }

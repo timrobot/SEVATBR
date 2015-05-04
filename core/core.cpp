@@ -16,6 +16,7 @@
 #include "agent.h"
 
 // Signal handler for killing the program
+// EMERGENCY SHUTDOWN
 static int stop_signal;
 
 /** Signal handler to stop the program
@@ -39,32 +40,29 @@ int main(int argc, char *argv[]) {
   int input_id;
   enum input_states { S_USER, S_AGENT };
 
-  printf("CORE INITIALIZING...\n");
   signal(SIGINT, stop_program);
+  // for current testing purposes, connect to the controller first
+  if (user_connect(USER_SERVER) == -1) {
+    return -1;
+  }
+  user_log("CORE INITIALIZING...\n");
   // init robot and user
   if (robot::set(TENNIS_BALL_ROBOT) == -1) {
     return -1;
   }
-  // for current testing purposes, connect to the controller first
-//  if (user_connect(USER_XBOXCTRL) == -1) {
-//    return -1;
-//  }
-  printf("initializing agent\n");
+  user_log("initializing agent\n");
   if (agent::wakeup() == -1) {
-//    user_disconnect();
+    user_disconnect();
     return -1;
   }
   input_id = S_AGENT;
   agent::set_enable(true);
 
   // start getting communication accesses
-  printf("querying...\n");
-  struct timespec t;
-  t.tv_nsec = 100000000;
-  t.tv_sec = 0;
+  user_log("querying...\n");
   while (!stop_signal) {
     switch (input_id) {
-/*      case S_USER:
+      case S_USER:
         user_get_poses(base, arm);
         robot::move(base, arm);
         if (!user_get_override()) {
@@ -73,25 +71,24 @@ int main(int argc, char *argv[]) {
           input_id = S_AGENT;
         }
         break;
-*/
+
       case S_AGENT:
         agent::get_poses(base, arm);
         robot::move(base, arm);
-        nanosleep(&t, NULL);
-/*        if (user_get_override()) {
+        if (user_get_override()) {
           agent::set_enable(false);
           user_set_enable(true);
           input_id = S_USER;
-        }*/
+        }
         break;
     }
   }
 
   // clean up
   agent::gotosleep();
-//  user_disconnect();
+  user_disconnect();
   robot::unset();
-  printf("CORE COMPLETE.\n");
+  user_log("CORE COMPLETE.\n");
 
   return 0;
 }

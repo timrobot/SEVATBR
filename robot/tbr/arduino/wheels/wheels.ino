@@ -11,7 +11,6 @@
 #define TRIGGER_PIN   7
 #define ECHO_PIN      8
 #define MAX_DISTANCE  200
-#define POT_PIN       A0
 
 NewPing back_sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 Servo wheel_l[3];
@@ -54,7 +53,6 @@ void setup() {
   wheel_r[1].attach(WHEEL_R2);
   wheel_l[2].attach(WHEEL_L3);
   wheel_r[2].attach(WHEEL_R3);
-  pinMode(POT_PIN, INPUT);
   pinMode(13, OUTPUT);
 
   Serial.begin(38400);
@@ -95,8 +93,8 @@ void loop() {
   setwheels(left_value * 90 / 255, right_value * 90 / 255);
 
   if (millis() - msecs > 100) { // 10Hz
-    sprintf(msg, "[%d %d %d]", DEV_ID,
-        back_sonar.ping() / US_ROUNDTRIP_CM, analogRead(POT_PIN));
+    sprintf(msg, "[%d %d]", DEV_ID,
+        back_sonar.ping() / US_ROUNDTRIP_CM);
     Serial.println(msg);
     msecs = millis();
   }
