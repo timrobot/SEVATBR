@@ -7,8 +7,8 @@ INCLUDE = -I$(shell pwd) \
 LIBS = -L$(shell pwd)/../user -luser \
        -L$(shell pwd)/../agent -lagent \
 	     -L$(shell pwd)/../robot -lrobot \
+       -lFestival -lestools -lestbase -leststring \
        `pkg-config --libs opencv`
-#       -lFestival -lestools -lestbase -leststring \
 #       -larmadillo
 SUBDIRS = $(shell pwd)/../user \
           $(shell pwd)/../agent \

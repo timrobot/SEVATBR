@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   printf("CORE INITIALIZING...\n");
   signal(SIGINT, stop_program);
   // init robot and user
-  if (robot::set(STANDARD_OUT) == -1) {
+  if (robot::set(TENNIS_BALL_ROBOT) == -1) {
     return -1;
   }
   // for current testing purposes, connect to the controller first

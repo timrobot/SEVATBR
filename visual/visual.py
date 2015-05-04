@@ -102,15 +102,17 @@ def run_middle():
 ## Continuously captures image from computer camera and feeds it to the is_ball_middle method to detect whether tennis ball is in the middle of the screen.
 def run():
     global particle_filter, mode, quiet
-    cam = Camera(0, {"width" : 20, "height" : 40})
-    #disp = Display()
+    cam_width = 320
+    cam_height = 240
+    cam = Camera(0, {"width" : cam_width, "height" : cam_height})
+    disp = Display()
     best_found = False
     
     print "VISUAL-PROC-STARTED"
     sys.stdout.flush()
     while True:
         best_found = False
-        sleep(.05)
+        #sleep(.05)
         img = cam.getImage()
         # close window with left click
         #if disp.mouseLeft:
@@ -121,7 +123,7 @@ def run():
             img = img.smooth()
             blobs = get_hue_blobs(img)
             if blobs:
-                blobs.draw()
+                #blobs.draw()
                 best = get_best_blob(blobs, particle_filter, mode)
                 if best:
                     best_found = True
@@ -130,7 +132,7 @@ def run():
                     img.drawCircle(centroid, rad, (0,255,0), 2)
                     dist = (38 * 1200) / best.area()
                     if not quiet:
-                        print "coordinate:[%s %s %s %s]" % (mode, centroid[0], centroid[1], dist)
+                        print "coordinate:[%s %s %s %s]" % (mode, centroid[0] - cam_width/2, centroid[1] - cam_height/2, dist)
                         sys.stdout.flush()
         elif mode == "basket":
             img = cam.getImage()
@@ -146,7 +148,7 @@ def run():
                     dist = (38 * 140) / height
                     best.drawRect(color=Color.BLUE, width=2)
                     if not quiet:
-                        print "coordinate:[%s %s %s %s]" % (mode, centroid[0], centroid[1], dist)
+                        print "coordinate:[%s %s %s %s]" % (mode, centroid[0] - cam_width/2, centroid[1] - cam_height/2, dist)
                         sys.stdout.flush()
                 else:
                     if not quiet:
@@ -155,12 +157,11 @@ def run():
         if not best_found and not quiet:
             print "notfound:[%s]" % mode
             sys.stdout.flush()
-
         if mode == "basket":
             mode = "ball"
         else:
             mode = "basket"
-        #img.save(disp)
+        img.save(disp)
         sys.stdout.flush()
 
 def switch_handler(signum, frame):

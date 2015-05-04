@@ -28,9 +28,13 @@ int main() {
     start_visual();
     printf("started\n");
     int x = 0;
+    int t, f, r;
     while(1) {
-        pose3d_t *pos = get_position(NULL);
-        if (pos) {
+        pose3d_t *pos = get_position(&f, &t, &r);
+        if (!r || t == 2) {
+        continue;
+        }
+        if (f) {
           printf("%d here's output: { %lf %lf %lf }\n", x, pos->x, pos->y, pos->z);
           x++;
           if(x % 100 == 0) {
@@ -42,6 +46,8 @@ int main() {
                 set_detection(DETECT_BASKET);
             }
           }
+        }else {
+        printf("not found\n");
         }
         // this simulates while loop of decision engine
 //        psleep(0.01);

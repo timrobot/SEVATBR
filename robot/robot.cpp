@@ -74,13 +74,13 @@ int robot::unset(void) {
  *  @return 0 on success, -1 otherwise
  */
 int robot::move(pose3d_t *base, pose3d_t *arm) {
-  int forward;
-  int rotate;
+  double forward;
+  double rotate;
   tbr_t *tbr;
 
   switch (currid) {
-    //case 0x45:
-    case STANDARD_OUT:
+    case 0x45:
+    //case STANDARD_OUT:
       printf("[STDOUT] "
           "arm->yaw: %f, arm->pitch: %f, "
           "base->y: %f, base->yaw: %f\n\n",

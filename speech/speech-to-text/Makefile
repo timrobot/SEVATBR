@@ -3,7 +3,8 @@ CFLAGS = -pedantic -Wall -std=gnu99 -O3
 GSTFLAGS = `pkg-config --cflags gstreamer-0.10`
 PSFLAGS = `pkg-config --cflags pocketsphinx sphinxbase`
 GSTLIBS = `pkg-config --libs gstreamer-0.10`
-PSLIBS = `pkg-config --libs pocketsphinx sphinxbase`
+PSLIBS = -L/usr/local/lib -lpocketsphinx -lsphinxbase -lsphinxad
+#         `pkg-config --libs pocketsphinx sphinxbase`
 INCLUDE = -I/usr/local/include/pocketsphinx/ -I/usr/local/include/sphinxbase/ \
           -I/usr/include/gstreamer-0.10/ -I/usr/include/glib-2.0/
 MODELDIR = /usr/local/share/pocketsphinx/model

@@ -148,6 +148,12 @@ void tbr_send(tbr_t *robot) {
           robot->prev_left = robot->left;
           robot->prev_right = robot->right;
         }
+        if (robot->left >= 0.0) {
+          robot->left *= 1.15;
+        }
+        if (robot->right >= 0.0) {
+          robot->right *= 1.15;
+        }
         sprintf(msg, "[%d %d]\n",
             (int)(limitf(robot->left, -1.0, 1.0) * 255.0),
             (int)(limitf(robot->right, -1.0, 1.0) * 255.0));
@@ -160,10 +166,10 @@ void tbr_send(tbr_t *robot) {
           robot->prev_arm = robot->arm;
         }
         // limit the arm
-        if ((robot->potentiometer > botpot && robot->arm < 0.0) ||
+        /*if ((robot->potentiometer > botpot && robot->arm < 0.0) ||
             (robot->potentiometer < toppot && robot->arm > 0.0)) {
           robot->arm = 0.0;
-        }
+        }*/
         sprintf(msg, "[%d]\n",
             (int)(limitf(robot->arm, -1.0, 1.0) * 255.0));
         serial_write(&robot->connections[i], msg);
@@ -199,6 +205,7 @@ void tbr_recv(tbr_t *robot) {
   int back_sonar;
   int left_sonar;
   int right_sonar;
+  int bt;
   for (i = 0; i < NUM_DEV; i++) {
     switch (robot->ids[i]) {
       case WHEEL_DEVID:
@@ -206,8 +213,8 @@ void tbr_recv(tbr_t *robot) {
         if (!msg) {
           break;
         }
-        sscanf(msg, "[%d %d %d]\n", &robot->ids[i],
-            &back_sonar, &robot->potentiometer);
+        sscanf(msg, "[%d %d]\n", &robot->ids[i],
+            &back_sonar);
         robot->sonar[BACK_SONAR] = (double)back_sonar;
         break;
       case ARM_DEVID:
@@ -225,7 +232,7 @@ void tbr_recv(tbr_t *robot) {
         if (!msg) {
           break;
         }
-        sscanf(msg, "[%d ]\n", &robot->ids[i]);
+        sscanf(msg, "[%d %d]\n", &robot->ids[i], &bt);
         break;
       default:
         break;

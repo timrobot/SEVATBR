@@ -16,15 +16,15 @@ typedef struct tbr {
   char **possible_ports;
   int num_possible;
 
-  int left;
-  int right;
-  int arm;
-  int claw;
+  double left;
+  double right;
+  double arm;
+  double claw;
 
-  int prev_left;
-  int prev_right;
-  int prev_arm;
-  int prev_claw;
+  double prev_left;
+  double prev_right;
+  double prev_arm;
+  double prev_claw;
 
   double sonar[3];
   int potentiometer;

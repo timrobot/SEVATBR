@@ -65,14 +65,13 @@ int start_visual(void) {
   return -1;
 }
 
-pose3d_t *get_position(int *type) {
-  int found;
-  int notfound;
+pose3d_t *get_position(int *found, int *type, int *readdata) {
   int bytesread;
   char typestr[16];
   memset(typestr, 0, sizeof(typestr));
-  found = 0;
-  notfound = 0;
+  (*readdata) = 0;
+  (*type) = 0;
+
   bytesread = read(pipefd[0], interim, 127);
   while (bytesread > 0) {
     int i;
@@ -83,16 +82,18 @@ pose3d_t *get_position(int *type) {
     }
     for (i = 0; i < bytesread; i++) {
       if (interim[i] == '\n') {
+        printf("read: %s\n", interim);
         if (strncmp(buf, "coordinate:", 11) == 0) {
           memset(&loc, 0, sizeof(pose3d_t));
           sscanf(buf, "coordinate:[%s %llf %llf %llf]\n", typestr, &loc.x, &loc.y, &loc.z);
-          found = 1;
+          (*found) = 1;
+          (*readdata) = 1;
         }
         if (strncmp(buf, "notfound:", 9) == 0) {
           memset(&loc, 0, sizeof(pose3d_t));
           sscanf(buf, "notfound:[%s]\n", typestr);
-          notfound = 1;
-          printf("%s is not found\n", typestr);
+          (*found) = 0;
+          (*readdata) = 1;
         }
         ind = 0;
       } else {
@@ -102,27 +103,15 @@ pose3d_t *get_position(int *type) {
     }
     bytesread = read(pipefd[0], interim, 127);
   }
-  if (found || notfound) {
-    if (type) {
-      if (strcmp(typestr, "ball") == 0) {
-        *type = 1;
-      } else if (strcmp(typestr, "basket") == 0) {
-        *type = 2;
-      } else {
-        *type = 0;
-      }
+  if ((*readdata)) {
+    if (strstr(typestr, "ball")) {
+      (*type) = 1;
+    } else if (strstr(typestr, "basket")) {
+      (*type) = 2;
     }
-    if (found) {
-      return &loc;
-    } else if (notfound) {
-      return NULL;
-    }
-  } else {
-    if (type) {
-      *type = 0;
-    }
-    return NULL;
+    return &loc;
   }
+  return NULL;
 }
 
 void stop_visual(void) {

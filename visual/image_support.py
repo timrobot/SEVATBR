@@ -35,7 +35,8 @@ def image_hue_filter(img, mode):
     elif mode == "basket":
         # good tested values
         #return img.hueDistance(110, minsaturation=105, minvalue=60)
-        return img.hueDistance(112, minsaturation=30, minvalue=80)
+        #return img.hueDistance(112, minsaturation=30, minvalue=80)
+        return img.hueDistance(112, minsaturation=90, minvalue=80)
 
 
 ## Gets basket blobs after hue distance filtering.
