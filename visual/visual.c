@@ -114,7 +114,7 @@ pose3d_t *get_position(int *found, int *type, int *readdata) {
   return NULL;
 }
 
-void stop_visual(void) {
+int stop_visual(void) {
   if (initd) {
     close(pipefd[0]);
     close(pipefd[1]);
@@ -122,4 +122,5 @@ void stop_visual(void) {
     waitpid(procID, NULL, 0);
     initd = 0;
   }
+  return 0;
 }

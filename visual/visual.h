@@ -13,7 +13,7 @@ extern "C" {
 int start_visual(void);
 void set_detection(int mode);
 pose3d_t *get_position(int *found, int *type, int *readdata);
-void stop_visual(void);
+int stop_visual(void);
 
 #ifdef __cplusplus
 }
